@@ -14,3 +14,4 @@ Cloud-only execution. No local builds/tests/runs. Ledger commits carry [skip ci]
 ## Rulings
 
 - (none yet)
+## BLOCKED 2026-09-24 — Actions runners refused: "recent account payments have failed or spending limit needs to be increased" (run 36060749832). Owner must fix Billing & plans, then re-dispatch: gh workflow run import.yml -R Exodi-dio/tune. No code fault; plan resumes at Phase 0 Step 2.
