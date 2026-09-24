@@ -1,0 +1,19 @@
+# NOTICE — Tune
+
+Tune is reworked by **exodi_dio** and licensed under GPLv3 (see LICENSE).
+
+## Provenance
+
+- Application base: the Android/KMP mobile app from
+  `misa198/airmedy` (GPLv3). All PC/desktop sync and previous-developer
+  references have been removed; the player, library, and UI were reworked
+  into a standalone local music player.
+- Artist-screen UI elements and transitions adapted from
+  `kushagrasinghx/BitChord` (GPLv3).
+
+## Third-party components (from upstream)
+
+- FFmpeg (LGPL-2.1+) — audio decoding.
+- miniaudio, SFBAudioEngine references (desktop legacy, not shipped).
+- OpenCC (Apache-2.0), go-pinyin phrase data (MIT), koreanromanizer (MIT)
+  — romanization data/tooling where retained.
