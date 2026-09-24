@@ -1,0 +1,36 @@
+name: import-base
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: tune
+      - uses: actions/checkout@v4
+        with:
+          repository: misa198/airmedy
+          ref: master
+          sparse-checkout: |
+            mobile
+            scripts/build-ffmpeg-android.sh
+          path: up
+      - name: Transplant mobile subtree to repo root
+        run: |
+          set -eux
+          rm -rf tune/androidApp tune/sharedLogic tune/gradle tune/gradlew tune/gradlew.bat tune/settings.gradle.kts tune/build.gradle.kts tune/gradle.properties tune/iosApp tune/tools
+          cp -a up/mobile/androidApp up/mobile/sharedLogic up/mobile/gradle up/mobile/gradlew up/mobile/gradlew.bat up/mobile/settings.gradle.kts up/mobile/build.gradle.kts up/mobile/gradle.properties up/mobile/tools tune/
+          mkdir -p tune/scripts
+          cp -a up/scripts/build-ffmpeg-android.sh tune/scripts/
+          chmod +x tune/gradlew
+      - name: Commit and push
+        run: |
+          cd tune
+          git config user.name "tune-bot"
+          git config user.email "tune-bot@users.noreply.github.com"
+          git add -A
+          git commit -m "Import airmedy mobile base (GPLv3, see NOTICE)" || echo "nothing to commit"
+          git push origin HEAD:main
