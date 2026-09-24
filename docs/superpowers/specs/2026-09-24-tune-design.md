@@ -125,3 +125,22 @@ links. CI grep-gate fails on `airmedy|misa198` outside NOTICE.
 - Haze/Compose BOM alignment for ported components.
 - MediaStore permission UX (Android 12–16).
 - No device in CI: UI verified on-device by owner.
+
+## 14. Low-end performance (added post-approval)
+
+Tune must stay EXTREMELY smooth on weak chips and small RAM:
+
+- Global low-spec mode: `ActivityManager.isLowRamDevice()` OR the
+  "Reduce animations" setting disables Haze blur/glass, parallax
+  headers, particle/lyric animations, palette animation (snap), and
+  canvas artwork effects. No exceptions.
+- Lists: `LazyColumn`/`LazyRow` everywhere with stable keys. Artwork
+  thumbnails size-capped (max 256px in lists) with a bounded memory
+  cache. Full-resolution art only on the now-playing screen.
+- Zero main-thread I/O: scanning, metadata reads, palette extraction,
+  and artwork decode run off the main thread. Large libraries use paged
+  Room queries.
+- Release hygiene: R8 full mode, Baseline Profiles for startup and
+  scrolling, APK size watched in CI.
+- Verification: CI enforces build/tests/lint/branding gates; smoothness
+  acceptance is owner on-device testing on a low-end phone.
