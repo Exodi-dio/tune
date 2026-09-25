@@ -1,5 +1,7 @@
 package com.exodidio.tune.ui.components
 
+import android.app.ActivityManager
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.LruCache
@@ -31,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -39,12 +42,70 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.exodidio.tune.R
 import com.exodidio.tune.ui.theme.LocalTuneColors
 
-private val artworkCache = LruCache<String, ImageBitmap>(250)
+private const val ArtworkCacheFraction = 8
+
+internal fun artworkCacheMaxBytes(memoryClassMb: Int): Int =
+    memoryClassMb * 1024 * 1024 / ArtworkCacheFraction
+
+internal fun artworkCacheKey(absolutePath: String, targetPx: Int): String =
+    "$absolutePath:$targetPx"
+
+internal object ArtworkThumbnailCache {
+    @Volatile private var backing: LruCache<String, ImageBitmap>? = null
+    private val inFlight = ConcurrentHashMap<String, Unit>()
+
+    fun init(memoryClassMb: Int) {
+        if (backing == null) {
+            synchronized(this) {
+                if (backing == null) {
+                    val maxBytes = artworkCacheMaxBytes(memoryClassMb)
+                    backing = object : LruCache<String, ImageBitmap>(maxBytes) {
+                        override fun sizeOf(key: String, value: ImageBitmap): Int {
+                            return try {
+                                value.asAndroidBitmap().allocationByteCount.coerceAtLeast(1)
+                            } catch (_: Throwable) {
+                                4 * 1024
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun cacheKey(path: String, targetPx: Int): String = artworkCacheKey(path, targetPx)
+
+    fun get(key: String): ImageBitmap? = try {
+        backing?.get(key)
+    } catch (_: Throwable) {
+        null
+    }
+
+    fun put(key: String, value: ImageBitmap) {
+        try {
+            backing?.put(key, value)
+        } catch (_: Throwable) {
+            Unit
+        } finally {
+            inFlight.remove(key)
+        }
+    }
+
+    fun claimInFlight(key: String): Boolean = inFlight.putIfAbsent(key, Unit) == null
+    fun releaseInFlight(key: String) { inFlight.remove(key) }
+}
+
+// After: byte-budgeted cache initialised once from ActivityManager.memoryClass.
+private fun ensureArtworkCache(context: Context) {
+    val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    ArtworkThumbnailCache.init(manager.memoryClass)
+}
 
 @Composable
 internal fun rememberArtworkThumbnail(
@@ -53,41 +114,41 @@ internal fun rememberArtworkThumbnail(
 ): ImageBitmap? {
     if (artworkPath.isNullOrBlank()) return null
     val context = LocalContext.current
+    ensureArtworkCache(context)
     val absolutePath = remember(artworkPath, context) {
         val file = File(artworkPath)
         if (file.isAbsolute) file.absolutePath else File(context.filesDir, artworkPath).absolutePath
     }
-    val cacheKey = "$absolutePath:$targetPx"
-
-    var bitmap by remember(cacheKey) { mutableStateOf(artworkCache.get(cacheKey)) }
-
+    val cacheKey = remember(absolutePath, targetPx) { ArtworkThumbnailCache.cacheKey(absolutePath, targetPx) }
+    var bitmap by remember(cacheKey) { mutableStateOf(ArtworkThumbnailCache.get(cacheKey)) }
     LaunchedEffect(cacheKey) {
-        if (bitmap == null) {
-            val loaded = withContext(Dispatchers.IO) {
-                val file = File(absolutePath)
-                if (!file.isFile) return@withContext null
-                runCatching {
-                    val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                    BitmapFactory.decodeFile(file.absolutePath, boundsOptions)
-
-                    var sampleSize = 1
-                    while (boundsOptions.outWidth / (sampleSize * 2) >= targetPx &&
-                        boundsOptions.outHeight / (sampleSize * 2) >= targetPx
-                    ) {
-                        sampleSize *= 2
-                    }
-
-                    val decodeOptions = BitmapFactory.Options().apply {
-                        inSampleSize = sampleSize
-                        inPreferredConfig = Bitmap.Config.RGB_565
-                    }
-                    BitmapFactory.decodeFile(file.absolutePath, decodeOptions)?.asImageBitmap()
-                }.getOrNull()
-            }
-            if (loaded != null) {
-                artworkCache.put(cacheKey, loaded)
-                bitmap = loaded
-            }
+        if (bitmap != null) return@LaunchedEffect
+        if (!ArtworkThumbnailCache.claimInFlight(cacheKey)) return@LaunchedEffect
+        val loaded = withContext(Dispatchers.IO) {
+            val file = File(absolutePath)
+            if (!file.isFile) return@withContext null
+            runCatching {
+                val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeFile(file.absolutePath, boundsOptions)
+                var sampleSize = 1
+                while (boundsOptions.outWidth / (sampleSize * 2) >= targetPx &&
+                    boundsOptions.outHeight / (sampleSize * 2) >= targetPx
+                ) {
+                    sampleSize *= 2
+                }
+                val decodeOptions = BitmapFactory.Options().apply {
+                    inSampleSize = sampleSize
+                    inPreferredConfig = Bitmap.Config.RGB_565
+                }
+                BitmapFactory.decodeFile(file.absolutePath, decodeOptions)?.asImageBitmap()
+            }.getOrNull()
+        }
+        if (loaded != null) {
+            // put happens on the IO result, never on the main dispatcher.
+            ArtworkThumbnailCache.put(cacheKey, loaded)
+            bitmap = loaded
+        } else {
+            ArtworkThumbnailCache.releaseInFlight(cacheKey)
         }
     }
     return bitmap
