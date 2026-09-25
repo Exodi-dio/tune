@@ -47,6 +47,7 @@ import com.exodidio.tune.sync.PulledAsset
 import com.exodidio.tune.sync.PlaylistMutationStore
 import com.exodidio.tune.sync.PlaylistArtworkStagingStore
 import com.exodidio.tune.sync.StagedPlaylistArtwork
+import com.exodidio.tune.library.LocalImport
 import com.exodidio.tune.player.TrackAnalysis
 import com.exodidio.tune.player.ListeningSession
 import com.exodidio.tune.player.PlaybackAttempt
@@ -306,6 +307,7 @@ internal interface SyncDao {
     @Query("DELETE FROM sync_tracks WHERE planId = :planId") suspend fun deleteTracks(planId: String)
     @Query("DELETE FROM sync_playlists WHERE planId = :planId") suspend fun deletePlaylists(planId: String)
     @Query("DELETE FROM library_search_fts WHERE planId = :planId") suspend fun deleteSearchDocuments(planId: String)
+    @Query("SELECT * FROM sync_playlists WHERE planId = :planId") suspend fun playlistEntities(planId: String): List<SyncPlaylistEntity>
     @Query("DELETE FROM sync_documents WHERE planId = :planId") suspend fun deleteDocuments(planId: String)
     @Query("DELETE FROM sync_plans WHERE planId = :planId AND active = 0") suspend fun deleteInactivePlan(planId: String)
     @Query("SELECT * FROM playlist_mutations WHERE state = 'pending' ORDER BY updatedAt, mutationId") suspend fun pendingPlaylistMutations(): List<PlaylistMutationEntity>
@@ -694,6 +696,20 @@ internal class AndroidLibrarySyncStore(
             payload = PlaylistMutationPayload(trackId = trackId, isFavorite = favorite),
         )
         queuePlaylistMutation(mutation)
+    }
+
+    suspend fun playlistEntities(planId: String): List<SyncPlaylistEntity> = dao.playlistEntities(planId)
+
+    /** Commits a local MediaStore scan: replaces this plan's tracks, audio/artwork assets and search docs. */
+    suspend fun commitLocalLibrary(import: LocalImport) = database.withTransaction {
+        dao.insertPlan(SyncPlanEntity(import.planId, "local", "{}", "active", false))
+        dao.deleteTracks(import.planId)
+        dao.deleteAssets(import.planId)
+        dao.deleteSearchDocuments(import.planId)
+        dao.insertTracks(import.tracks)
+        dao.insertAssets(import.audioAssets + import.artworkAssets)
+        dao.insertSearchDocuments(import.searchDocuments)
+        dao.activatePlan(import.planId)
     }
 
     suspend fun createLocalPlaylist(
@@ -1342,7 +1358,7 @@ private fun LibraryTrackRow.metadataObject(): JsonObject? = runCatching {
     LibrarySyncProtocol.json.parseToJsonElement(rawJson) as? JsonObject
 }.getOrNull()
 
-private fun searchDocumentsFor(
+internal fun searchDocumentsFor(
     planId: String,
     tracks: List<SyncTrackEntity>,
     playlists: List<SyncPlaylistEntity>,
