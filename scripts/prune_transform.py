@@ -235,7 +235,7 @@ write(p, t)
 p = f"{R}/ui/screens/InsightViewModel.kt"
 t = read(p)
 t = remove_once(p, t, "import com.exodidio.tune.pairing.PairingPreferences\n", "PairingPreferences import")
-t = remove_once(p, t, """    class Factory(
+old_factory = """    class Factory(
         private val store: AndroidLibrarySyncStore,
         private val preferences: PairingPreferences,
         private val playbackController: PlaybackController,
@@ -247,25 +247,34 @@ t = remove_once(p, t, """    class Factory(
             preferences.pairedDesktop,
             playbackController,
         ) as T
-    }""", "insight Factory (old)")
-t = t.replace("""    class Factory(
+    }"""
+new_factory = """    class Factory(
         private val store: AndroidLibrarySyncStore,
         private val playbackController: PlaybackController,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T = InsightViewModel(
             store,
-            flow { emit(preferences.identity()) },
-            preferences.pairedDesktop,
+            flowOf(MobileIdentity(id = "local", name = "This phone", platform = "android", publicKey = byteArrayOf())),
+            flowOf<PairedDesktop?>(null),
             playbackController,
         ) as T
-    }""", """PLACEHOLDER_NEVER_MATCHES""", 1)
-t = remove_once(p, t, """    class Factory(
-        private val store: AndroidLibrarySyncStore,
-        private val playbackController: PlaybackController,
-    ) : ViewModelProvider.Factory {""", "UNUSED")
+    }"""
+if t.count(old_factory) != 1:
+    fails.append("InsightViewModel: old Factory found %dx (want 1)" % t.count(old_factory))
+else:
+    print(f"{p}: rewrote Insight Factory for local-only identity")
+    t = t.replace(old_factory, new_factory, 1)
+if "flow {" in t:
+    fails.append("InsightViewModel: unexpected remaining flow builder")
+else:
+    t = remove_once(p, t, "import kotlinx.coroutines.flow.flow\n", "flow builder import")
+    if "import kotlinx.coroutines.flow.flowOf\n" not in t:
+        t = t.replace("import kotlinx.coroutines.flow.flowOn\n", "import kotlinx.coroutines.flow.flowOf\nimport kotlinx.coroutines.flow.flowOn\n", 1)
+        print(f"{p}: added flowOf import")
+check_absent(p, t, "PairingPreferences", "PairingPreferences")
+check_absent(p, t, "preferences.", "preferences.")
 write(p, t)
-fails.append("InsightViewModel: manual rewrite required (placeholder guard)")
 
 # ---------------- AndroidManifest.xml ----------------
 p = "androidApp/src/main/AndroidManifest.xml"
