@@ -49,7 +49,6 @@ import com.exodidio.tune.sync.AndroidSyncRuntime
 import com.exodidio.tune.lastfm.AndroidLastFmRuntime
 import com.exodidio.tune.lastfm.LastFmService
 import com.exodidio.tune.lastfm.LastFmTrack
-import com.exodidio.tune.pairing.PairingPreferences
 import com.exodidio.tune.mood.MoodRadioBatchSize
 import com.exodidio.tune.mood.MoodRadioRefillThreshold
 import com.exodidio.tune.mood.selectMoodRadio
@@ -96,7 +95,7 @@ class PlaybackService : Service() {
         super.onCreate()
         AndroidPlaybackRuntime.initialize(applicationContext, AndroidSyncRuntime.syncStore())
         lastFm = AndroidLastFmRuntime.initialize(applicationContext, AndroidSyncRuntime.syncStore())
-        listeningTracker = ListeningTracker(runBlocking { PairingPreferences(applicationContext).identity().id }) { UUID.randomUUID().toString() }
+        listeningTracker = ListeningTracker("local") { UUID.randomUUID().toString() }
         listeningWriter = scope.launch {
             for (write in listeningWrites) AndroidSyncRuntime.syncStore().recordListening(write)
         }
