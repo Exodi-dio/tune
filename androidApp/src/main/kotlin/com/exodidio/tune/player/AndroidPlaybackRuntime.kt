@@ -42,7 +42,7 @@ internal object AndroidPlaybackRuntime {
                     val artwork = resolveSyncedAudioFile(appContext.filesDir, track.artworkPath)
                         ?.takeIf(File::isFile)
                         ?.absolutePath
-                    Log.d(PlaybackLogTag, "Resolved audio id=$trackId path=${audio.absolutePath} artwork=${artwork != null}")
+                    Log.d(PlaybackLogTag, "Resolved audio id=$trackId path=${audioPath} artwork=${artwork != null}")
                     val metadata = track.metadataObject()
                     fun firstName(key: String): String = ((metadata?.get(key) as? JsonArray)?.firstOrNull() as? JsonObject)
                         ?.get("name")?.jsonPrimitive?.contentOrNull.orEmpty()
