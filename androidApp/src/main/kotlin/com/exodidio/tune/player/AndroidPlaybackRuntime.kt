@@ -1,6 +1,8 @@
 package com.exodidio.tune.player
 
+import android.content.ContentResolver
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import java.io.File
 import kotlinx.coroutines.flow.first
@@ -9,6 +11,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import com.exodidio.tune.library.AudioTarget
+import com.exodidio.tune.library.resolveAudioTarget
 import com.exodidio.tune.sync.AndroidLibrarySyncStore
 import com.exodidio.tune.sync.LibraryTrack
 import com.exodidio.tune.sync.metadataObject
@@ -26,13 +30,13 @@ internal object AndroidPlaybackRuntime {
         resolver = PlaybackItemResolver { trackId ->
             val track = syncStore.tracks.first().firstOrNull { it.id == trackId }
             if (track == null) {
-                Log.w(PlaybackLogTag, "Resolve failed: track is not in synced library id=$trackId")
+                Log.w(PlaybackLogTag, "Resolve failed: track is not in local library id=$trackId")
                 null
             } else {
                 val storedPath = track.audioPath
-                val audio = resolveSyncedAudioFile(appContext.filesDir, storedPath)
-                if (audio?.isFile != true) {
-                    Log.w(PlaybackLogTag, "Resolve failed: audio asset missing id=$trackId storedPath=$storedPath resolvedPath=${audio?.absolutePath}")
+                val audioPath = resolvePlayableAudioPath(appContext, storedPath)
+                if (audioPath == null) {
+                    Log.w(PlaybackLogTag, "Resolve failed: audio asset missing id=$trackId storedPath=$storedPath")
                     null
                 } else {
                     val artwork = resolveSyncedAudioFile(appContext.filesDir, track.artworkPath)
@@ -46,7 +50,7 @@ internal object AndroidPlaybackRuntime {
                         trackId = track.id,
                         title = track.title,
                         artist = playbackArtistNames(metadata, track.artists),
-                        audioPath = audio.absolutePath,
+                        audioPath = audioPath,
                         artworkPath = artwork,
                         albumId = track.albumId,
                         analysis = syncStore.analysis(track.id),
@@ -63,7 +67,9 @@ internal object AndroidPlaybackRuntime {
     suspend fun availableTrackIds(trackIds: Collection<String>): Set<String> {
         check(::appContext.isInitialized) { "AndroidPlaybackRuntime is not initialized" }
         if (trackIds.isEmpty()) return emptySet()
-        return availableSyncedTrackIds(appContext.filesDir, syncStore.tracks.first(), trackIds.toSet())
+        return availableSyncedTrackIds(appContext.filesDir, syncStore.tracks.first(), trackIds.toSet()) { uri ->
+            contentUriExists(appContext.contentResolver, uri)
+        }
     }
 
     fun controller(): PlaybackController {
@@ -87,11 +93,30 @@ internal fun resolveSyncedAudioFile(filesDir: File, storedPath: String?): File? 
     File(path).let { candidate -> if (candidate.isAbsolute) candidate else File(filesDir, path) }
 }
 
+internal fun contentUriExists(resolver: ContentResolver, uriString: String): Boolean = runCatching {
+    resolver.openFileDescriptor(Uri.parse(uriString), "r")?.close()
+    true
+}.getOrDefault(false)
+
+internal fun resolvePlayableAudioPath(context: Context, storedPath: String?): String? =
+    when (val target = resolveAudioTarget(context.filesDir, storedPath)) {
+        is AudioTarget.FileTarget -> target.file.takeIf(File::isFile)?.absolutePath
+        is AudioTarget.ContentTarget -> target.uri.takeIf { contentUriExists(context.contentResolver, it) }
+        null -> null
+    }
+
 internal fun availableSyncedTrackIds(
     filesDir: File,
     tracks: List<LibraryTrack>,
     requestedTrackIds: Set<String>,
+    contentExists: (String) -> Boolean = { false },
 ): Set<String> = tracks.asSequence()
     .filter { it.id in requestedTrackIds }
-    .filter { resolveSyncedAudioFile(filesDir, it.audioPath)?.isFile == true }
+    .filter { track ->
+        when (val target = resolveAudioTarget(filesDir, track.audioPath)) {
+            is AudioTarget.FileTarget -> target.file.isFile
+            is AudioTarget.ContentTarget -> contentExists(target.uri)
+            null -> false
+        }
+    }
     .mapTo(LinkedHashSet()) { it.id }
