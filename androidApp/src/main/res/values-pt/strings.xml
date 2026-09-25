@@ -144,6 +144,7 @@
     <string name="library_genres">Géneros</string>
     <string name="library_composers">Compositores</string>
     <string name="library_search">Pesquisar</string>
+    <string name="library_scan_local">Scan local files</string>
     <string name="library_search_placeholder">Pesquisar na biblioteca</string>
     <string name="library_search_empty_title">Pesquisar na biblioteca</string>
     <string name="library_search_empty_description">Introduza um título, artista, álbum, playlist ou compositor.</string>
