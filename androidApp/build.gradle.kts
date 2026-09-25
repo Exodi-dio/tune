@@ -65,7 +65,7 @@ plugins {
 
 val subsetMaterialSymbolsFont =
     tasks.register<SubsetMaterialSymbolsFontTask>("subsetMaterialSymbolsFont") {
-        symbolsKt = file("src/main/kotlin/me/exodidio/tune/ui/components/MaterialSymbols.kt")
+        symbolsKt = file("src/main/kotlin/com/exodidio/tune/ui/components/MaterialSymbols.kt")
         sourceFont = rootProject.file("tools/fonts/material_symbols_rounded.ttf")
         subsetScript = rootProject.file("tools/font-subset/subset_font.py")
         outputFont = file("src/main/res/font/material_symbols_rounded.ttf")
