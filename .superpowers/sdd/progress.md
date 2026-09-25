@@ -40,3 +40,6 @@
 - Ruling: batch-branch scheme stands (see Task 1 ruling).
 - Verified: RED 36177626806 on 9cf053b, GREEN 36178016974 on d4c305b, RED 36178432338 on deb1742, GREEN 36179013234 on 6eb5ac3.
 - Batch 1: complete (commits 1e7dd02..6eb5ac3, 2 parked minors, review otherwise clean)
+## Batch 2 (perf T5+T6) completion
+- Fix round 1/5: all 4 findings ADDRESSED, no new breakage (scoped re-review clean).
+- Batch 2: complete (commits c48dcfa..e8f3a203e34d4b881a2f8a4d003e1836fe72d34a via batch-2b, review clean after 1 fix round).
