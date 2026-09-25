@@ -144,6 +144,7 @@
     <string name="library_genres">ジャンル</string>
     <string name="library_composers">作曲者</string>
     <string name="library_search">検索</string>
+    <string name="library_scan_local">Scan local files</string>
     <string name="library_search_placeholder">ライブラリを検索</string>
     <string name="library_search_empty_title">ライブラリを検索</string>
     <string name="library_search_empty_description">タイトル、アーティスト、アルバム、プレイリスト、作曲者を入力してください。</string>
