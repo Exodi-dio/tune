@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# Builds the Android FFmpeg decoder used by mobile/androidApp.
-# Source is downloaded to a temporary cache exactly like the desktop scripts;
+# Builds the Android FFmpeg decoder used by Tune's androidApp.
+# Adapted from airmedy scripts/build-ffmpeg-android.sh (GPLv3):
+# repo root IS the mobile project (no mobile/ subdir), SDK auto-detected,
+# portable across Linux and macOS runners/hosts.
+#
+# Source is downloaded to a temporary cache exactly like the upstream script;
 # no FFmpeg source or generated library is committed to this repository.
 #
 # Usage: bash scripts/build-ffmpeg-android.sh [arm64-v8a]
@@ -10,15 +14,37 @@ FFMPEG_VERSION="8.1.2"
 FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.gz"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-ANDROID_DIR="${REPO_ROOT}/mobile/androidApp"
-SDK_DIR="$(awk -F= '/^sdk.dir=/{print $2}' "${REPO_ROOT}/mobile/local.properties")"
+ANDROID_DIR="${REPO_ROOT}/androidApp"
 NDK_VERSION="30.0.15729638"
+API=31
+
+detect_sdk_dir() {
+    if [[ -n "${ANDROID_SDK_ROOT:-}" ]]; then echo "${ANDROID_SDK_ROOT}"; return; fi
+    if [[ -n "${ANDROID_HOME:-}" ]]; then echo "${ANDROID_HOME}"; return; fi
+    if [[ -f "${REPO_ROOT}/local.properties" ]]; then
+        awk -F= '/^sdk.dir=/{print $2}' "${REPO_ROOT}/local.properties"
+        return
+    fi
+    echo ""
+}
+SDK_DIR="$(detect_sdk_dir)"
+[[ -n "${SDK_DIR}" ]] || { echo "Android SDK not found (set ANDROID_SDK_ROOT or sdk.dir in local.properties)" >&2; exit 1; }
 NDK="${SDK_DIR}/ndk/${NDK_VERSION}"
-TOOLCHAIN="$(find "${NDK}/toolchains/llvm/prebuilt" -maxdepth 1 -type d -name 'darwin-*' -print -quit)"
-BUILD_DIR="${TMPDIR:-/tmp}/ffmpeg-build-airmedy-android-${FFMPEG_VERSION}"
+
+if [[ -d "${NDK}/toolchains/llvm/prebuilt/linux-x86_64" ]]; then
+    HOST_TAG="linux-x86_64"
+else
+    DARWIN_CANDIDATE="$(echo "${NDK}"/toolchains/llvm/prebuilt/darwin-*)"
+    if [[ -d "${DARWIN_CANDIDATE%% *}" ]]; then
+        HOST_TAG="$(basename "${DARWIN_CANDIDATE%% *}")"
+    else
+        echo "No NDK LLVM prebuilt toolchain found under ${NDK}" >&2; exit 1
+    fi
+fi
+TOOLCHAIN="${NDK}/toolchains/llvm/prebuilt/${HOST_TAG}"
+BUILD_DIR="${TMPDIR:-/tmp}/ffmpeg-build-tune-android-${FFMPEG_VERSION}"
 JNI_OUT="${ANDROID_DIR}/src/main/jniLibs"
 INCLUDE_OUT="${ANDROID_DIR}/build/ffmpeg/include"
-API=31
 
 [[ -x "${TOOLCHAIN}/bin/clang" ]] || { echo "Android NDK ${NDK_VERSION} is required at ${NDK}" >&2; exit 1; }
 
@@ -26,6 +52,8 @@ API=31
 # registry so every music format supported by the pinned upstream source stays
 # supported without maintaining a fragile allow-list. Programs, encoders,
 # muxers, filters, devices and network protocols remain excluded.
+
+NPROC="$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)"
 
 download_source() {
     mkdir -p "${BUILD_DIR}/src"
@@ -60,7 +88,7 @@ build_arch() {
         --disable-avdevice --disable-avfilter --disable-swscale \
         --extra-cflags="-Oz -ffunction-sections -fdata-sections" \
         --extra-ldflags="-Wl,--gc-sections -Wl,-z,max-page-size=16384"
-    make -j"$(sysctl -n hw.ncpu)"
+    make -j"${NPROC}"
     make install
     popd >/dev/null
     mkdir -p "${JNI_OUT}/${ABI}"
