@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +20,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import com.exodidio.tune.pairing.MobileIdentity
 import com.exodidio.tune.pairing.PairedDesktop
-import com.exodidio.tune.pairing.PairingPreferences
 import com.exodidio.tune.player.DailyPlaybackAttemptStat
 import com.exodidio.tune.player.DailyTrackListeningStat
 import com.exodidio.tune.player.PlaybackController
@@ -104,14 +103,13 @@ internal class InsightViewModel(
 ) : ViewModel() {
     class Factory(
         private val store: AndroidLibrarySyncStore,
-        private val preferences: PairingPreferences,
         private val playbackController: PlaybackController,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T = InsightViewModel(
             store,
-            flow { emit(preferences.identity()) },
-            preferences.pairedDesktop,
+            flowOf(MobileIdentity(id = "local", name = "This phone", platform = "android", publicKey = byteArrayOf())),
+            flowOf<PairedDesktop?>(null),
             playbackController,
         ) as T
     }

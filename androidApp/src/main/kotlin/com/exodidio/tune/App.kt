@@ -77,7 +77,6 @@ import com.exodidio.tune.ui.components.TrackContextBottomSheetRequest
 import com.exodidio.tune.ui.theme.TuneTheme
 import com.exodidio.tune.ui.theme.LocalTuneColors
 import com.exodidio.tune.player.PlaybackState
-import com.exodidio.tune.sync.AndroidSyncState
 
 private enum class EqualizerProfileSheet { Menu, Create, DeleteConfirmation }
 
@@ -130,7 +129,6 @@ internal fun App(
     playback: PlaybackModel = PlaybackModel(),
     onIntent: (AppIntent) -> Unit = {},
     onFullScreenPlayerVisibilityChanged: (Boolean) -> Unit = {},
-    onDismissSyncFailure: () -> Unit = {},
 ) {
     val library = destinations.library
     val settings = destinations.settings
@@ -255,7 +253,6 @@ internal fun App(
             else -> stringResource(currentPage.titleRes(uiState.selectedDestination))
         }
         val showBack = currentPage != AppStackPage.Root
-        val showSyncAddAction = currentPage == AppStackPage.SettingsSync && settings.syncState.desktop == null && !settings.syncState.isPairing
         val showLibrarySortAction = currentPage == AppStackPage.LibraryTracks ||
             currentPage == AppStackPage.LibraryArtists || currentPage == AppStackPage.LibraryAlbums ||
             currentPage == AppStackPage.LibraryGenres || currentPage == AppStackPage.LibraryComposers
@@ -369,20 +366,13 @@ internal fun App(
                 } else {
                     null
                 },
-                hasActions = showSyncAddAction || showLibrarySortAction || showPlaylistAddAction || currentPage == AppStackPage.SettingsEqualizer || currentPage == AppStackPage.SettingsLyrics,
+                 || showPlaylistAddAction || currentPage == AppStackPage.SettingsEqualizer || currentPage == AppStackPage.SettingsLyrics,
                 animateChanges = animateHeaderChanges,
                 titleStackKey = "${uiState.selectedDestination.name}:${currentPage.name}",
                 isForward = isForwardHeaderTransition,
                 backGlassTintAlpha = if (currentPage == AppStackPage.AlbumDetails || currentPage == AppStackPage.PlaylistDetails || currentPage == AppStackPage.ArtistDetails || currentPage == AppStackPage.GenreDetails || currentPage == AppStackPage.ComposerDetails) 0.08f else null,
             ) {
-                if (showSyncAddAction) {
-                    TuneGlassIconButton(
-                        hazeState = hazeState,
-                        symbol = MaterialSymbols.Add,
-                        label = stringResource(R.string.sync_add_device),
-                        onClick = { onIntent(AppIntent.OpenPage(AppStackPage.SettingsSyncScanner)) },
-                    )
-                } else if (showPlaylistAddAction) {
+
                     TuneGlassIconButton(
                         hazeState = hazeState,
                         symbol = MaterialSymbols.Add,
@@ -524,20 +514,6 @@ internal fun App(
                     confirmVariant = TunePillButtonVariant.Destructive,
                 )
                 null -> Unit
-            }
-            (settings.syncState.librarySync as? AndroidSyncState.Failed)?.takeIf {
-                it.requiredBytes != null && it.availableBytes != null
-            }?.let { failure ->
-                TuneDialog(
-                    title = stringResource(R.string.sync_insufficient_storage_title),
-                    description = stringResource(
-                        R.string.sync_insufficient_storage_description,
-                        formatSyncStorageMegabytes(failure.requiredBytes!!),
-                        formatSyncStorageMegabytes(failure.availableBytes!!),
-                    ),
-                    dismissLabel = stringResource(R.string.close),
-                    onDismiss = onDismissSyncFailure,
-                )
             }
             NavigationChrome(
                 selectedDestination = uiState.selectedDestination,

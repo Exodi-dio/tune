@@ -152,11 +152,6 @@ internal data class LibraryDestinationModel(
 )
 
 internal data class SettingsDestinationModel(
-    val syncState: SyncUiState = SyncUiState(),
-    val onPairingQrScanned: (String) -> Boolean = { false },
-    val onUnpair: () -> Unit = {},
-    val onSyncScreenVisible: () -> Unit = {},
-    val onSyncScreenHidden: () -> Unit = {},
     val lastFmStatus: LastFmStatus = LastFmStatus(),
     val onLastFmConnect: () -> Unit = {},
     val onLastFmDisconnect: () -> Unit = {},

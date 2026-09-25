@@ -13,7 +13,6 @@ import com.exodidio.tune.ui.components.MaterialSymbols
 internal fun SettingsContent(
     onAppearanceSelected: () -> Unit,
     onPlaybackSelected: () -> Unit,
-    onSyncSelected: () -> Unit,
     onIntegrationSelected: () -> Unit,
     onAboutSelected: () -> Unit,
     modifier: Modifier = Modifier,
@@ -25,11 +24,6 @@ internal fun SettingsContent(
                     R.string.settings_appearance,
                     leadingSymbol = MaterialSymbols.Palette,
                     onClick = onAppearanceSelected,
-                ),
-                ActionListItem(
-                    R.string.settings_sync,
-                    leadingSymbol = MaterialSymbols.Refresh,
-                    onClick = onSyncSelected,
                 ),
                 ActionListItem(
                     R.string.settings_playback,

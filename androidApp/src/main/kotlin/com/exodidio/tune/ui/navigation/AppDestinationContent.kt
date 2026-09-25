@@ -63,9 +63,7 @@ import com.exodidio.tune.ui.screens.PlaybackSettingsContent
 import com.exodidio.tune.ui.screens.VolumeNormalizationContent
 import com.exodidio.tune.ui.screens.SongTransitionContent
 import com.exodidio.tune.ui.screens.EqualizerContent
-import com.exodidio.tune.ui.screens.SyncContent
 import com.exodidio.tune.lastfm.LastFmStatus
-import com.exodidio.tune.ui.screens.SyncScannerContent
 import com.exodidio.tune.ui.theme.LocalTuneColors
 
 import com.exodidio.tune.ui.screens.LibraryTracksContent
@@ -235,11 +233,6 @@ internal fun AppDestinationContent(
     val onArtistTrackContextBottomSheet = onTrackContextBottomSheet
     val onGenreTrackContextBottomSheet = onTrackContextBottomSheet
     val onComposerTrackContextBottomSheet = onTrackContextBottomSheet
-    val syncUiState = settings.syncState
-    val onPairingQrScanned = settings.onPairingQrScanned
-    val onUnpair = settings.onUnpair
-    val onSyncScreenVisible = settings.onSyncScreenVisible
-    val onSyncScreenHidden = settings.onSyncScreenHidden
     val lastFmStatus = settings.lastFmStatus
     val onLastFmConnect = settings.onLastFmConnect
     val onLastFmDisconnect = settings.onLastFmDisconnect
@@ -396,14 +389,6 @@ internal fun AppDestinationContent(
                                 },
                                 hazeState = hazeState,
                             )
-                            AppStackPage.SettingsSync -> SyncContent(
-                                syncUiState = syncUiState,
-                                onUnpair = onUnpair,
-                                onOpenExternalUrl = { url -> onIntent(AppIntent.OpenExternalUrl(url)) },
-                                onScreenVisible = onSyncScreenVisible,
-                                onScreenHidden = onSyncScreenHidden,
-                                modifier = settingsPageModifier,
-                            )
                             AppStackPage.SettingsPlayback -> PlaybackSettingsContent(
                                 showFullscreenQualityBadge = showFullscreenQualityBadge,
                                 onShowFullscreenQualityBadgeChanged = onShowFullscreenQualityBadgeChanged,
@@ -439,10 +424,6 @@ internal fun AppDestinationContent(
                                 onBandChanged = onEqualizerBandChanged,
                                 modifier = settingsPageModifier,
                             )
-                            AppStackPage.SettingsSyncScanner -> SyncScannerContent(
-                                onQrScanned = onPairingQrScanned,
-                                modifier = Modifier.padding(contentPadding),
-                            )
                             AppStackPage.SettingsIntegration -> IntegrationContent(
                                 onLastFmSelected = { onIntent(AppIntent.OpenPage(AppStackPage.SettingsLastFm)) },
                                 onLyricsSelected = { onIntent(AppIntent.OpenPage(AppStackPage.SettingsLyrics)) },
@@ -468,9 +449,6 @@ internal fun AppDestinationContent(
                                 },
                                 onPlaybackSelected = {
                                     onIntent(AppIntent.OpenPage(AppStackPage.SettingsPlayback))
-                                },
-                                onSyncSelected = {
-                                    onIntent(AppIntent.OpenPage(AppStackPage.SettingsSync))
                                 },
                                 onIntegrationSelected = {
                                     onIntent(AppIntent.OpenPage(AppStackPage.SettingsIntegration))

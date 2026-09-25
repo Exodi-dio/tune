@@ -40,24 +40,7 @@ import android.view.WindowInsetsController
 import android.view.KeyEvent
 import com.exodidio.tune.settings.ThemeMode
 import com.exodidio.tune.settings.ThemePreferences
-import com.exodidio.tune.pairing.AndroidPairingClock
-import com.exodidio.tune.pairing.AndroidPairingIdGenerator
-import com.exodidio.tune.pairing.HiveMqPairingTransport
-import com.exodidio.tune.pairing.HiveMqSyncSession
-import com.exodidio.tune.pairing.MobilePairingUseCase
-import com.exodidio.tune.pairing.PairingPreferences
-import com.exodidio.tune.pairing.AndroidTrustedDesktopDiscovery
 import com.exodidio.tune.sync.AndroidSyncRuntime
-import com.exodidio.tune.sync.LibrarySyncService
-import com.exodidio.tune.sync.AndroidPlaylistReconciliationTransport
-import com.exodidio.tune.sync.PlaylistReconciliationClock
-import com.exodidio.tune.sync.PlaylistReconciliationCoordinator
-import com.exodidio.tune.sync.PlaylistReconciliationPublisher
-import com.exodidio.tune.sync.PlaylistSyncProtocol
-import com.exodidio.tune.sync.PlaylistReconciliationOutcome
-import com.exodidio.tune.sync.PlaylistMutationStatus
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import com.exodidio.tune.player.AndroidPlaybackRuntime
 import com.exodidio.tune.player.AndroidPlaybackSession
 import com.exodidio.tune.player.PlaybackService
@@ -92,75 +75,16 @@ class MainActivity : ComponentActivity() {
             AndroidRomanizationEngine { applicationContext.assets.open(it) },
         )
     }
-    private val reconciliationMutex = Mutex()
     private lateinit var lastFm: LastFmService
     private var systemMusicVolumeState by mutableFloatStateOf(0f)
     private val viewModel: MainViewModel by viewModels {
         MainViewModel.Factory(ThemePreferences(applicationContext))
     }
-    private val syncViewModel: SyncViewModel by viewModels {
-        val preferences = PairingPreferences(applicationContext)
-        val syncSession = HiveMqSyncSession()
-        SyncViewModel.Factory(
-            MobilePairingUseCase(
-                identityProvider = preferences,
-                bindingStore = preferences,
-                transport = HiveMqPairingTransport(),
-                clock = AndroidPairingClock,
-                ids = AndroidPairingIdGenerator,
-            ),
-            mqttSession = syncSession,
-            discovery = AndroidTrustedDesktopDiscovery(applicationContext),
-            onSyncRequest = { payload, endpoint, session -> AndroidSyncRuntime.start(applicationContext, payload, endpoint, session) },
-            onPlaylistReconciliationRequest = { payload ->
-                reconciliationMutex.withLock {
-                AndroidSyncRuntime.awaitNoForegroundSync()
-                preferences.current()?.let { desktop ->
-                    AndroidSyncRuntime.initialize(applicationContext)
-                    val coordinator = PlaylistReconciliationCoordinator(
-                        identityProvider = preferences,
-                        clock = PlaylistReconciliationClock { System.currentTimeMillis() },
-                        store = AndroidSyncRuntime.syncStore(),
-                        transport = AndroidPlaylistReconciliationTransport(
-                            preferences, applicationContext.filesDir, AndroidSyncRuntime.syncStore(),
-                            listening = AndroidSyncRuntime.syncStore(),
-                        ),
-                        publisher = PlaylistReconciliationPublisher { result ->
-                            val mobileId = preferences.identity().id
-                            syncSession.publish(PlaylistSyncProtocol.resultTopic(desktop.desktopId, mobileId), result)
-                        },
-                    )
-                    when (val outcome = coordinator.handle(payload, desktop)) {
-                        is PlaylistReconciliationOutcome.Completed -> {
-                            val rejected = outcome.results.filter { it.status == PlaylistMutationStatus.REJECTED }.map { it.mutationId }
-                            AndroidSyncRuntime.syncStore().markLocalPlaylistMutationsFailed(rejected)
-                            AndroidSyncRuntime.syncStore().discardLocalPlaylistsForMutations(
-                                outcome.results.filter { it.status == PlaylistMutationStatus.SCOPE_CONFLICT }.map { it.mutationId },
-                            )
-                        }
-                        else -> Unit
-                    }
-                }
-                }
-            },
-            onBeforeUnpair = {
-                LibrarySyncService.cancel(applicationContext)
-                AndroidSyncRuntime.clearAll()
-            },
-            lastSyncedAt = preferences.lastSyncedAt,
-            libraryAnalysis = AndroidSyncRuntime.syncStore().analysisProgress,
-            libraryAnalysisEnabled = AndroidSyncRuntime.syncStore().libraryAnalysisEnabled,
-        )
-    }
     private val tracksViewModel: LibraryTracksViewModel by viewModels {
         LibraryTracksViewModel.Factory(AndroidSyncRuntime.syncStore(), AndroidPlaybackRuntime.controller())
     }
     private val insightViewModel: InsightViewModel by viewModels {
-        InsightViewModel.Factory(
-            AndroidSyncRuntime.syncStore(),
-            PairingPreferences(applicationContext),
-            AndroidPlaybackRuntime.controller(),
-        )
+
     }
     private val artistsViewModel: LibraryArtistsViewModel by viewModels {
         LibraryArtistsViewModel.Factory(AndroidSyncRuntime.syncStore())
@@ -219,7 +143,6 @@ class MainActivity : ComponentActivity() {
             val romanization by romanizationViewModel.state.collectAsStateWithLifecycle()
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val lastFmStatus by lastFm.status.collectAsStateWithLifecycle()
-            val syncUiState by syncViewModel.uiState.collectAsStateWithLifecycle()
             val activePage = uiState.currentPage
             val activeDestination = uiState.selectedDestination
             val allTracks by AndroidSyncRuntime.syncStore().tracks.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -452,17 +375,6 @@ class MainActivity : ComponentActivity() {
                     ),
                 ),
                 settings = SettingsDestinationModel(
-                    syncState = syncUiState,
-                    onPairingQrScanned = { raw ->
-                        if (!syncViewModel.acceptsQr(raw)) false else {
-                            syncViewModel.pair(raw)
-                            viewModel.dispatch(AppIntent.NavigateBack)
-                            true
-                        }
-                    },
-                    onUnpair = syncViewModel::unpair,
-                    onSyncScreenVisible = syncViewModel::onSyncScreenVisible,
-                    onSyncScreenHidden = syncViewModel::onSyncScreenHidden,
                     lastFmStatus = lastFmStatus,
                     onLastFmConnect = {
                         lastFm.authorizationUrl()?.let { url -> startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
@@ -553,7 +465,6 @@ class MainActivity : ComponentActivity() {
                     isFullScreenPlayerVisible = visible
                     updateSystemBarAppearance(darkTheme, visible)
                 },
-                onDismissSyncFailure = AndroidSyncRuntime::idle,
             )
         }
     }
