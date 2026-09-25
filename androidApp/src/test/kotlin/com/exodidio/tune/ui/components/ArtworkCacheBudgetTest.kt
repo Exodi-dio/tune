@@ -1,5 +1,6 @@
 package com.exodidio.tune.ui.components
 
+import com.exodidio.tune.ui.navigation.fullscreenSampleSize
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -27,5 +28,21 @@ class ArtworkCacheBudgetTest {
         assertTrue(thumb256 < 256 * 1024)
         // 250 such thumbs at 120px fit in a 24 MB budget.
         assertTrue(250 * thumb120 < artworkCacheMaxBytes(192))
+    }
+
+    @Test
+    fun fullscreenKeyIsPathOnly() {
+        assertEquals("/data/big.jpg:1080", ArtworkThumbnailCache.cacheKey("/data/big.jpg", 1080))
+    }
+
+    @Test
+    fun fullscreenSampleCapsTo1080() {
+        // 4000x3000 capped to 1080px target: sample 2 -> 2000x1500.
+        assertEquals(2, fullscreenSampleSize(4000, 3000, 1080))
+    }
+
+    @Test
+    fun fullscreenSampleIsOneForSmall() {
+        assertEquals(1, fullscreenSampleSize(800, 600, 1080))
     }
 }
