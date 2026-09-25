@@ -34,3 +34,9 @@
 - Task 1: complete (commits ea889f9..74f9d4c, 1 parked minor, review otherwise clean)
 ## Task 2 completion
 - Task 2: complete (commits 74f9d4c..2499bf0, review clean). Verified: range = exactly [032d115 RED, 2499bf0 perf:]; impl/v0.2.0 untouched until merge; put() releases in-flight in finally (no success-path leak).
+## Batch 1 (perf T3+T4) rulings + completion
+- Ruling: SyncDatabase 'Missing' waived — brief lists the file but prescribes zero edits; brief steps are the authority. No fix.
+- Ruling: coverage-limitation findings parked as deferred minors (Compose recomposition enforcement, RGB_565/get-put assertions) — no scope expansion mid-batch; final review triages. Cost if wrong: partial regression safety on two behaviors.
+- Ruling: batch-branch scheme stands (see Task 1 ruling).
+- Verified: RED 36177626806 on 9cf053b, GREEN 36178016974 on d4c305b, RED 36178432338 on deb1742, GREEN 36179013234 on 6eb5ac3.
+- Batch 1: complete (commits 1e7dd02..6eb5ac3, 2 parked minors, review otherwise clean)
