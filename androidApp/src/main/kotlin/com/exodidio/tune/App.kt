@@ -63,12 +63,13 @@ import com.exodidio.tune.ui.navigation.NavigationChrome
 import com.exodidio.tune.ui.navigation.NavigationChromeScrollAccumulator
 import com.exodidio.tune.ui.navigation.showsMiniPlayer
 import com.exodidio.tune.ui.navigation.titleRes
+import com.exodidio.tune.sync.metadataObject
 import com.exodidio.tune.ui.screens.ArtistSortOption
 import com.exodidio.tune.ui.screens.AlbumSortOption
 import com.exodidio.tune.ui.screens.GenreSortOption
 import com.exodidio.tune.ui.screens.ComposerSortOption
 import com.exodidio.tune.ui.screens.TrackSortOption
-import com.exodidio.tune.ui.screens.isFavorite
+import com.exodidio.tune.ui.screens.isFavoriteOf
 import com.exodidio.tune.ui.screens.CreatePlaylistBottomSheet
 import com.exodidio.tune.ui.screens.CreateEqualizerProfileBottomSheet
 import com.exodidio.tune.ui.screens.EqualizerProfileMenuBottomSheet
@@ -573,6 +574,19 @@ internal fun App(
                     .navigationBarsPadding()
                     .padding(start = 20.dp, end = 20.dp, bottom = FloatingNavigationBottomMargin),
             )
+            val currentPlayingId = when (val state = playbackState) {
+                is PlaybackState.Preparing -> state.item.trackId
+                is PlaybackState.Playing -> state.item.trackId
+                is PlaybackState.Paused -> state.item.trackId
+                else -> ""
+            }
+            val currentPlayingTrack = remember(playback.queueTracks, currentPlayingId) {
+                playback.queueTracks.firstOrNull { it.id == currentPlayingId }
+            }
+            val currentPlayingMetadata = remember(currentPlayingTrack?.metadataJson) {
+                currentPlayingTrack?.metadataObject()
+            }
+            val isCurrentFavorite = remember(currentPlayingMetadata) { isFavoriteOf(currentPlayingMetadata) }
             FullScreenPlayer(
                 visible = isFullScreenPlayerVisible,
                 dragProgress = fullScreenPlayerDragProgress,
@@ -604,12 +618,7 @@ internal fun App(
                 moodRadioEligibleTrackIds = playback.moodRadioEligibleTrackIds,
                 onStartMoodRadio = playback.onStartMoodRadio,
                 moodRadioActive = playback.moodRadioActive,
-                isFavorite = playback.queueTracks.firstOrNull { track -> track.id == when (val state = playbackState) {
-                    is PlaybackState.Preparing -> state.item.trackId
-                    is PlaybackState.Playing -> state.item.trackId
-                    is PlaybackState.Paused -> state.item.trackId
-                    else -> ""
-                } }?.isFavorite() == true,
+                isFavorite = isCurrentFavorite,
                 onFavoriteToggle = playback.onFavoriteToggle,
                 onTrackPlayNext = playback.onTrackPlayNext,
                 onTrackAddToQueue = playback.onTrackAddToQueue,
