@@ -1,3 +1,4 @@
+added Uri import
 package com.exodidio.tune.player
 
 import android.app.NotificationChannel
@@ -10,6 +11,7 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
@@ -45,6 +47,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import com.exodidio.tune.MainActivity
 import com.exodidio.tune.R
+import com.exodidio.tune.library.AudioTarget
+import com.exodidio.tune.library.resolveAudioTarget
 import com.exodidio.tune.sync.AndroidSyncRuntime
 import com.exodidio.tune.lastfm.AndroidLastFmRuntime
 import com.exodidio.tune.lastfm.LastFmService
@@ -424,7 +428,7 @@ class PlaybackService : Service() {
             try {
                 preparedDecoder.setGlobalDspConfig(equalizerDspConfig(equalizerSettings))
                 preparedDecoder.setFocusGain(if (isDucked) DuckedFocusGain else 1f)
-                preparedDecoder.prepare(File(item.audioPath), normalizationGain(item, queue.peekNext()))
+                preparedDecoder.preparePath(item.audioPath, normalizationGain(item, queue.peekNext()))
                 if (startPositionMs > 0L) preparedDecoder.seekTo(clampSeekPosition(startPositionMs, preparedDecoder.durationMs()))
                 if (startPaused) {
                     preparedDecoder.pause()
@@ -463,7 +467,7 @@ class PlaybackService : Service() {
             decoder = FfmpegDecoder().also {
                 it.setGlobalDspConfig(equalizerDspConfig(equalizerSettings))
                 it.setFocusGain(if (isDucked) DuckedFocusGain else 1f)
-                it.prepare(File(item.audioPath), normalizationGain(item, queue.peekNext()))
+                it.preparePath(item.audioPath, normalizationGain(item, queue.peekNext()))
                 val positionMs = clampSeekPosition(savedPositionMs, it.durationMs())
                 if (positionMs > 0L) it.seekTo(positionMs)
                 it.pause()
@@ -705,7 +709,7 @@ class PlaybackService : Service() {
         currentDecoder.clearPreloaded()
         preloadedItem = nextId?.let { id -> AndroidPlaybackRuntime.controller().resolve(id) }
         preloadedItem?.let { item ->
-            runCatching { currentDecoder.preload(File(item.audioPath), normalizationGain(item, queue.peekNext())) }
+            runCatching { currentDecoder.preloadPath(item.audioPath, normalizationGain(item, queue.peekNext())) }
                 .onSuccess { loaded ->
                     if (!loaded) preloadedItem = null
                 }
@@ -930,6 +934,30 @@ class PlaybackService : Service() {
         if (artwork != null) nowPlayingArtworkCache.put(path, artwork)
         else Log.w(PlaybackLogTag, "Unable to decode Now Playing artwork path=$path")
         return artwork
+    }
+
+    private fun FfmpegDecoder.preparePath(path: String, gain: Float) {
+        when (val target = resolveAudioTarget(filesDir, path)) {
+            is AudioTarget.FileTarget -> prepare(target.file, gain)
+            is AudioTarget.ContentTarget -> {
+                val fd = contentResolver.openFileDescriptor(Uri.parse(target.uri), "r")?.detachFd()
+                    ?: error("Unable to open audio uri")
+                prepareFd(fd, gain)
+            }
+            null -> error("Empty audio path")
+        }
+    }
+
+    private fun FfmpegDecoder.preloadPath(path: String, gain: Float): Boolean {
+        return when (val target = resolveAudioTarget(filesDir, path)) {
+            is AudioTarget.FileTarget -> preload(target.file, gain)
+            is AudioTarget.ContentTarget -> {
+                val fd = contentResolver.openFileDescriptor(Uri.parse(target.uri), "r")?.detachFd()
+                    ?: error("Unable to open audio uri")
+                preloadFd(fd, gain)
+            }
+            null -> error("Empty audio path")
+        }
     }
 
     private fun notification(item: PlaybackItem): Notification = Notification.Builder(this, ChannelId)
