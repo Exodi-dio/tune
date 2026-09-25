@@ -75,7 +75,6 @@ val subsetMaterialSymbolsFont =
     }
 
 val romanizationAssets = tasks.register<Sync>("romanizationAssets") {
-    from(rootProject.file("../internal/infra/romanization/data"))
     from(rootProject.file("tools/romanization/ATTRIBUTION.md"))
     from(rootProject.file("tools/romanization/LICENSE-OpenCC.txt"))
     into(layout.buildDirectory.dir("generated/romanizationAssets/romanization"))
