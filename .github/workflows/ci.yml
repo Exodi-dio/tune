@@ -13,6 +13,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -49,3 +51,15 @@ jobs:
       - name: Branding gate
         run: |
           if grep -rniE 'airmedy|misa198' --exclude-dir=.git --exclude-dir=.github --exclude-dir=.superpowers --exclude-dir=docs --exclude-dir=build --exclude-dir=.gradle --exclude=NOTICE . ; then echo "STALE BRANDING"; exit 1; fi
+      - name: Snapshot debug APK
+        if: success()
+        run: |
+          set -x
+          mkdir -p build-artifacts
+          cp androidApp/build/outputs/apk/dev/debug/*.apk build-artifacts/tune-debug.apk
+          git config user.email "tune-ci@users.noreply.github.com"
+          git config user.name "tune-ci"
+          git add -f build-artifacts/tune-debug.apk
+          if git diff --cached --quiet; then echo "no new apk"; exit 0; fi
+          git commit -m "chore(apk): snapshot debug build [ci]"
+          git push --force origin HEAD:refs/heads/apk-latest
