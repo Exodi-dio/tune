@@ -58,8 +58,8 @@ internal data class LocalTrack(
     val mimeType: String?,
     val label: String?,
     val copyright: String?,
-    val sampleRateHz: Int?,
-    val bitDepth: Int?,
+    val sampleRateHz: Int? = null,
+    val bitDepth: Int? = null,
 )
 
 internal fun MediaRow.toLocalTrack(): LocalTrack? {
@@ -141,7 +141,9 @@ internal data class LocalImport(
     val artworkAssets: List<SyncAssetEntity>,
     val searchDocuments: List<LibrarySearchDocumentEntity>,
     val skipped: Int,
-)
+) {
+    val inserted: Int get() = tracks.size
+}
 
 internal fun trackIdFor(mediaId: Long): String = "local-$mediaId"
 
