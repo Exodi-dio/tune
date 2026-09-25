@@ -366,13 +366,13 @@ internal fun App(
                 } else {
                     null
                 },
-                 || showPlaylistAddAction || currentPage == AppStackPage.SettingsEqualizer || currentPage == AppStackPage.SettingsLyrics,
+                hasActions = showLibrarySortAction || showPlaylistAddAction || currentPage == AppStackPage.SettingsEqualizer || currentPage == AppStackPage.SettingsLyrics,
                 animateChanges = animateHeaderChanges,
                 titleStackKey = "${uiState.selectedDestination.name}:${currentPage.name}",
                 isForward = isForwardHeaderTransition,
                 backGlassTintAlpha = if (currentPage == AppStackPage.AlbumDetails || currentPage == AppStackPage.PlaylistDetails || currentPage == AppStackPage.ArtistDetails || currentPage == AppStackPage.GenreDetails || currentPage == AppStackPage.ComposerDetails) 0.08f else null,
             ) {
-
+                if (showPlaylistAddAction) {
                     TuneGlassIconButton(
                         hazeState = hazeState,
                         symbol = MaterialSymbols.Add,
