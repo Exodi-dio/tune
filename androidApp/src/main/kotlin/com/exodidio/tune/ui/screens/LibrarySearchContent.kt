@@ -45,6 +45,12 @@ import com.exodidio.tune.ui.components.TrackContextMenu
 import com.exodidio.tune.ui.components.TrackRow
 import com.exodidio.tune.ui.theme.LocalTuneColors
 
+internal fun tracksByAlbumId(tracks: List<LibraryTrack>): Map<String, List<LibraryTrack>> =
+    tracks.groupBy { it.albumId }
+
+internal fun trackIndexById(tracks: List<LibraryTrack>): Map<String, Int> =
+    tracks.mapIndexed { index, track -> track.id to index }.toMap()
+
 @Composable
 internal fun LibrarySearchContent(
     uiState: LibrarySearchUiState,
@@ -68,6 +74,8 @@ internal fun LibrarySearchContent(
     val colors = LocalTuneColors.current
     var contextTrack by remember { mutableStateOf<LibraryTrack?>(null) }
     var contextAlbumId by remember { mutableStateOf<String?>(null) }
+    val tracksByAlbum = remember(uiState.allTracks) { tracksByAlbumId(uiState.allTracks) }
+    val playlistArtworkByTrackId = remember(uiState.allTracks) { uiState.allTracks.associateBy({ it.id }, { it.artworkPath }) }
     BoxWithConstraints(modifier.fillMaxSize()) {
     val trackDividerWidth = maxWidth * 0.8f
     Column(Modifier.fillMaxSize()) {
@@ -92,7 +100,8 @@ internal fun LibrarySearchContent(
                     ) {
                         Column {
                             TrackRow(track.title, track.artists, artworkPath = track.artworkPath, contentPadding = PaddingValues(vertical = 6.dp), onClick = { onTrackClick(track.id) }, onMoreClick = { contextTrack = track }, onLongClick = { contextTrack = track })
-                            val trackIndex = uiState.tracks.indexOfFirst { it.id == track.id }
+                            val trackIndexByIdMap = remember(uiState.tracks) { trackIndexById(uiState.tracks) }
+                            val trackIndex = trackIndexByIdMap[track.id] ?: -1
                             if (trackHasDivider(trackIndex, uiState.tracks.lastIndex)) {
                                 HorizontalDivider(
                                     color = colors.borderGlass,
@@ -103,7 +112,7 @@ internal fun LibrarySearchContent(
                     }
                 }
                 searchSection(R.string.library_albums, uiState.albums, { it.id }, topPadding = 32.dp) { album ->
-                    val tracks = uiState.allTracks.filter { it.albumId == album.id }
+                    val tracks = tracksByAlbum[album.id].orEmpty()
                     AlbumContextMenu(
                         tracks = tracks, expanded = contextAlbumId == album.id, onDismiss = { contextAlbumId = null }, playbackQueue = playbackQueue,
                         onPlayNext = onAlbumPlayNext, onAddToQueue = onAlbumAddToQueue, onAddToFavorites = onAlbumAddToFavorites,
@@ -126,7 +135,7 @@ internal fun LibrarySearchContent(
                     DiscCard(
                         title = playlist.name,
                         subtitle = "",
-                        artworkPath = uiState.allTracks.firstOrNull { it.id in playlist.trackIds }?.artworkPath,
+                        artworkPath = playlist.trackIds.firstNotNullOfOrNull { playlistArtworkByTrackId[it] },
                         fallbackSymbol = MaterialSymbols.QueueMusic,
                         onClick = { onPlaylistClick(playlist.id) },
                     )
