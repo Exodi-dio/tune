@@ -144,6 +144,7 @@
     <string name="library_genres">Жанры</string>
     <string name="library_composers">Композиторы</string>
     <string name="library_search">Поиск</string>
+    <string name="library_scan_local">Scan local files</string>
     <string name="library_search_placeholder">Поиск по медиатеке</string>
     <string name="library_search_empty_title">Поиск по медиатеке</string>
     <string name="library_search_empty_description">Введите название, исполнителя, альбом, плейлист или композитора.</string>
