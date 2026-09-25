@@ -96,7 +96,7 @@ class LocalImportTest {
         assertTrue((byType["artist"] ?: emptyList()).isNotEmpty())
         assertTrue((byType["album"] ?: emptyList()).isNotEmpty())
         val trackDoc = result.searchDocuments.first { it.entityType == "track" }
-        assertTrue(trackDoc.content.contains("HiRes Song"))
+        assertTrue(trackDoc.content.contains("hires song"))
     }
 
     @Test fun qualityEndToEnd() {
