@@ -144,6 +144,7 @@
     <string name="library_genres">Genres</string>
     <string name="library_composers">Komponisten</string>
     <string name="library_search">Suchen</string>
+    <string name="library_scan_local">Scan local files</string>
     <string name="library_search_placeholder">Mediathek durchsuchen</string>
     <string name="library_search_empty_title">Mediathek durchsuchen</string>
     <string name="library_search_empty_description">Geben Sie einen Titel, Künstler, ein Album, eine Playlist oder einen Komponisten ein.</string>
