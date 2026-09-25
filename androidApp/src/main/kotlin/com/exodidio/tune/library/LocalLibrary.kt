@@ -87,6 +87,8 @@ fun MediaRow.toLocalTrack(): LocalTrack? {
         mimeType = mimeType,
         label = label,
         copyright = copyright,
+        sampleRateHz = null,
+        bitDepth = null,
     )
 }
 
