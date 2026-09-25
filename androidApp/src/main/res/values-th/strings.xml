@@ -144,6 +144,7 @@
     <string name="library_genres">แนวเพลง</string>
     <string name="library_composers">คีตกวี</string>
     <string name="library_search">ค้นหา</string>
+    <string name="library_scan_local">Scan local files</string>
     <string name="library_search_placeholder">ค้นหาในคลังเพลงของคุณ</string>
     <string name="library_search_empty_title">ค้นหาในคลังเพลงของคุณ</string>
     <string name="library_search_empty_description">ป้อนชื่อเพลง ศิลปิน อัลบั้ม เพลย์ลิสต์ หรือคีตกวี</string>
