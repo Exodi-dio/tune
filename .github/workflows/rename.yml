@@ -30,6 +30,8 @@ jobs:
         run: |
           set -eux
           FILTER="--include=*.kt --include=*.java --include=*.kts --include=*.xml --include=*.gradle --include=*.properties --include=*.cpp --include=*.h --include=*.c --include=*.json --include=*.md --include=*.txt --include=*.cfg --include=*.pro"
+          grep -rl $FILTER -e 'me/misa198/airmedy' --exclude-dir=.git . | xargs -r sed -i 's|me/misa198/airmedy|com/exodidio/tune|g'
+          grep -rl $FILTER -e 'me/exodidio/tune' --exclude-dir=.git . | xargs -r sed -i 's|me/exodidio/tune|com/exodidio/tune|g'
           grep -rl $FILTER -e 'github.com/misa198/airmedy' --exclude-dir=.git . | xargs -r sed -i 's|github.com/misa198/airmedy|github.com/Exodi-dio/tune|g'
           grep -rl $FILTER -e 'me\.misa198\.airmedy' --exclude-dir=.git . | xargs -r sed -i 's/me\.misa198\.airmedy/com.exodidio.tune/g'
           grep -rl $FILTER -e 'me_misa198_airmedy' --exclude-dir=.git . | xargs -r sed -i 's/me_misa198_airmedy/com_exodidio_tune/g'
