@@ -45,7 +45,7 @@
                 <data
                     android:host="lastfm"
                     android:path="/auth"
-                    android:scheme="airmedy" />
+                    android:scheme="tune" />
             </intent-filter>
         </activity>
     </application>

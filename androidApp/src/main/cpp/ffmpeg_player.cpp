@@ -463,7 +463,7 @@ namespace {
     }
 }  // namespace
 
-extern "C" JNIEXPORT jlong JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeCreate(JNIEnv *, jclass) {
+extern "C" JNIEXPORT jlong JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeCreate(JNIEnv *, jclass) {
     auto *engine = new PlaybackEngine();
     auto config = std::make_unique<GlobalDspConfig>();
     engine->dsp_config.store(config.get(), std::memory_order_release);
@@ -471,14 +471,14 @@ extern "C" JNIEXPORT jlong JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_
     return reinterpret_cast<jlong>(engine);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeDestroy(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeDestroy(JNIEnv *, jclass, jlong value) {
     auto *engine = reinterpret_cast<PlaybackEngine *>(value);
     if (engine == nullptr) return;
     destroy_engine(*engine);
     delete engine;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativePrepare(JNIEnv *env, jclass, jlong value, jint fd, jfloat gain) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativePrepare(JNIEnv *env, jclass, jlong value, jint fd, jfloat gain) {
     auto *engine = reinterpret_cast<PlaybackEngine *>(value);
     std::string error;
     if (engine == nullptr || !open_output(*engine, error) || !open_slot(engine->slots[0], fd, engine->output_rate, gain, error)) {
@@ -495,7 +495,7 @@ extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_n
     engine->transition_event.store(kTransitionNone, std::memory_order_release);
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativePreload(JNIEnv *env, jclass, jlong value, jint fd, jfloat gain) {
+extern "C" JNIEXPORT jboolean JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativePreload(JNIEnv *env, jclass, jlong value, jint fd, jfloat gain) {
     auto *engine = reinterpret_cast<PlaybackEngine *>(value);
     std::string error;
     if (engine == nullptr || engine->active_slot.load() == kNoSlot) {
@@ -529,7 +529,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_me_misa198_airmedy_player_FfmpegDecod
     return JNI_TRUE;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeSetNormalizationGains(JNIEnv *, jclass, jlong value, jfloat active_gain, jfloat preloaded_gain) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeSetNormalizationGains(JNIEnv *, jclass, jlong value, jfloat active_gain, jfloat preloaded_gain) {
     auto *engine = reinterpret_cast<PlaybackEngine *>(value);
     if (engine == nullptr) return;
     const int active = engine->active_slot.load(std::memory_order_acquire);
@@ -537,12 +537,12 @@ extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_n
     const int preloaded = engine->preloaded_slot.load(std::memory_order_acquire);
     if (preloaded != kNoSlot) engine->slots[preloaded].normalization_gain_db.store(preloaded_gain, std::memory_order_release);
 }
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeSetFocusGain(JNIEnv *, jclass, jlong value, jfloat gain) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeSetFocusGain(JNIEnv *, jclass, jlong value, jfloat gain) {
     auto *engine = reinterpret_cast<PlaybackEngine *>(value);
     if (engine != nullptr) engine->focus_gain.store(std::clamp(gain, 0.0f, 1.0f), std::memory_order_release);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeClearPreloaded(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeClearPreloaded(JNIEnv *, jclass, jlong value) {
     auto *engine = reinterpret_cast<PlaybackEngine *>(value);
     if (engine == nullptr) return;
     const int slot = engine->preloaded_slot.exchange(kNoSlot);
@@ -552,12 +552,12 @@ extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_n
     }
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeHasPreloaded(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT jboolean JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeHasPreloaded(JNIEnv *, jclass, jlong value) {
     auto *engine = reinterpret_cast<PlaybackEngine *>(value);
     return engine != nullptr && engine->preloaded_slot.load(std::memory_order_acquire) != kNoSlot;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeBeginCrossfade(JNIEnv *, jclass, jlong value, jlong duration_ms) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeBeginCrossfade(JNIEnv *, jclass, jlong value, jlong duration_ms) {
     auto *engine = reinterpret_cast<PlaybackEngine *>(value);
     if (engine == nullptr || engine->crossfading.load() || engine->preloaded_slot.load() == kNoSlot) return;
     const int incoming = engine->preloaded_slot.exchange(kNoSlot);
@@ -569,24 +569,24 @@ extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_n
     engine->transition_event.store(kTransitionCrossfadeStarted, std::memory_order_release);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeFinishCrossfade(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeFinishCrossfade(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     if (e != nullptr) snap_fade(*e);
 }
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeSnapCrossfade(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeSnapCrossfade(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     if (e != nullptr) snap_fade(*e);
 }
-extern "C" JNIEXPORT jboolean JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeIsCrossfading(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT jboolean JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeIsCrossfading(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     return e != nullptr && e->crossfading.load();
 }
-extern "C" JNIEXPORT jint JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeConsumeTransition(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT jint JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeConsumeTransition(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     return e == nullptr ? kTransitionNone : e->transition_event.exchange(kTransitionNone);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeSetGlobalDspConfig(JNIEnv *env, jclass, jlong value, jfloat preamp, jfloat width, jfloatArray eq) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeSetGlobalDspConfig(JNIEnv *env, jclass, jlong value, jfloat preamp, jfloat width, jfloatArray eq) {
     auto *engine = reinterpret_cast<PlaybackEngine *>(value);
     if (engine == nullptr) return;
     auto config = std::make_unique<GlobalDspConfig>();
@@ -599,14 +599,14 @@ extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_n
     engine->dsp_config.store(config.get(), std::memory_order_release);
     engine->dsp_configs.push_back(std::move(config));
 }
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativePlay(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativePlay(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     if (e != nullptr && e->stream != nullptr) {
         e->playing.store(true);
         AAudioStream_requestStart(e->stream);
     }
 }
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativePause(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativePause(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     if (e != nullptr) {
         snap_fade(*e);
@@ -614,7 +614,7 @@ extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_n
         if (e->stream != nullptr) AAudioStream_requestPause(e->stream);
     }
 }
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeStop(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeStop(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     if (e != nullptr) {
         snap_fade(*e);
@@ -622,7 +622,7 @@ extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_n
         if (e->stream != nullptr) AAudioStream_requestPause(e->stream);
     }
 }
-extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeSeekTo(JNIEnv *, jclass, jlong value, jlong ms) {
+extern "C" JNIEXPORT void JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeSeekTo(JNIEnv *, jclass, jlong value, jlong ms) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     if (e == nullptr) return;
     snap_fade(*e);
@@ -639,38 +639,38 @@ extern "C" JNIEXPORT void JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_n
     s.finished.store(false, std::memory_order_release);
     s.write_frame.store(s.read_frame.load(std::memory_order_acquire), std::memory_order_release);
 }
-extern "C" JNIEXPORT jlong JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeDurationMs(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT jlong JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeDurationMs(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     const int i = e == nullptr ? kNoSlot : e->active_slot.load();
     auto *s = i == kNoSlot ? nullptr : &e->slots[i];
     return s != nullptr && s->format != nullptr && s->format->duration > 0 ? s->format->duration / 1000 : 0;
 }
-extern "C" JNIEXPORT jlong JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativePositionMs(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT jlong JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativePositionMs(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     const int i = e == nullptr ? kNoSlot : e->active_slot.load();
     if (i == kNoSlot) return 0;
     auto &s = e->slots[i];
     return (s.position_base_us.load() + av_rescale(s.rendered_frames.load(), AV_TIME_BASE, s.output_rate)) / 1000;
 }
-extern "C" JNIEXPORT jlong JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativePreloadedDurationMs(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT jlong JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativePreloadedDurationMs(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     const int i = e == nullptr ? kNoSlot : e->preloaded_slot.load();
     auto *s = i == kNoSlot ? nullptr : &e->slots[i];
     return s != nullptr && s->format != nullptr && s->format->duration > 0 ? s->format->duration / 1000 : 0;
 }
-extern "C" JNIEXPORT jlong JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativePreloadedPositionMs(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT jlong JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativePreloadedPositionMs(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     const int i = e == nullptr ? kNoSlot : e->preloaded_slot.load();
     if (i == kNoSlot) return 0;
     auto &s = e->slots[i];
     return (s.position_base_us.load() + av_rescale(s.rendered_frames.load(), AV_TIME_BASE, s.output_rate)) / 1000;
 }
-extern "C" JNIEXPORT jboolean JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeIsFinished(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT jboolean JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeIsFinished(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     const int i = e == nullptr ? kNoSlot : e->active_slot.load();
     return i != kNoSlot && e->slots[i].finished.load();
 }
-extern "C" JNIEXPORT jboolean JNICALL Java_me_misa198_airmedy_player_FfmpegDecoder_nativeIsOutputDisconnected(JNIEnv *, jclass, jlong value) {
+extern "C" JNIEXPORT jboolean JNICALL Java_com_exodidio_tune_player_FfmpegDecoder_nativeIsOutputDisconnected(JNIEnv *, jclass, jlong value) {
     auto *e = reinterpret_cast<PlaybackEngine *>(value);
     return e != nullptr && e->output_disconnected.load();
 }

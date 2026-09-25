@@ -5,7 +5,7 @@
 | Character readings | [go-pinyin v0.21.0](https://github.com/mozillazg/go-pinyin/tree/v0.21.0) | MIT, Copyright (c) 2016 mozillazg |
 | Phrase readings | [phrase-pinyin-data cee0ed6e6e4898580cafd2bd5e3723e20b214aa0](https://github.com/mozillazg/phrase-pinyin-data/tree/cee0ed6e6e4898580cafd2bd5e3723e20b214aa0) | MIT, Copyright (c) 2017 mozillazg |
 | Traditional character lookup | [OpenCC 5c764a5a886f46eb365656ed91a0410d7162fac6](https://github.com/BYVoid/OpenCC/tree/5c764a5a886f46eb365656ed91a0410d7162fac6) | [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) |
-| Korean rules | [koreanromanizer v1.0.0](https://github.com/misa198/koreanromanizer/tree/v1.0.0), based on koroman e529729b923f8a9d9acc62b2c9c0887b00e9bd88 | MIT, Copyright (c) 2025 Donghe Youn (Daissue) |
+| Korean rules | [koreanromanizer v1.0.0](https://github.com/exodidio/koreanromanizer/tree/v1.0.0), based on koroman e529729b923f8a9d9acc62b2c9c0887b00e9bd88 | MIT, Copyright (c) 2025 Donghe Youn (Daissue) |
 
 Korean rules are ported to Kotlin, preserving the Go implementation's unchanged
 non-Hangul text. Chinese conversion follows the desktop engine. Gradle copies

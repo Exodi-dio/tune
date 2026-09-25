@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Airmedy</string>
+    <string name="app_name">Tune</string>
     <string name="destination_home">首页</string>
     <string name="home_greeting_morning">早上好</string>
     <string name="home_greeting_afternoon">下午好</string>
@@ -63,7 +63,7 @@
     <string name="insight_genre_description">流派听歌时长图表</string>
     <string name="insight_outcomes_description">播放结果分布图表</string>
     <string name="track_info_quality_unknown">未知</string>
-    <string name="placeholder_settings">自定义 Airmedy 的外观。</string>
+    <string name="placeholder_settings">自定义 Tune 的外观。</string>
     <string name="appearance_title">外观</string>
     <string name="appearance_theme_title">主题</string>
     <string name="appearance_reduce_transparency">减少透明度</string>
@@ -81,26 +81,26 @@
     <string name="sync_last_synced">上次同步：%1$s</string>
     <string name="sync_never_synced">从未同步过</string>
     <string name="sync_paired_device_description">此手机一次只能连接一台电脑。在配对新电脑之前，请先解除绑定。</string>
-    <string name="sync_ready_to_connect_description">准备连接。在电脑上的 Airmedy 中启动广播，此界面将自动连接。</string>
+    <string name="sync_ready_to_connect_description">准备连接。在电脑上的 Tune 中启动广播，此界面将自动连接。</string>
     <string name="sync_revoke">解除绑定</string>
     <string name="sync_help">了解如何连接</string>
     <string name="sync_waiting_title">等待桌面端确认</string>
-    <string name="sync_waiting_description">请在电脑端的 Airmedy 应用中同意连接请求。</string>
+    <string name="sync_waiting_description">请在电脑端的 Tune 应用中同意连接请求。</string>
     <string name="sync_camera_required">扫描桌面端二维码需要相机权限。</string>
-    <string name="sync_scan_description">请将镜头对准 Airmedy 桌面端显示的配对二维码。</string>
+    <string name="sync_scan_description">请将镜头对准 Tune 桌面端显示的配对二维码。</string>
     <string name="sync_scan_hint">请将二维码置于取景框内。</string>
     <string name="sync_select_qr_image">选择二维码图片</string>
     <string name="sync_revoke_confirm_title">断开与此电脑的连接？</string>
     <string name="sync_revoke_confirm_description">此操作将移除该手机上的连接。在桌面端解除之前，电脑将保持授权状态。</string>
     <string name="sync_error_already_paired">在配对新设备前，请先断开与当前电脑的连接。</string>
-    <string name="sync_error_invalid_qr">该二维码不是有效的 Airmedy 桌面端配对码。</string>
+    <string name="sync_error_invalid_qr">该二维码不是有效的 Tune 桌面端配对码。</string>
     <string name="sync_error_transport">无法访问桌面端。请确保两台设备处于同一局域网中。</string>
     <string name="sync_error_timeout">桌面端响应超时，请重新扫描二维码。</string>
     <string name="sync_error_rejected">桌面端已拒绝此配对请求。</string>
     <string name="sync_error_expired">配对请求已过期，请重新扫描二维码。</string>
     <string name="sync_error_invalid_response">无法验证桌面端的响应。</string>
     <string name="sync_notification_channel">媒体库同步</string>
-    <string name="sync_notification_title">正在同步 Airmedy 媒体库</string>
+    <string name="sync_notification_title">正在同步 Tune 媒体库</string>
     <string name="sync_notification_connecting">正在连接桌面端…</string>
     <string name="sync_notification_progress">正在同步 %1$d%%</string>
     <string name="sync_notification_complete">媒体库同步完成</string>
@@ -240,7 +240,7 @@
     <string name="about_version">版本</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">开源许可</string>
-    <string name="about_sponsor">赞助 Airmedy</string>
+    <string name="about_sponsor">赞助 Tune</string>
     <string name="about_sponsor_github">GitHub Sponsors</string>
     <string name="about_sponsor_kofi">Ko-fi</string>
     <string name="about_sponsor_bmac">Buy Me a Coffee</string>

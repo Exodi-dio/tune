@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Airmedy</string>
+    <string name="app_name">Tune</string>
     <string name="destination_home">Início</string>
     <string name="home_greeting_morning">Bom dia</string>
     <string name="home_greeting_afternoon">Boa tarde</string>
@@ -63,7 +63,7 @@
     <string name="insight_genre_description">Gráfico de tempo de reprodução por género</string>
     <string name="insight_outcomes_description">Gráfico de resultados de reprodução</string>
     <string name="track_info_quality_unknown">Desconhecido</string>
-    <string name="placeholder_settings">Personalize o aspeto do Airmedy.</string>
+    <string name="placeholder_settings">Personalize o aspeto do Tune.</string>
     <string name="appearance_title">Aspeto</string>
     <string name="appearance_theme_title">Tema</string>
     <string name="appearance_reduce_transparency">Reduzir transparência</string>
@@ -81,26 +81,26 @@
     <string name="sync_last_synced">Última sincronização: %1$s</string>
     <string name="sync_never_synced">Nunca sincronizado</string>
     <string name="sync_paired_device_description">Este telemóvel só pode estar ligado a um computador de cada vez. Revogue-o antes de emparelhar um novo.</string>
-    <string name="sync_ready_to_connect_description">Pronto para ligar. Inicie a transmissão no Airmedy no seu computador; este ecrã ligar-se-á automaticamente.</string>
+    <string name="sync_ready_to_connect_description">Pronto para ligar. Inicie a transmissão no Tune no seu computador; este ecrã ligar-se-á automaticamente.</string>
     <string name="sync_revoke">Revogar</string>
     <string name="sync_help">Saiba como conectar</string>
     <string name="sync_waiting_title">A aguardar aprovação do computador</string>
-    <string name="sync_waiting_description">Aprove este telemóvel na aplicação de ambiente de trabalho do Airmedy.</string>
+    <string name="sync_waiting_description">Aprove este telemóvel na aplicação de ambiente de trabalho do Tune.</string>
     <string name="sync_camera_required">O acesso à câmara é necessário para ler o código QR do computador.</string>
-    <string name="sync_scan_description">Aponte a câmara para o código QR de emparelhamento exibido no Airmedy Desktop.</string>
+    <string name="sync_scan_description">Aponte a câmara para o código QR de emparelhamento exibido no Tune Desktop.</string>
     <string name="sync_scan_hint">Mantenha o código QR dentro da moldura.</string>
     <string name="sync_select_qr_image">Escolher imagem de QR</string>
     <string name="sync_revoke_confirm_title">Desligar este computador?</string>
     <string name="sync_revoke_confirm_description">Isto remove a ligação deste telemóvel. O computador permanece autorizado até ser revogado no mesmo.</string>
     <string name="sync_error_already_paired">Desligue o computador atual antes de emparelhar outro.</string>
-    <string name="sync_error_invalid_qr">Esse código QR não é um código de emparelhamento do Airmedy Desktop.</string>
+    <string name="sync_error_invalid_qr">Esse código QR não é um código de emparelhamento do Tune Desktop.</string>
     <string name="sync_error_transport">Não foi possível alcançar o computador. Certifique-se de que ambos os dispositivos estão na mesma rede.</string>
     <string name="sync_error_timeout">O computador não respondeu a tempo. Leia o código QR novamente.</string>
     <string name="sync_error_rejected">O computador rejeitou este pedido de emparelhamento.</string>
     <string name="sync_error_expired">O pedido de emparelhamento expirou. Leia o código QR novamente.</string>
     <string name="sync_error_invalid_response">A resposta do computador não pôde ser verificada.</string>
     <string name="sync_notification_channel">Sincronização da biblioteca</string>
-    <string name="sync_notification_title">A sincronizar a biblioteca do Airmedy</string>
+    <string name="sync_notification_title">A sincronizar a biblioteca do Tune</string>
     <string name="sync_notification_connecting">A ligar ao computador…</string>
     <string name="sync_notification_progress">A sincronizar %1$d%%</string>
     <string name="sync_notification_complete">Sincronização da biblioteca concluída</string>
@@ -241,7 +241,7 @@
     <string name="about_version">Versão</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">Licença</string>
-    <string name="about_sponsor">Apoiar o Airmedy</string>
+    <string name="about_sponsor">Apoiar o Tune</string>
     <string name="about_sponsor_github">GitHub Sponsors</string>
     <string name="about_sponsor_kofi">Ko-fi</string>
     <string name="about_sponsor_bmac">Buy Me a Coffee</string>

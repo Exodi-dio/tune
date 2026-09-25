@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Airmedy</string>
+    <string name="app_name">Tune</string>
     <string name="destination_home">Главная</string>
     <string name="home_greeting_morning">Доброе утро</string>
     <string name="home_greeting_afternoon">Добрый день</string>
@@ -63,7 +63,7 @@
     <string name="insight_genre_description">График времени прослушивания по жанрам</string>
     <string name="insight_outcomes_description">График итогов воспроизведения</string>
     <string name="track_info_quality_unknown">Неизвестно</string>
-    <string name="placeholder_settings">Настройте внешний вид Airmedy.</string>
+    <string name="placeholder_settings">Настройте внешний вид Tune.</string>
     <string name="appearance_title">Внешний вид</string>
     <string name="appearance_theme_title">Тема</string>
     <string name="appearance_reduce_transparency">Уменьшить прозрачность</string>
@@ -81,26 +81,26 @@
     <string name="sync_last_synced">Последняя синхронизация: %1$s</string>
     <string name="sync_never_synced">Еще не синхронизировано</string>
     <string name="sync_paired_device_description">Этот телефон может быть подключен только к одному компьютеру. Отключите его перед привязкой нового.</string>
-    <string name="sync_ready_to_connect_description">Готово к подключению. Запустите трансляцию в Airmedy на компьютере, и экран подключится автоматически.</string>
+    <string name="sync_ready_to_connect_description">Готово к подключению. Запустите трансляцию в Tune на компьютере, и экран подключится автоматически.</string>
     <string name="sync_revoke">Отозвать</string>
     <string name="sync_help">Узнайте, как подключиться</string>
     <string name="sync_waiting_title">Ожидание подтверждения на компьютере</string>
-    <string name="sync_waiting_description">Подтвердите подключение телефона в приложении Airmedy на компьютере.</string>
+    <string name="sync_waiting_description">Подтвердите подключение телефона в приложении Tune на компьютере.</string>
     <string name="sync_camera_required">Для сканирования QR-кода необходим доступ к камере.</string>
-    <string name="sync_scan_description">Наведите камеру на QR-код сопряжения в приложении Airmedy на компьютере.</string>
+    <string name="sync_scan_description">Наведите камеру на QR-код сопряжения в приложении Tune на компьютере.</string>
     <string name="sync_scan_hint">Поместите QR-код в рамку.</string>
     <string name="sync_select_qr_image">Выбрать изображение QR</string>
     <string name="sync_revoke_confirm_title">Отключить этот компьютер?</string>
     <string name="sync_revoke_confirm_description">Это удалит подключение с телефона. Компьютер останется авторизованным, пока вы не отмените это на нем.</string>
     <string name="sync_error_already_paired">Отключите текущий компьютер перед привязкой другого.</string>
-    <string name="sync_error_invalid_qr">Этот QR-код не является кодом сопряжения Airmedy Desktop.</string>
+    <string name="sync_error_invalid_qr">Этот QR-код не является кодом сопряжения Tune Desktop.</string>
     <string name="sync_error_transport">Не удалось связаться с компьютером. Убедитесь, что оба устройства находятся в одной сети.</string>
     <string name="sync_error_timeout">Компьютер не ответил вовремя. Отсканируйте QR-код заново.</string>
     <string name="sync_error_rejected">Компьютер отклонил запрос на сопряжение.</string>
     <string name="sync_error_expired">Срок действия запроса на сопряжение истек. Отсканируйте QR-код заново.</string>
     <string name="sync_error_invalid_response">Не удалось проверить ответ компьютера.</string>
     <string name="sync_notification_channel">Синхронизация медиатеки</string>
-    <string name="sync_notification_title">Синхронизация медиатеки Airmedy</string>
+    <string name="sync_notification_title">Синхронизация медиатеки Tune</string>
     <string name="sync_notification_connecting">Подключение к компьютеру…</string>
     <string name="sync_notification_progress">Синхронизация: %1$d%%</string>
     <string name="sync_notification_complete">Синхронизация медиатеки завершена</string>
@@ -243,7 +243,7 @@
     <string name="about_version">Версия</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">Лицензия</string>
-    <string name="about_sponsor">Поддержать Airmedy</string>
+    <string name="about_sponsor">Поддержать Tune</string>
     <string name="about_sponsor_github">GitHub Sponsors</string>
     <string name="about_sponsor_kofi">Ko-fi</string>
     <string name="about_sponsor_bmac">Buy Me a Coffee</string>

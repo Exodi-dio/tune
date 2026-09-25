@@ -4,7 +4,7 @@ Status: design approved (amended: name Tune). Awaiting spec review.
 
 ## 1. Goal
 
-Rework airmedy's Android app into **Tune**: a standalone, local-only music
+Rework tune's Android app into **Tune**: a standalone, local-only music
 player. Ship an installable debug APK from GitHub Releases. The About
 screen credits "Reworked by exodi_dio". Brand: red music-note icon
 (owner-supplied), name Tune everywhere, in and out of the app.
@@ -18,7 +18,7 @@ Success criteria:
 - End-to-end local playback: scan → library → queue → play, all
   FFmpeg-supported formats, full metadata, synced lyrics in any language.
 - Bitchord-style artist screen with transitions, no crashes.
-- Zero Airmedy / PC-sync references in UI, strings, package, icons.
+- Zero Tune / PC-sync references in UI, strings, package, icons.
 
 ## 2. Non-goals (v0.1)
 
@@ -29,7 +29,7 @@ Success criteria:
 
 ## 3. Base & layout
 
-- Repo root = airmedy `mobile/` subtree (androidApp/, sharedLogic/,
+- Repo root = tune `mobile/` subtree (androidApp/, sharedLogic/,
   gradle/, gradlew, settings).
 - Drop `iosApp/` (frozen) and desktop-only docs. Keep `tools/`
   font/romanization assets that are in use.
@@ -98,7 +98,7 @@ bound to local artist data:
 ## 10. About (new)
 
 Tune hero (new icon), "Reworked by exodi_dio", version, GPLv3 + source
-links. CI grep-gate fails on `airmedy|misa198` outside NOTICE.
+links. CI grep-gate fails on `tune|exodidio` outside NOTICE.
 
 ## 11. Cloud pipeline (permanent)
 

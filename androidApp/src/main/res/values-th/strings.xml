@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Airmedy</string>
+    <string name="app_name">Tune</string>
     <string name="destination_home">หน้าแรก</string>
     <string name="home_greeting_morning">อรุณสวัสดิ์</string>
     <string name="home_greeting_afternoon">สวัสดีตอนบ่าย</string>
@@ -63,7 +63,7 @@
     <string name="insight_genre_description">แผนภูมิเวลาการฟังตามแนวเพลง</string>
     <string name="insight_outcomes_description">แผนภูมิผลลัพธ์การเล่น</string>
     <string name="track_info_quality_unknown">ไม่ทราบ</string>
-    <string name="placeholder_settings">ปรับแต่งรูปลักษณ์ของ Airmedy</string>
+    <string name="placeholder_settings">ปรับแต่งรูปลักษณ์ของ Tune</string>
     <string name="appearance_title">รูปลักษณ์</string>
     <string name="appearance_theme_title">ธีม</string>
     <string name="appearance_reduce_transparency">ลดความโปร่งแสง</string>
@@ -81,26 +81,26 @@
     <string name="sync_last_synced">ซิงค์ล่าสุด: %1$s</string>
     <string name="sync_never_synced">ยังไม่เคยซิงค์</string>
     <string name="sync_paired_device_description">โทรศัพท์นี้สามารถเชื่อมต่อกับเดสก์ท็อปได้ทีละเครื่องเท่านั้น ยกเลิกการเชื่อมต่อก่อนจับคู่เครื่องใหม่</string>
-    <string name="sync_ready_to_connect_description">พร้อมเชื่อมต่อแล้ว เริ่มการแพร่สัญญาณใน Airmedy บนเดสก์ท็อปของคุณ หน้าจอนี้จะเชื่อมต่อโดยอัตโนมัติ</string>
+    <string name="sync_ready_to_connect_description">พร้อมเชื่อมต่อแล้ว เริ่มการแพร่สัญญาณใน Tune บนเดสก์ท็อปของคุณ หน้าจอนี้จะเชื่อมต่อโดยอัตโนมัติ</string>
     <string name="sync_revoke">ยกเลิก</string>
     <string name="sync_help">เรียนรู้วิธีเชื่อมต่อ</string>
     <string name="sync_waiting_title">กำลังรอการอนุมัติจากเดสก์ท็อป</string>
-    <string name="sync_waiting_description">อนุมัติโทรศัพท์นี้ในแอป Airmedy บนเดสก์ท็อป</string>
+    <string name="sync_waiting_description">อนุมัติโทรศัพท์นี้ในแอป Tune บนเดสก์ท็อป</string>
     <string name="sync_camera_required">ต้องได้รับอนุญาตให้ใช้กล้องเพื่อสแกนรหัส QR บนเดสก์ท็อป</string>
-    <string name="sync_scan_description">เล็งกล้องของคุณไปที่รหัส QR สำหรับจับคู่ที่แสดงใน Airmedy Desktop</string>
+    <string name="sync_scan_description">เล็งกล้องของคุณไปที่รหัส QR สำหรับจับคู่ที่แสดงใน Tune Desktop</string>
     <string name="sync_scan_hint">วางรหัส QR ให้อยู่ในกรอบ</string>
     <string name="sync_select_qr_image">เลือกรูปภาพ QR</string>
     <string name="sync_revoke_confirm_title">ตัดการเชื่อมต่อกับเดสก์ท็อปนี้หรือไม่?</string>
     <string name="sync_revoke_confirm_description">การดำเนินการนี้จะลบการเชื่อมต่อออกจากโทรศัพท์นี้ เดสก์ท็อปจะยังคงได้รับอนุญาตจนกว่าจะถูกยกเลิกที่นั่น</string>
     <string name="sync_error_already_paired">ตัดการเชื่อมต่อเดสก์ท็อปปัจจุบันก่อนจับคู่เครื่องอื่น</string>
-    <string name="sync_error_invalid_qr">รหัส QR นั้นไม่ใช่รหัสสำหรับจับคู่ของ Airmedy Desktop</string>
+    <string name="sync_error_invalid_qr">รหัส QR นั้นไม่ใช่รหัสสำหรับจับคู่ของ Tune Desktop</string>
     <string name="sync_error_transport">ไม่สามารถเข้าถึงเดสก์ท็อปได้ ตรวจสอบว่าอุปกรณ์ทั้งสองอยู่ในเครือข่ายเดียวกัน</string>
     <string name="sync_error_timeout">เดสก์ท็อปไม่ตอบสนองในเวลาที่กำหนด สแกนรหัส QR ใหม่อีกครั้ง</string>
     <string name="sync_error_rejected">เดสก์ท็อปปฏิเสธคำขอจับคู่นี้</string>
     <string name="sync_error_expired">คำขอจับคู่หมดอายุแล้ว สแกนรหัส QR ใหม่อีกครั้ง</string>
     <string name="sync_error_invalid_response">ไม่สามารถตรวจสอบการตอบสนองของเดสก์ท็อปได้</string>
     <string name="sync_notification_channel">การซิงค์คลังเพลง</string>
-    <string name="sync_notification_title">กำลังซิงค์คลังเพลง Airmedy</string>
+    <string name="sync_notification_title">กำลังซิงค์คลังเพลง Tune</string>
     <string name="sync_notification_connecting">กำลังเชื่อมต่อไปยังเดสก์ท็อป…</string>
     <string name="sync_notification_progress">กำลังซิงค์ %1$d%%</string>
     <string name="sync_notification_complete">การซิงค์คลังเพลงเสร็จสมบูรณ์</string>
@@ -240,7 +240,7 @@
     <string name="about_version">เวอร์ชัน</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">สัญญาอนุญาต</string>
-    <string name="about_sponsor">สนับสนุน Airmedy</string>
+    <string name="about_sponsor">สนับสนุน Tune</string>
     <string name="about_sponsor_github">GitHub Sponsors</string>
     <string name="about_sponsor_kofi">Ko-fi</string>
     <string name="about_sponsor_bmac">Buy Me a Coffee</string>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Airmedy</string>
+    <string name="app_name">Tune</string>
     <string name="destination_home">Startseite</string>
     <string name="home_greeting_morning">Guten Morgen</string>
     <string name="home_greeting_afternoon">Guten Tag</string>
@@ -63,7 +63,7 @@
     <string name="insight_genre_description">Diagramm zur Hörzeit nach Genre</string>
     <string name="insight_outcomes_description">Diagramm zu den Wiedergabe-Ergebnissen</string>
     <string name="track_info_quality_unknown">Unbekannt</string>
-    <string name="placeholder_settings">Passen Sie das Erscheinungsbild von Airmedy an.</string>
+    <string name="placeholder_settings">Passen Sie das Erscheinungsbild von Tune an.</string>
     <string name="appearance_title">Erscheinungsbild</string>
     <string name="appearance_theme_title">Thema</string>
     <string name="appearance_reduce_transparency">Transparenz reduzieren</string>
@@ -81,26 +81,26 @@
     <string name="sync_last_synced">Zuletzt synchronisiert: %1$s</string>
     <string name="sync_never_synced">Noch nie synchronisiert</string>
     <string name="sync_paired_device_description">Dieses Smartphone kann jeweils nur mit einem Desktop-Gerät verbunden sein. Trennen Sie es, bevor Sie ein neues koppeln.</string>
-    <string name="sync_ready_to_connect_description">Bereit zum Verbinden. Starten Sie das Senden in Airmedy auf Ihrem Desktop; dieser Bildschirm verbindet sich automatisch.</string>
+    <string name="sync_ready_to_connect_description">Bereit zum Verbinden. Starten Sie das Senden in Tune auf Ihrem Desktop; dieser Bildschirm verbindet sich automatisch.</string>
     <string name="sync_revoke">Trennen</string>
     <string name="sync_help">Erfahren Sie, wie Sie sich verbinden</string>
     <string name="sync_waiting_title">Warten auf Desktop-Genehmigung</string>
-    <string name="sync_waiting_description">Bestätigen Sie dieses Smartphone in der Airmedy Desktop-App.</string>
+    <string name="sync_waiting_description">Bestätigen Sie dieses Smartphone in der Tune Desktop-App.</string>
     <string name="sync_camera_required">Kamerazugriff ist erforderlich, um den Desktop-QR-Code zu scannen.</string>
-    <string name="sync_scan_description">Richten Sie Ihre Kamera auf den in Airmedy Desktop angezeigten Kopplungs-QR-Code.</string>
+    <string name="sync_scan_description">Richten Sie Ihre Kamera auf den in Tune Desktop angezeigten Kopplungs-QR-Code.</string>
     <string name="sync_scan_hint">Halten Sie den QR-Code innerhalb des Rahmens.</string>
     <string name="sync_select_qr_image">QR-Bild auswählen</string>
     <string name="sync_revoke_confirm_title">Diesen Desktop trennen?</string>
     <string name="sync_revoke_confirm_description">Dadurch wird die Verbindung von diesem Smartphone entfernt. Der Desktop bleibt autorisiert, bis er dort getrennt wird.</string>
     <string name="sync_error_already_paired">Trennen Sie den aktuellen Desktop, bevor Sie einen anderen koppeln.</string>
-    <string name="sync_error_invalid_qr">Dieser QR-Code ist kein Kopplungscode von Airmedy Desktop.</string>
+    <string name="sync_error_invalid_qr">Dieser QR-Code ist kein Kopplungscode von Tune Desktop.</string>
     <string name="sync_error_transport">Desktop konnte nicht erreicht werden. Stellen Sie sicher, dass sich beide Geräte im selben Netzwerk befinden.</string>
     <string name="sync_error_timeout">Der Desktop hat nicht rechtzeitig geantwortet. Scannen Sie den QR-Code erneut.</string>
     <string name="sync_error_rejected">Der Desktop hat diese Kopplungsanfrage abgelehnt.</string>
     <string name="sync_error_expired">Die Kopplungsanfrage ist abgelaufen. Scannen Sie den QR-Code erneut.</string>
     <string name="sync_error_invalid_response">Die Antwort des Desktops konnte nicht überprüft werden.</string>
     <string name="sync_notification_channel">Mediathek-Synchronisierung</string>
-    <string name="sync_notification_title">Airmedy-Mediathek wird synchronisiert</string>
+    <string name="sync_notification_title">Tune-Mediathek wird synchronisiert</string>
     <string name="sync_notification_connecting">Verbindung zum Desktop wird hergestellt…</string>
     <string name="sync_notification_progress">Synchronisierung %1$d%%</string>
     <string name="sync_notification_complete">Mediathek-Synchronisierung abgeschlossen</string>
@@ -241,7 +241,7 @@
     <string name="about_version">Version</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">Lizenz</string>
-    <string name="about_sponsor">Airmedy unterstützen</string>
+    <string name="about_sponsor">Tune unterstützen</string>
     <string name="about_sponsor_github">GitHub Sponsors</string>
     <string name="about_sponsor_kofi">Ko-fi</string>
     <string name="about_sponsor_bmac">Buy Me a Coffee</string>

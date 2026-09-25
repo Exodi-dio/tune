@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Airmedy</string>
+    <string name="app_name">Tune</string>
     <string name="destination_home">Trang chủ</string>
     <string name="home_greeting_morning">Chào buổi sáng</string>
     <string name="home_greeting_afternoon">Chào buổi chiều</string>
@@ -63,7 +63,7 @@
     <string name="insight_genre_description">Biểu đồ thời gian nghe theo thể loại</string>
     <string name="insight_outcomes_description">Biểu đồ kết quả phát nhạc</string>
     <string name="track_info_quality_unknown">Không xác định</string>
-    <string name="placeholder_settings">Tùy chỉnh giao diện Airmedy.</string>
+    <string name="placeholder_settings">Tùy chỉnh giao diện Tune.</string>
     <string name="appearance_title">Giao diện</string>
     <string name="appearance_theme_title">Giao diện</string>
     <string name="appearance_reduce_transparency">Giảm độ trong suốt</string>
@@ -81,26 +81,26 @@
     <string name="sync_last_synced">Đồng bộ lần cuối: %1$s</string>
     <string name="sync_never_synced">Chưa từng đồng bộ</string>
     <string name="sync_paired_device_description">Điện thoại này chỉ có thể kết nối với một máy tính tại một thời điểm. Hủy kết nối trước khi ghép nối máy tính mới.</string>
-    <string name="sync_ready_to_connect_description">Sẵn sàng kết nối. Bật phát tín hiệu trong Airmedy trên máy tính; màn hình này sẽ tự động kết nối.</string>
+    <string name="sync_ready_to_connect_description">Sẵn sàng kết nối. Bật phát tín hiệu trong Tune trên máy tính; màn hình này sẽ tự động kết nối.</string>
     <string name="sync_revoke">Hủy kết nối</string>
     <string name="sync_help">Tìm hiểu cách kết nối</string>
     <string name="sync_waiting_title">Đang chờ máy tính phê duyệt</string>
-    <string name="sync_waiting_description">Phê duyệt điện thoại này trong ứng dụng Airmedy trên máy tính.</string>
+    <string name="sync_waiting_description">Phê duyệt điện thoại này trong ứng dụng Tune trên máy tính.</string>
     <string name="sync_camera_required">Cần quyền truy cập máy ảnh để quét mã QR trên máy tính.</string>
-    <string name="sync_scan_description">Hướng máy ảnh về phía mã QR ghép nối hiển thị trên Airmedy Desktop.</string>
+    <string name="sync_scan_description">Hướng máy ảnh về phía mã QR ghép nối hiển thị trên Tune Desktop.</string>
     <string name="sync_scan_hint">Căn chỉnh mã QR nằm trong khung hình.</string>
     <string name="sync_select_qr_image">Chọn ảnh mã QR</string>
     <string name="sync_revoke_confirm_title">Ngắt kết nối với máy tính này?</string>
     <string name="sync_revoke_confirm_description">Thao tác này sẽ xóa kết nối khỏi điện thoại. Máy tính vẫn giữ ủy quyền cho đến khi bị hủy trên máy tính.</string>
     <string name="sync_error_already_paired">Ngắt kết nối máy tính hiện tại trước khi ghép nối máy tính khác.</string>
-    <string name="sync_error_invalid_qr">Mã QR đó không phải là mã ghép nối của Airmedy Desktop.</string>
+    <string name="sync_error_invalid_qr">Mã QR đó không phải là mã ghép nối của Tune Desktop.</string>
     <string name="sync_error_transport">Không thể kết nối với máy tính. Hãy đảm bảo cả hai thiết bị ở cùng một mạng.</string>
     <string name="sync_error_timeout">Máy tính không phản hồi kịp thời. Vui lòng quét lại mã QR.</string>
     <string name="sync_error_rejected">Máy tính đã từ chối yêu cầu ghép nối này.</string>
     <string name="sync_error_expired">Yêu cầu ghép nối đã hết hạn. Vui lòng quét lại mã QR.</string>
     <string name="sync_error_invalid_response">Không thể xác minh phản hồi từ máy tính.</string>
     <string name="sync_notification_channel">Đồng bộ thư viện</string>
-    <string name="sync_notification_title">Đang đồng bộ thư viện Airmedy</string>
+    <string name="sync_notification_title">Đang đồng bộ thư viện Tune</string>
     <string name="sync_notification_connecting">Đang kết nối với máy tính…</string>
     <string name="sync_notification_progress">Đang đồng bộ %1$d%%</string>
     <string name="sync_notification_complete">Đồng bộ thư viện hoàn tất</string>
@@ -240,7 +240,7 @@
     <string name="about_version">Phiên bản</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">Giấy phép</string>
-    <string name="about_sponsor">Tài trợ cho Airmedy</string>
+    <string name="about_sponsor">Tài trợ cho Tune</string>
     <string name="about_sponsor_github">GitHub Sponsors</string>
     <string name="about_sponsor_kofi">Ko-fi</string>
     <string name="about_sponsor_bmac">Buy Me a Coffee</string>

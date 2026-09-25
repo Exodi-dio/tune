@@ -18,7 +18,7 @@ kotlin {
     }
     
     android {
-       namespace = "me.misa198.airmedy.sharedLogic"
+       namespace = "com.exodidio.tune.sharedLogic"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
     

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Airmedy</string>
+    <string name="app_name">Tune</string>
     <string name="destination_home">Home</string>
     <string name="home_greeting_morning">Good morning</string>
     <string name="home_greeting_afternoon">Good afternoon</string>
@@ -63,7 +63,7 @@
     <string name="insight_genre_description">Listening time by genre chart</string>
     <string name="insight_outcomes_description">Playback outcomes chart</string>
     <string name="track_info_quality_unknown">Unknown</string>
-    <string name="placeholder_settings">Customize how Airmedy looks.</string>
+    <string name="placeholder_settings">Customize how Tune looks.</string>
     <string name="appearance_title">Appearance</string>
     <string name="appearance_theme_title">Theme</string>
     <string name="appearance_reduce_transparency">Reduce transparency</string>
@@ -81,26 +81,26 @@
     <string name="sync_last_synced">Last synced: %1$s</string>
     <string name="sync_never_synced">Never synced</string>
     <string name="sync_paired_device_description">This phone can connect to one desktop at a time. Revoke it before pairing a new desktop.</string>
-    <string name="sync_ready_to_connect_description">Ready to connect. Start Broadcast in Airmedy on your desktop; this screen connects automatically.</string>
+    <string name="sync_ready_to_connect_description">Ready to connect. Start Broadcast in Tune on your desktop; this screen connects automatically.</string>
     <string name="sync_revoke">Revoke</string>
     <string name="sync_help">Learn how to connect</string>
     <string name="sync_waiting_title">Waiting for desktop approval</string>
-    <string name="sync_waiting_description">Approve this phone in the Airmedy desktop app.</string>
+    <string name="sync_waiting_description">Approve this phone in the Tune desktop app.</string>
     <string name="sync_camera_required">Camera access is required to scan the desktop QR code.</string>
-    <string name="sync_scan_description">Point your camera at the pairing QR code shown in Airmedy Desktop.</string>
+    <string name="sync_scan_description">Point your camera at the pairing QR code shown in Tune Desktop.</string>
     <string name="sync_scan_hint">Keep the QR code inside the frame.</string>
     <string name="sync_select_qr_image">Choose QR image</string>
     <string name="sync_revoke_confirm_title">Disconnect this desktop?</string>
     <string name="sync_revoke_confirm_description">This removes the connection from this phone. The desktop remains authorized until it is revoked there.</string>
     <string name="sync_error_already_paired">Disconnect the current desktop before pairing another one.</string>
-    <string name="sync_error_invalid_qr">That QR code is not an Airmedy desktop pairing code.</string>
+    <string name="sync_error_invalid_qr">That QR code is not an Tune desktop pairing code.</string>
     <string name="sync_error_transport">Unable to reach the desktop. Make sure both devices are on the same network.</string>
     <string name="sync_error_timeout">The desktop did not respond in time. Scan its QR code again.</string>
     <string name="sync_error_rejected">The desktop rejected this pairing request.</string>
     <string name="sync_error_expired">The desktop pairing request expired. Scan its QR code again.</string>
     <string name="sync_error_invalid_response">The desktop response could not be verified.</string>
     <string name="sync_notification_channel">Library sync</string>
-    <string name="sync_notification_title">Syncing Airmedy library</string>
+    <string name="sync_notification_title">Syncing Tune library</string>
     <string name="sync_notification_connecting">Connecting to desktop…</string>
     <string name="sync_notification_progress">Syncing %1$d%%</string>
     <string name="sync_notification_complete">Library sync complete</string>
@@ -252,7 +252,7 @@
     <string name="about_version">Version</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">License</string>
-    <string name="about_sponsor">Sponsor Airmedy</string>
+    <string name="about_sponsor">Sponsor Tune</string>
     <string name="about_sponsor_github">GitHub Sponsors</string>
     <string name="about_sponsor_kofi">Ko-fi</string>
     <string name="about_sponsor_bmac">Buy Me a Coffee</string>

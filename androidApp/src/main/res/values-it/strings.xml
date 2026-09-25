@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Airmedy</string>
+    <string name="app_name">Tune</string>
     <string name="destination_home">Home</string>
     <string name="home_greeting_morning">Buongiorno</string>
     <string name="home_greeting_afternoon">Buon pomeriggio</string>
@@ -63,7 +63,7 @@
     <string name="insight_genre_description">Grafico del tempo di ascolto per genere</string>
     <string name="insight_outcomes_description">Grafico degli esiti di riproduzione</string>
     <string name="track_info_quality_unknown">Sconosciuto</string>
-    <string name="placeholder_settings">Personalizza l\'aspetto di Airmedy.</string>
+    <string name="placeholder_settings">Personalizza l\'aspetto di Tune.</string>
     <string name="appearance_title">Aspetto</string>
     <string name="appearance_theme_title">Tema</string>
     <string name="appearance_reduce_transparency">Riduci trasparenza</string>
@@ -81,26 +81,26 @@
     <string name="sync_last_synced">Ultima sincronizzazione: %1$s</string>
     <string name="sync_never_synced">Mai sincronizzato</string>
     <string name="sync_paired_device_description">Questo telefono può connettersi a un desktop alla volta. Revocalo prima di associarne uno nuovo.</string>
-    <string name="sync_ready_to_connect_description">Pronto per la connessione. Avvia la trasmissione in Airmedy sul desktop; questa schermata si connetterà automaticamente.</string>
+    <string name="sync_ready_to_connect_description">Pronto per la connessione. Avvia la trasmissione in Tune sul desktop; questa schermata si connetterà automaticamente.</string>
     <string name="sync_revoke">Revoca</string>
     <string name="sync_help">Scopri come connetterti</string>
     <string name="sync_waiting_title">In attesa dell\'approvazione del desktop</string>
-    <string name="sync_waiting_description">Approva questo telefono nell\'app desktop di Airmedy.</string>
+    <string name="sync_waiting_description">Approva questo telefono nell\'app desktop di Tune.</string>
     <string name="sync_camera_required">L\'accesso alla fotocamera è necessario per scansionare il codice QR.</string>
-    <string name="sync_scan_description">Inquadra con la fotocamera il codice QR visualizzato in Airmedy Desktop.</string>
+    <string name="sync_scan_description">Inquadra con la fotocamera il codice QR visualizzato in Tune Desktop.</string>
     <string name="sync_scan_hint">Mantieni il codice QR all\'interno della cornice.</string>
     <string name="sync_select_qr_image">Scegli immagine QR</string>
     <string name="sync_revoke_confirm_title">Disconnettere questo desktop?</string>
     <string name="sync_revoke_confirm_description">Questo rimuoverà la connessione da questo telefono. Il desktop rimarrà autorizzato finché non verrà revocato da lì.</string>
     <string name="sync_error_already_paired">Disconnetti il desktop attuale prima di associarne un altro.</string>
-    <string name="sync_error_invalid_qr">Questo codice QR non è un codice di associazione di Airmedy Desktop.</string>
+    <string name="sync_error_invalid_qr">Questo codice QR non è un codice di associazione di Tune Desktop.</string>
     <string name="sync_error_transport">Impossibile raggiungere il desktop. Assicurati che entrambi i dispositivi siano sulla stessa rete.</string>
     <string name="sync_error_timeout">Il desktop non ha risposto in tempo. Scansiona nuovamente il codice QR.</string>
     <string name="sync_error_rejected">Il desktop ha rifiutato questa richiesta di associazione.</string>
     <string name="sync_error_expired">La richiesta di associazione è scaduta. Scansiona nuovamente il codice QR.</string>
     <string name="sync_error_invalid_response">La risposta del desktop non può essere verificata.</string>
     <string name="sync_notification_channel">Sincronizzazione libreria</string>
-    <string name="sync_notification_title">Sincronizzazione libreria Airmedy</string>
+    <string name="sync_notification_title">Sincronizzazione libreria Tune</string>
     <string name="sync_notification_connecting">Connessione al desktop in corso…</string>
     <string name="sync_notification_progress">Sincronizzazione in corso %1$d%%</string>
     <string name="sync_notification_complete">Sincronizzazione libreria completata</string>
@@ -241,7 +241,7 @@
     <string name="about_version">Versione</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">Licenza</string>
-    <string name="about_sponsor">Sostieni Airmedy</string>
+    <string name="about_sponsor">Sostieni Tune</string>
     <string name="about_sponsor_github">GitHub Sponsors</string>
     <string name="about_sponsor_kofi">Ko-fi</string>
     <string name="about_sponsor_bmac">Buy Me a Coffee</string>

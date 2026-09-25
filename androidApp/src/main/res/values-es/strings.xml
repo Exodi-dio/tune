@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Airmedy</string>
+    <string name="app_name">Tune</string>
     <string name="destination_home">Inicio</string>
     <string name="home_greeting_morning">Buenos días</string>
     <string name="home_greeting_afternoon">Buenas tardes</string>
@@ -63,7 +63,7 @@
     <string name="insight_genre_description">Gráfico de tiempo de escucha por género</string>
     <string name="insight_outcomes_description">Gráfico de resultados de reproducción</string>
     <string name="track_info_quality_unknown">Desconocido</string>
-    <string name="placeholder_settings">Personaliza el aspecto de Airmedy.</string>
+    <string name="placeholder_settings">Personaliza el aspecto de Tune.</string>
     <string name="appearance_title">Apariencia</string>
     <string name="appearance_theme_title">Tema</string>
     <string name="appearance_reduce_transparency">Reducir transparencia</string>
@@ -81,26 +81,26 @@
     <string name="sync_last_synced">Última sincronización: %1$s</string>
     <string name="sync_never_synced">Aún no sincronizado</string>
     <string name="sync_paired_device_description">Este teléfono solo puede conectarse a un escritorio a la vez. Desvincúlalo antes de emparejar uno nuevo.</string>
-    <string name="sync_ready_to_connect_description">Listo para conectar. Inicia la transmisión en Airmedy en tu escritorio; esta pantalla se conectará automáticamente.</string>
+    <string name="sync_ready_to_connect_description">Listo para conectar. Inicia la transmisión en Tune en tu escritorio; esta pantalla se conectará automáticamente.</string>
     <string name="sync_revoke">Desvincular</string>
     <string name="sync_help">Aprende a conectarte</string>
     <string name="sync_waiting_title">Esperando aprobación del escritorio</string>
-    <string name="sync_waiting_description">Aprueba este teléfono en la aplicación de escritorio de Airmedy.</string>
+    <string name="sync_waiting_description">Aprueba este teléfono en la aplicación de escritorio de Tune.</string>
     <string name="sync_camera_required">Se requiere acceso a la cámara para escanear el código QR del escritorio.</string>
-    <string name="sync_scan_description">Apunta tu cámara al código QR de emparejamiento mostrado en Airmedy Desktop.</string>
+    <string name="sync_scan_description">Apunta tu cámara al código QR de emparejamiento mostrado en Tune Desktop.</string>
     <string name="sync_scan_hint">Mantén el código QR dentro del marco.</string>
     <string name="sync_select_qr_image">Elegir imagen de QR</string>
     <string name="sync_revoke_confirm_title">¿Desconectar este escritorio?</string>
     <string name="sync_revoke_confirm_description">Esto elimina la conexión de este teléfono. El escritorio seguirá autorizado hasta que se desvincule allí.</string>
     <string name="sync_error_already_paired">Desconecta el escritorio actual antes de emparejar otro.</string>
-    <string name="sync_error_invalid_qr">Ese código QR no es un código de emparejamiento de Airmedy Desktop.</string>
+    <string name="sync_error_invalid_qr">Ese código QR no es un código de emparejamiento de Tune Desktop.</string>
     <string name="sync_error_transport">No se puede conectar con el escritorio. Asegúrate de que ambos dispositivos estén en la misma red.</string>
     <string name="sync_error_timeout">El escritorio no respondió a tiempo. Escanea su código QR de nuevo.</string>
     <string name="sync_error_rejected">El escritorio ha rechazado esta solicitud de emparejamiento.</string>
     <string name="sync_error_expired">La solicitud de emparejamiento ha caducado. Escanea su código QR de nuevo.</string>
     <string name="sync_error_invalid_response">No se pudo verificar la respuesta del escritorio.</string>
     <string name="sync_notification_channel">Sincronización de biblioteca</string>
-    <string name="sync_notification_title">Sincronizando biblioteca de Airmedy</string>
+    <string name="sync_notification_title">Sincronizando biblioteca de Tune</string>
     <string name="sync_notification_connecting">Conectando al escritorio…</string>
     <string name="sync_notification_progress">Sincronizando %1$d%%</string>
     <string name="sync_notification_complete">Sincronización de biblioteca completada</string>
@@ -241,7 +241,7 @@
     <string name="about_version">Versión</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">Licencia</string>
-    <string name="about_sponsor">Patrocinar Airmedy</string>
+    <string name="about_sponsor">Patrocinar Tune</string>
     <string name="about_sponsor_github">GitHub Sponsors</string>
     <string name="about_sponsor_kofi">Ko-fi</string>
     <string name="about_sponsor_bmac">Buy Me a Coffee</string>

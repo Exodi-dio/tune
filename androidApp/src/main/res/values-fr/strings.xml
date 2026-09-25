@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Airmedy</string>
+    <string name="app_name">Tune</string>
     <string name="destination_home">Accueil</string>
     <string name="home_greeting_morning">Bonjour</string>
     <string name="home_greeting_afternoon">Bon après-midi</string>
@@ -63,7 +63,7 @@
     <string name="insight_genre_description">Graphique du temps d\'écoute par genre</string>
     <string name="insight_outcomes_description">Graphique des résultats de lecture</string>
     <string name="track_info_quality_unknown">Inconnu</string>
-    <string name="placeholder_settings">Personnalisez l\'apparence d\'Airmedy.</string>
+    <string name="placeholder_settings">Personnalisez l\'apparence d\'Tune.</string>
     <string name="appearance_title">Apparence</string>
     <string name="appearance_theme_title">Thème</string>
     <string name="appearance_reduce_transparency">Réduire la transparence</string>
@@ -81,26 +81,26 @@
     <string name="sync_last_synced">Dernière synchronisation : %1$s</string>
     <string name="sync_never_synced">Jamais synchronisé</string>
     <string name="sync_paired_device_description">Ce téléphone ne peut être connecté qu\'à un seul ordinateur à la fois. Révoquez-le avant d\'en associer un nouveau.</string>
-    <string name="sync_ready_to_connect_description">Prêt pour la connexion. Lancez la diffusion dans Airmedy sur votre ordinateur ; cet écran se connectera automatiquement.</string>
+    <string name="sync_ready_to_connect_description">Prêt pour la connexion. Lancez la diffusion dans Tune sur votre ordinateur ; cet écran se connectera automatiquement.</string>
     <string name="sync_revoke">Révoquer</string>
     <string name="sync_help">Découvrez comment vous connecter</string>
     <string name="sync_waiting_title">En attente de l\'approbation de l\'ordinateur</string>
-    <string name="sync_waiting_description">Approuvez ce téléphone dans l\'application de bureau Airmedy.</string>
+    <string name="sync_waiting_description">Approuvez ce téléphone dans l\'application de bureau Tune.</string>
     <string name="sync_camera_required">L\'accès à l\'appareil photo est requis pour scanner le code QR du bureau.</string>
-    <string name="sync_scan_description">Pointez votre appareil photo vers le code QR d\'association affiché dans Airmedy Desktop.</string>
+    <string name="sync_scan_description">Pointez votre appareil photo vers le code QR d\'association affiché dans Tune Desktop.</string>
     <string name="sync_scan_hint">Gardez le code QR à l\'intérieur du cadre.</string>
     <string name="sync_select_qr_image">Choisir une image QR</string>
     <string name="sync_revoke_confirm_title">Déconnecter cet ordinateur ?</string>
     <string name="sync_revoke_confirm_description">Cela supprime la connexion de ce téléphone. L\'ordinateur reste autorisé jusqu\'à ce qu\'il soit révoqué là-bas.</string>
     <string name="sync_error_already_paired">Déconnectez l\'ordinateur actuel avant d\'en associer un autre.</string>
-    <string name="sync_error_invalid_qr">Ce code QR n\'est pas un code d\'association Airmedy Desktop.</string>
+    <string name="sync_error_invalid_qr">Ce code QR n\'est pas un code d\'association Tune Desktop.</string>
     <string name="sync_error_transport">Impossible de joindre l\'ordinateur. Assurez-vous que les deux appareils sont sur le même réseau.</string>
     <string name="sync_error_timeout">L\'ordinateur n\'a pas répondu à temps. Scannez à nouveau son code QR.</string>
     <string name="sync_error_rejected">L\'ordinateur a rejeté cette demande d\'association.</string>
     <string name="sync_error_expired">La demande d\'association a expiré. Scannez à nouveau son code QR.</string>
     <string name="sync_error_invalid_response">La réponse de l\'ordinateur n\'a pas pu être vérifiée.</string>
     <string name="sync_notification_channel">Synchronisation de la bibliothèque</string>
-    <string name="sync_notification_title">Synchronisation de la bibliothèque Airmedy</string>
+    <string name="sync_notification_title">Synchronisation de la bibliothèque Tune</string>
     <string name="sync_notification_connecting">Connexion à l\'ordinateur…</string>
     <string name="sync_notification_progress">Synchronisation %1$d%%</string>
     <string name="sync_notification_complete">Synchronisation de la bibliothèque terminée</string>
@@ -241,7 +241,7 @@
     <string name="about_version">Version</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">Licence</string>
-    <string name="about_sponsor">Soutenir Airmedy</string>
+    <string name="about_sponsor">Soutenir Tune</string>
     <string name="about_sponsor_github">GitHub Sponsors</string>
     <string name="about_sponsor_kofi">Ko-fi</string>
     <string name="about_sponsor_bmac">Buy Me a Coffee</string>
