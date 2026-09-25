@@ -192,11 +192,23 @@ private fun jsonEscape(value: String): String = buildString(value.length + 2) {
 
 private fun jstr(value: String): String = "\"${jsonEscape(value)}\""
 
-internal fun metadataJsonFor(track: LocalTrack, sampleRateHz: Int?, bitDepth: Int?): String {
+internal fun metadataJsonFor(
+    track: LocalTrack,
+    sampleRateHz: Int?,
+    bitDepth: Int?,
+    artistArtworkKey: String?,
+    albumArtworkKey: String?,
+): String {
     val (format, codec) = formatFor(track.mimeType)
-    val artists = if (track.artist.isBlank()) "[]" else
-        """[{"id":${jstr(artistIdFor(track.artist))},"name":${jstr(track.artist)}}]"""
-    val album = """{"id":${jstr(if (track.album.isBlank()) "" else albumIdFor(track.album))},"title":${jstr(track.album)}}"""
+    val artists = if (track.artist.isBlank()) "[]" else {
+        val key = if (artistArtworkKey == null) "" else ","artwork_key":${jstr(artistArtworkKey)}"
+        """[{"id":${jstr(artistIdFor(track.artist))},"name":${jstr(track.artist)}$key}]"""
+    }
+    val albumId = if (track.album.isBlank()) "" else albumIdFor(track.album)
+    val albumKey = if (albumArtworkKey == null) "" else ","artwork_key":${jstr(albumArtworkKey)}"
+    val albumYear = track.year?.let { ","year":$it" }.orEmpty()
+    val albumCopyright = if (track.copyright == null) "" else ","copyright":${jstr(track.copyright)}"
+    val album = """{"id":${jstr(albumId)},"title":${jstr(track.album)}$albumYear$albumCopyright$albumKey}"""
     fun optLong(name: String, value: Long?) = if (value == null) "" else ",\"$name\":$value"
     fun optInt(name: String, value: Int?) = if (value == null) "" else ",\"$name\":$value"
     fun optStr(name: String, value: String?) = if (value == null) "" else ",\"$name\":${jstr(value)}"
@@ -225,6 +237,15 @@ fun buildLocalImport(
     planId: String = LOCAL_PLAN_ID,
 ): LocalImport {
     val valid = tracks.filter { it.uri.isNotBlank() && it.mediaId > 0L }
+    val artistArt = linkedMapOf<String, String>()
+    val albumArt = linkedMapOf<String, String>()
+    valid.forEach { track ->
+        val assetId = "artwork:${trackIdFor(track.mediaId)}"
+        if (artwork.containsKey(trackIdFor(track.mediaId))) {
+            if (track.artist.isNotBlank()) artistArt.putIfAbsent(artistIdFor(track.artist), assetId)
+            if (track.album.isNotBlank()) albumArt.putIfAbsent(albumIdFor(track.album), assetId)
+        }
+    }
     val entities = valid.mapIndexed { index, track ->
         val id = trackIdFor(track.mediaId)
         val art = artwork[id]
@@ -241,7 +262,13 @@ fun buildLocalImport(
             discNumber = track.discNo,
             trackNumber = track.trackNo,
             syncOrder = index,
-            rawJson = metadataJsonFor(track, track.sampleRateHz, track.bitDepth),
+            rawJson = metadataJsonFor(
+                track,
+                track.sampleRateHz,
+                track.bitDepth,
+                artistArt[artistIdFor(track.artist)].takeIf { track.artist.isNotBlank() },
+                albumArt[albumIdFor(track.album)].takeIf { track.album.isNotBlank() },
+            ),
         )
     }
     val audioAssets = entities.map { row ->
