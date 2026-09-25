@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the Android FFmpeg decoder used by Tune's androidApp.
-# Adapted from airmedy scripts/build-ffmpeg-android.sh (GPLv3):
+# Adapted from the upstream mobile FFmpeg build script (GPLv3):
 # repo root IS the mobile project (no mobile/ subdir), SDK auto-detected,
 # portable across Linux and macOS runners/hosts.
 #
