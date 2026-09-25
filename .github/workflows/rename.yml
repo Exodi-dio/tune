@@ -1,0 +1,51 @@
+name: rename
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  rename:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Move package directories
+        run: |
+          set -eux
+          find androidApp/src sharedLogic/src -type d -path '*me/misa198/airmedy' | sort -r | while read -r d; do
+            target="${d//me\/misa198\/airmedy/com\/exodidio\/tune}"
+            mkdir -p "$(dirname "$target")"
+            git mv "$d" "$target"
+          done
+          find androidApp/src sharedLogic/src -type d -name me -empty -delete || true
+          find androidApp/src sharedLogic/src -type d -name misa198 -empty -delete || true
+      - name: Rename res files with brand in the name
+        run: |
+          set -eux
+          cd androidApp/src/main/res
+          for f in $(find . -iname '*airmedy*'); do
+            twin="$(echo "$f" | sed 's/airmedy/tune/g; s/Airmedy/Tune/g')"
+            if [ -f "$twin" ]; then git rm "$f"; else git mv "$f" "$twin"; fi
+          done
+      - name: Rewrite identifiers and brand strings
+        run: |
+          set -eux
+          FILTER="--include=*.kt --include=*.java --include=*.kts --include=*.xml --include=*.gradle --include=*.properties --include=*.cpp --include=*.h --include=*.c --include=*.json --include=*.md --include=*.txt --include=*.cfg --include=*.pro"
+          grep -rl $FILTER -e 'github.com/misa198/airmedy' --exclude-dir=.git . | xargs -r sed -i 's|github.com/misa198/airmedy|github.com/Exodi-dio/tune|g'
+          grep -rl $FILTER -e 'me\.misa198\.airmedy' --exclude-dir=.git . | xargs -r sed -i 's/me\.misa198\.airmedy/com.exodidio.tune/g'
+          grep -rl $FILTER -e 'me_misa198_airmedy' --exclude-dir=.git . | xargs -r sed -i 's/me_misa198_airmedy/com_exodidio_tune/g'
+          grep -rl $FILTER -e 'misa198' --exclude-dir=.git . | xargs -r sed -i 's/misa198/exodidio/g'
+          grep -rl $FILTER -e 'Airmedy' --exclude-dir=.git . | xargs -r sed -i 's/Airmedy/Tune/g'
+          grep -rl $FILTER -e 'airmedy' --exclude-dir=.git . | xargs -r sed -i 's/airmedy/tune/g'
+          sed -i 's/rootProject\.name *= *"Airmedy"/rootProject.name = "Tune"/' settings.gradle.kts
+          sed -i 's/versionCode *= *[0-9][0-9]*/versionCode = 1/; s/versionName *= *"[^"]*"/versionName = "0.1.0"/' androidApp/build.gradle.kts
+      - name: Report leftovers
+        run: |
+          echo "=== remaining brand references (informational) ==="
+          grep -rniE 'airmedy|misa198' --exclude-dir=.git --exclude=NOTICE . || echo "NONE — clean"
+      - name: Commit and push
+        run: |
+          git config user.name "tune-bot"
+          git config user.email "tune-bot@users.noreply.github.com"
+          git add -A
+          git commit -m "Rename Airmedy to Tune (com.exodidio.tune, 0.1.0)" || echo "nothing to commit"
+          git push origin HEAD:main
