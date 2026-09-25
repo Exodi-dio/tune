@@ -26,6 +26,17 @@ internal class FfmpegDecoder : Closeable {
         }
     }
 
+    /** Opens a MediaStore content Uri through the same native fd path. Caller transfers fd ownership. */
+    fun prepareFd(fd: Int, normalizationGainDb: Float = 0f) {
+        check(handle != 0L) { "Decoder is closed" }
+        nativePrepare(handle, fd, normalizationGainDb)
+    }
+
+    fun preloadFd(fd: Int, normalizationGainDb: Float = 0f): Boolean {
+        check(handle != 0L) { "Decoder is closed" }
+        return nativePreload(handle, fd, normalizationGainDb)
+    }
+
     fun setNormalizationGains(activeDb: Float, preloadedDb: Float) {
         nativeSetNormalizationGains(requireHandle(), activeDb, preloadedDb)
     }
