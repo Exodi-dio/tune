@@ -2,16 +2,17 @@ package com.exodidio.tune.library
 
 import com.exodidio.tune.sync.LibrarySearchDocumentEntity
 import com.exodidio.tune.sync.SyncAssetEntity
+import com.exodidio.tune.sync.SyncPlaylistEntity
 import com.exodidio.tune.sync.SyncTrackEntity
 import com.exodidio.tune.sync.searchDocumentsFor
 import java.io.File
 import java.security.MessageDigest
 import java.time.Instant
 
-const val LOCAL_PLAN_ID = "local"
+internal const val LOCAL_PLAN_ID = "local"
 
 /** One MediaStore audio row, straight from the cursor (all fields nullable). */
-data class MediaRow(
+internal data class MediaRow(
     val mediaId: Long,
     val uri: String,
     val displayName: String?,
@@ -33,12 +34,10 @@ data class MediaRow(
     val mimeType: String?,
     val label: String?,
     val copyright: String?,
-    val sampleRateHz: Int?,
-    val bitDepth: Int?,
 )
 
 /** Validated scan result. Blank text stays blank: display layers fall back. */
-data class LocalTrack(
+internal data class LocalTrack(
     val mediaId: Long,
     val uri: String,
     val title: String,
@@ -59,11 +58,11 @@ data class LocalTrack(
     val mimeType: String?,
     val label: String?,
     val copyright: String?,
-    val sampleRateHz: Int? = null,
-    val bitDepth: Int? = null,
+    val sampleRateHz: Int?,
+    val bitDepth: Int?,
 )
 
-fun MediaRow.toLocalTrack(): LocalTrack? {
+internal fun MediaRow.toLocalTrack(): LocalTrack? {
     if (mediaId <= 0L || uri.isBlank()) return null
     val fileTitle = displayName?.substringBeforeLast('.')?.takeIf { it.isNotBlank() }
     return LocalTrack(
@@ -93,7 +92,7 @@ fun MediaRow.toLocalTrack(): LocalTrack? {
 }
 
 /** Tags read from the file itself (null = unreadable, keep scan values). */
-data class RawTags(
+internal data class RawTags(
     val title: String?,
     val artist: String?,
     val album: String?,
@@ -109,7 +108,7 @@ data class RawTags(
     val hasEmbeddedArt: Boolean,
 )
 
-fun LocalTrack.applyTags(tags: RawTags?): LocalTrack {
+internal fun LocalTrack.applyTags(tags: RawTags?): LocalTrack {
     if (tags == null) return this
     fun pick(scan: String, tag: String?): String = tag?.ifBlank { null } ?: scan
     return copy(
@@ -128,14 +127,14 @@ fun LocalTrack.applyTags(tags: RawTags?): LocalTrack {
     )
 }
 
-data class LocalArtwork(
+internal data class LocalArtwork(
     val relativePath: String,
     val sha256: String,
     val sizeBytes: Long,
     val mime: String,
 )
 
-data class LocalImport(
+internal data class LocalImport(
     val planId: String,
     val tracks: List<SyncTrackEntity>,
     val audioAssets: List<SyncAssetEntity>,
@@ -144,16 +143,16 @@ data class LocalImport(
     val skipped: Int,
 )
 
-fun trackIdFor(mediaId: Long): String = "local-$mediaId"
+internal fun trackIdFor(mediaId: Long): String = "local-$mediaId"
 
-fun stableId(prefix: String, name: String): String {
+internal fun stableId(prefix: String, name: String): String {
     val digest = MessageDigest.getInstance("SHA-1").digest(name.lowercase().toByteArray())
     return prefix + digest.joinToString("") { "%02x".format(it) }.take(12)
 }
 
-fun artistIdFor(name: String): String = stableId("local-artist-", name)
+internal fun artistIdFor(name: String): String = stableId("local-artist-", name)
 
-fun albumIdFor(name: String): String = stableId("local-album-", name)
+internal fun albumIdFor(name: String): String = stableId("local-album-", name)
 
 internal fun formatFor(mimeType: String?): Pair<String, String> {
     return when (mimeType?.substringAfter('/')?.lowercase().orEmpty()) {
@@ -190,7 +189,7 @@ private fun jsonEscape(value: String): String = buildString(value.length + 2) {
     }
 }
 
-private fun jstr(value: String): String = "\"${jsonEscape(value)}\""
+private fun jstr(value: String): String = "\"" + jsonEscape(value) + "\""
 
 internal fun metadataJsonFor(
     track: LocalTrack,
@@ -200,26 +199,33 @@ internal fun metadataJsonFor(
     albumArtworkKey: String?,
 ): String {
     val (format, codec) = formatFor(track.mimeType)
-    val artists = if (track.artist.isBlank()) "[]" else {
-        val key = if (artistArtworkKey == null) "" else ","artwork_key":${jstr(artistArtworkKey)}"
-        """[{"id":${jstr(artistIdFor(track.artist))},"name":${jstr(track.artist)}$key}]"""
+    val artistPart = if (track.artist.isBlank()) {
+        "[]"
+    } else {
+        val key = if (artistArtworkKey == null) "" else "," + jstr("artwork_key") + ":" + jstr(artistArtworkKey)
+        "[" + "{" + jstr("id") + ":" + jstr(artistIdFor(track.artist)) + "," + jstr("name") + ":" + jstr(track.artist) + key + "}" + "]"
     }
     val albumId = if (track.album.isBlank()) "" else albumIdFor(track.album)
-    val albumKey = if (albumArtworkKey == null) "" else ","artwork_key":${jstr(albumArtworkKey)}"
-    val albumYear = track.year?.let { ","year":$it" }.orEmpty()
-    val albumCopyright = if (track.copyright == null) "" else ","copyright":${jstr(track.copyright)}"
-    val album = """{"id":${jstr(albumId)},"title":${jstr(track.album)}$albumYear$albumCopyright$albumKey}"""
-    fun optLong(name: String, value: Long?) = if (value == null) "" else ",\"$name\":$value"
-    fun optInt(name: String, value: Int?) = if (value == null) "" else ",\"$name\":$value"
-    fun optStr(name: String, value: String?) = if (value == null) "" else ",\"$name\":${jstr(value)}"
-    return """{"title":${jstr(track.title)},"artists":$artists,"album":$album""" +
-        ""","format":${jstr(format)},"codec":${jstr(codec)}""" +
-        ""","bit_depth":${bitDepth ?: 0},"sample_rate":${sampleRateHz ?: 0}""" +
+    val albumKey = if (albumArtworkKey == null) "" else "," + jstr("artwork_key") + ":" + jstr(albumArtworkKey)
+    val albumYear = track.year?.let { "," + jstr("year") + ":" + it.toString() }.orEmpty()
+    val albumCopyright = if (track.copyright == null) "" else "," + jstr("copyright") + ":" + jstr(track.copyright)
+    val albumPart = "{" + jstr("id") + ":" + jstr(albumId) + "," + jstr("title") + ":" + jstr(track.album) + albumYear + albumCopyright + albumKey + "}"
+    fun optLong(name: String, value: Long?): String = if (value == null) "" else "," + jstr(name) + ":" + value.toString()
+    fun optInt(name: String, value: Int?): String = if (value == null) "" else "," + jstr(name) + ":" + value.toString()
+    fun optStr(name: String, value: String?): String = if (value == null) "" else "," + jstr(name) + ":" + jstr(value)
+    return "{" + jstr("title") + ":" + jstr(track.title) +
+        "," + jstr("artists") + ":" + artistPart +
+        "," + jstr("album") + ":" + albumPart +
+        "," + jstr("format") + ":" + jstr(format) +
+        "," + jstr("codec") + ":" + jstr(codec) +
+        "," + jstr("bit_depth") + ":" + (bitDepth ?: 0).toString() +
+        "," + jstr("sample_rate") + ":" + (sampleRateHz ?: 0).toString() +
         optLong("bitrate", track.bitrate?.toLong()) +
         optLong("file_size", track.sizeBytes) +
         optLong("duration_ms", track.durationMs) +
         optInt("year", track.year) +
-        ""","disc_number":${track.discNo},"track_number":${track.trackNo}""" +
+        "," + jstr("disc_number") + ":" + track.discNo.toString() +
+        "," + jstr("track_number") + ":" + track.trackNo.toString() +
         optInt("total_discs", track.totalDiscs) +
         optInt("total_tracks", track.totalTracks) +
         optStr("raw_artist_names", track.artist.ifBlank { null }) +
@@ -230,17 +236,17 @@ internal fun metadataJsonFor(
         "}"
 }
 
-fun buildLocalImport(
+internal fun buildLocalImport(
     tracks: List<LocalTrack>,
     artwork: Map<String, LocalArtwork> = emptyMap(),
-    playlists: List<com.exodidio.tune.sync.SyncPlaylistEntity> = emptyList(),
+    playlists: List<SyncPlaylistEntity> = emptyList(),
     planId: String = LOCAL_PLAN_ID,
 ): LocalImport {
     val valid = tracks.filter { it.uri.isNotBlank() && it.mediaId > 0L }
     val artistArt = linkedMapOf<String, String>()
     val albumArt = linkedMapOf<String, String>()
     valid.forEach { track ->
-        val assetId = "artwork:${trackIdFor(track.mediaId)}"
+        val assetId = "artwork:" + trackIdFor(track.mediaId)
         if (artwork.containsKey(trackIdFor(track.mediaId))) {
             if (track.artist.isNotBlank()) artistArt.putIfAbsent(artistIdFor(track.artist), assetId)
             if (track.album.isNotBlank()) albumArt.putIfAbsent(albumIdFor(track.album), assetId)
@@ -275,7 +281,7 @@ fun buildLocalImport(
         val track = valid.first { trackIdFor(it.mediaId) == row.trackId }
         SyncAssetEntity(
             planId = planId,
-            assetId = "audio:${row.trackId}",
+            assetId = "audio:" + row.trackId,
             kind = "audio",
             sha256 = "",
             size = track.sizeBytes,
@@ -286,7 +292,7 @@ fun buildLocalImport(
         artwork[row.trackId]?.let { art ->
             SyncAssetEntity(
                 planId = planId,
-                assetId = "artwork:${row.trackId}",
+                assetId = "artwork:" + row.trackId,
                 kind = "artwork",
                 sha256 = art.sha256,
                 size = art.sizeBytes,
@@ -304,35 +310,35 @@ fun buildLocalImport(
     )
 }
 
-sealed interface AudioTarget {
+internal sealed interface AudioTarget {
     data class FileTarget(val file: File) : AudioTarget
     data class ContentTarget(val uri: String) : AudioTarget
 }
 
-fun resolveAudioTarget(filesDir: File, storedPath: String?): AudioTarget? {
+internal fun resolveAudioTarget(filesDir: File, storedPath: String?): AudioTarget? {
     val path = storedPath?.ifBlank { null } ?: return null
     if (path.startsWith("content://", ignoreCase = true)) return AudioTarget.ContentTarget(path)
     val file = File(path)
     return AudioTarget.FileTarget(if (file.isAbsolute) file else File(filesDir, path))
 }
 
-fun audioTargetExists(target: AudioTarget, contentExists: (String) -> Boolean): Boolean = when (target) {
+internal fun audioTargetExists(target: AudioTarget, contentExists: (String) -> Boolean): Boolean = when (target) {
     is AudioTarget.FileTarget -> target.file.isFile
     is AudioTarget.ContentTarget -> contentExists(target.uri)
 }
 
-enum class ScanPermission { Granted, NeedsRationale, Denied }
+internal enum class ScanPermission { Granted, NeedsRationale, Denied }
 
-data class LocalImportSummary(val inserted: Int, val skipped: Int)
+internal data class LocalImportSummary(val inserted: Int, val skipped: Int)
 
-data class LocalScanUiState(
+internal data class LocalScanUiState(
     val permission: ScanPermission? = null,
     val scanning: Boolean = false,
     val lastResult: LocalImportSummary? = null,
     val error: String? = null,
 )
 
-fun reduceScanPermission(state: LocalScanUiState, granted: Boolean, showRationale: Boolean): LocalScanUiState {
+internal fun reduceScanPermission(state: LocalScanUiState, granted: Boolean, showRationale: Boolean): LocalScanUiState {
     val permission = when {
         granted -> ScanPermission.Granted
         showRationale -> ScanPermission.NeedsRationale
