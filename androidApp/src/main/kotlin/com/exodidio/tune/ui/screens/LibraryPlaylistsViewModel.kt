@@ -27,7 +27,7 @@ import com.exodidio.tune.sync.LibraryTrack
 import com.exodidio.tune.sync.PlaylistMutation
 import com.exodidio.tune.sync.PlaylistMutationOperation
 import com.exodidio.tune.sync.PlaylistMutationPayload
-import com.exodidio.tune.sync.stagePlaylistArtwork
+import com.exodidio.tune.library.stagePlaylistArtwork
 import java.util.UUID
 
 internal data class PlaylistListItem(
