@@ -1,25 +1,39 @@
 package com.exodidio.tune.ui.screens
 
+import android.app.Activity
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.exodidio.tune.R
+import com.exodidio.tune.library.LocalLibraryScanner
+import com.exodidio.tune.library.ScanPermission
+import com.exodidio.tune.library.audioPermission
 import com.exodidio.tune.player.PlaybackQueueSnapshot
+import com.exodidio.tune.sync.AndroidSyncRuntime
 import com.exodidio.tune.sync.LibraryTrack
 import com.exodidio.tune.ui.components.ActionList
 import com.exodidio.tune.ui.components.ActionListContainerStyle
@@ -31,6 +45,7 @@ import com.exodidio.tune.ui.components.TrackContextMenu
 import com.exodidio.tune.ui.components.TrackContextBottomSheetRequest
 import com.exodidio.tune.ui.components.discGridItems
 import com.exodidio.tune.ui.theme.LocalTuneColors
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun LibraryContent(
@@ -55,6 +70,33 @@ internal fun LibraryContent(
     onTrackContextBottomSheet: (TrackContextBottomSheetRequest) -> Unit = {},
 ) {
     val colors = LocalTuneColors.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val scanner = remember(context.applicationContext) {
+        LocalLibraryScanner(context.applicationContext, AndroidSyncRuntime.syncStore())
+    }
+    val scanState by scanner.state.collectAsState()
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        val activity = context as? Activity
+        val rationale = activity?.shouldShowRequestPermissionRationale(audioPermission()) == true
+        scope.launch {
+            scanner.refreshPermission(granted, rationale)
+            if (granted) scanner.scan()
+        }
+    }
+    LaunchedEffect(scanner) {
+        val granted = context.checkSelfPermission(audioPermission()) == PackageManager.PERMISSION_GRANTED
+        val activity = context as? Activity
+        val rationale = !granted && activity?.shouldShowRequestPermissionRationale(audioPermission()) == true
+        scanner.refreshPermission(granted, rationale)
+    }
+    fun startScan() {
+        if (context.checkSelfPermission(audioPermission()) == PackageManager.PERMISSION_GRANTED) {
+            scope.launch { scanner.refreshPermission(true, false); scanner.scan() }
+        } else {
+            permissionLauncher.launch(audioPermission())
+        }
+    }
     var contextTrack by remember { mutableStateOf<LibraryTrack?>(null) }
     LazyColumn(
         state = listState,
@@ -64,6 +106,17 @@ internal fun LibraryContent(
         item {
             ActionList(
                 items = listOf(
+                    ActionListItem(
+                        labelRes = R.string.library_scan_local,
+                        leadingSymbol = MaterialSymbols.Refresh,
+                        leadingIconTint = colors.primary,
+                        trailingContent = if (scanState.scanning) {
+                            { CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
+                        } else {
+                            null
+                        },
+                        onClick = ::startScan,
+                    ),
                     ActionListItem(
                         labelRes = R.string.library_search,
                         leadingSymbol = MaterialSymbols.Search,
