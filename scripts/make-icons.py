@@ -127,7 +127,6 @@ def main():
     about_canvas.alpha_composite(about, ((ABOUT_SIZE - about.width) // 2, (ABOUT_SIZE - about.height) // 2))
     nodpi = os.path.join(RES, "drawable-nodpi")
     about_canvas.save(os.path.join(nodpi, "tune_about_app_icon.png"))
-    about_canvas.save(os.path.join(nodpi, "airmedy_about_app_icon.png"))
 
     # Verify every expected output.
     expected = []
