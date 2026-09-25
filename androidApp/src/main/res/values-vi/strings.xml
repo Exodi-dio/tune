@@ -144,6 +144,7 @@
     <string name="library_genres">Thể loại</string>
     <string name="library_composers">Nhà soạn nhạc</string>
     <string name="library_search">Tìm kiếm</string>
+    <string name="library_scan_local">Scan local files</string>
     <string name="library_search_placeholder">Tìm kiếm trong thư viện</string>
     <string name="library_search_empty_title">Tìm kiếm trong thư viện</string>
     <string name="library_search_empty_description">Nhập tên bài hát, nghệ sĩ, album, danh sách phát hoặc nhà soạn nhạc.</string>
