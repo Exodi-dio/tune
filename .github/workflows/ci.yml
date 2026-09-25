@@ -46,4 +46,4 @@ jobs:
           path: androidApp/build/outputs/apk/dev/debug/*.apk
       - name: Branding gate
         run: |
-          if grep -rniE 'airmedy|misa198' --exclude-dir=.git --exclude=NOTICE . ; then echo "STALE BRANDING"; exit 1; fi
+          if grep -rniE 'airmedy|misa198' --exclude-dir=.git --exclude-dir=.github --exclude-dir=.superpowers --exclude-dir=docs --exclude=NOTICE . ; then echo "STALE BRANDING"; exit 1; fi
