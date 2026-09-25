@@ -264,7 +264,8 @@ private fun Modifier.navigationForegroundMask(
         addRoundRect(navPillRectPx(pillLeft, pillWidth, size.height, pillRadius))
     }
     onDrawWithContent {
-        clipPath(pillPath, clipOp = clipOp) { this.drawContent() }
+        val contentScope = this
+        clipPath(pillPath, clipOp = clipOp) { contentScope.drawContent() }
     }
 }
 
