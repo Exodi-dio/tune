@@ -144,6 +144,7 @@
     <string name="library_genres">장르</string>
     <string name="library_composers">작곡가</string>
     <string name="library_search">검색</string>
+    <string name="library_scan_local">Scan local files</string>
     <string name="library_search_placeholder">라이브러리 검색</string>
     <string name="library_search_empty_title">라이브러리 검색</string>
     <string name="library_search_empty_description">제목, 아티스트, 앨범, 재생 목록 또는 작곡가를 입력하세요.</string>
