@@ -84,7 +84,10 @@ class MainActivity : ComponentActivity() {
         LibraryTracksViewModel.Factory(AndroidSyncRuntime.syncStore(), AndroidPlaybackRuntime.controller())
     }
     private val insightViewModel: InsightViewModel by viewModels {
-
+        InsightViewModel.Factory(
+            AndroidSyncRuntime.syncStore(),
+            AndroidPlaybackRuntime.controller(),
+        )
     }
     private val artistsViewModel: LibraryArtistsViewModel by viewModels {
         LibraryArtistsViewModel.Factory(AndroidSyncRuntime.syncStore())
