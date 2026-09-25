@@ -42,7 +42,6 @@ import com.exodidio.tune.AppDestinationModels
 import com.exodidio.tune.AppIntent
 import com.exodidio.tune.AppStackPage
 import com.exodidio.tune.StackPageEntry
-import com.exodidio.tune.SyncUiState
 import com.exodidio.tune.settings.ThemeMode
 import com.exodidio.tune.ui.components.HomeContent
 import com.exodidio.tune.ui.components.StackPageLayout
