@@ -1,0 +1,20 @@
+name: lint
+on:
+  workflow_dispatch:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-36
+      - name: Install font tooling
+        run: pip install --quiet fonttools brotli
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Android lint
+        run: ./gradlew :androidApp:lintDevDebug --no-daemon
