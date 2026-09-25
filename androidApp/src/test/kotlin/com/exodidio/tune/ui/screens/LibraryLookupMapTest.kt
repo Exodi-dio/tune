@@ -26,4 +26,26 @@ class LibraryLookupMapTest {
         val albums = listOf(LibraryAlbum(id = "a1", title = "A"))
         assertEquals("A", albumsById(albums)["a1"]!!.title)
     }
+
+    @Test
+    fun albumContextTracksIncludeMetadataFallback() {
+        val albums = listOf(LibraryAlbum(id = "a1", title = "A"))
+        val tracks = listOf(
+            LibraryTrack(id = "legacy", title = "Legacy", artists = "a", metadataJson = "{\"album\":{\"id\":\"a1\"}}"),
+        )
+        val map = albumContextTracksByAlbumId(albums, tracks)
+        assertEquals(listOf("legacy"), map["a1"]!!.map { it.id })
+    }
+
+    @Test
+    fun albumContextTracksSortByDiscAndTrack() {
+        val albums = listOf(LibraryAlbum(id = "a1", title = "A"))
+        val tracks = listOf(
+            LibraryTrack(id = "missing", title = "Missing", artists = "a", album = "Album", albumId = "a1", syncOrder = 0),
+            LibraryTrack(id = "second", title = "Second", artists = "a", album = "Album", albumId = "a1", discNumber = 1, trackNumber = 2, syncOrder = 2),
+            LibraryTrack(id = "first", title = "First", artists = "a", album = "Album", albumId = "a1", discNumber = 1, trackNumber = 1, syncOrder = 1),
+        )
+        val map = albumContextTracksByAlbumId(albums, tracks)
+        assertEquals(listOf("first", "second", "missing"), map["a1"]!!.map { it.id })
+    }
 }

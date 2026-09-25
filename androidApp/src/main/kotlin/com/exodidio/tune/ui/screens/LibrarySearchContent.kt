@@ -76,6 +76,7 @@ internal fun LibrarySearchContent(
     var contextAlbumId by remember { mutableStateOf<String?>(null) }
     val tracksByAlbum = remember(uiState.allTracks) { tracksByAlbumId(uiState.allTracks) }
     val playlistArtworkByTrackId = remember(uiState.allTracks) { uiState.allTracks.associateBy({ it.id }, { it.artworkPath }) }
+    val trackIndexByIdMap = remember(uiState.tracks) { trackIndexById(uiState.tracks) }
     BoxWithConstraints(modifier.fillMaxSize()) {
     val trackDividerWidth = maxWidth * 0.8f
     Column(Modifier.fillMaxSize()) {
@@ -100,7 +101,6 @@ internal fun LibrarySearchContent(
                     ) {
                         Column {
                             TrackRow(track.title, track.artists, artworkPath = track.artworkPath, contentPadding = PaddingValues(vertical = 6.dp), onClick = { onTrackClick(track.id) }, onMoreClick = { contextTrack = track }, onLongClick = { contextTrack = track })
-                            val trackIndexByIdMap = remember(uiState.tracks) { trackIndexById(uiState.tracks) }
                             val trackIndex = trackIndexByIdMap[track.id] ?: -1
                             if (trackHasDivider(trackIndex, uiState.tracks.lastIndex)) {
                                 HorizontalDivider(
