@@ -90,6 +90,13 @@ def main():
     white = Image.new("RGBA", (FG_SIZE, FG_SIZE), (255, 255, 255, 255))
     mono.paste(white, (0, 0), alpha)
     mono.save(os.path.join(xxx, "ic_launcher_monochrome.png"))
+    # drawable-nodpi mirrors keep R.drawable references working
+    # (notification small icon, legacy layouts).
+    nodpi_dir = os.path.join(RES, "drawable-nodpi")
+    os.makedirs(nodpi_dir, exist_ok=True)
+    mono.save(os.path.join(nodpi_dir, "ic_launcher_monochrome.png"))
+    fg_canvas.save(os.path.join(nodpi_dir, "ic_launcher_foreground.png"))
+    Image.new("RGBA", (FG_SIZE, FG_SIZE), red).save(os.path.join(nodpi_dir, "ic_launcher_background.png"))
 
     # Background color value.
     with open(os.path.join(RES, "values", "ic_launcher_background.xml"), "w") as f:
@@ -128,7 +135,10 @@ def main():
         expected += [(f"mipmap-{density}/ic_launcher.png", size), (f"mipmap-{density}/ic_launcher_round.png", size)]
     expected += [("mipmap-xxxhdpi/ic_launcher_foreground.png", FG_SIZE),
                  ("mipmap-xxxhdpi/ic_launcher_monochrome.png", FG_SIZE),
-                 ("drawable-nodpi/tune_about_app_icon.png", ABOUT_SIZE)]
+                 ("drawable-nodpi/tune_about_app_icon.png", ABOUT_SIZE),
+                 ("drawable-nodpi/ic_launcher_monochrome.png", FG_SIZE),
+                 ("drawable-nodpi/ic_launcher_foreground.png", FG_SIZE),
+                 ("drawable-nodpi/ic_launcher_background.png", FG_SIZE)]
     for rel, size in expected:
         p = os.path.join(RES, rel)
         got = Image.open(p).size
