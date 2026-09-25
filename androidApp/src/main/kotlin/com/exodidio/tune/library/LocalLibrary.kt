@@ -33,6 +33,8 @@ data class MediaRow(
     val mimeType: String?,
     val label: String?,
     val copyright: String?,
+    val sampleRateHz: Int?,
+    val bitDepth: Int?,
 )
 
 /** Validated scan result. Blank text stays blank: display layers fall back. */
@@ -57,6 +59,8 @@ data class LocalTrack(
     val mimeType: String?,
     val label: String?,
     val copyright: String?,
+    val sampleRateHz: Int? = null,
+    val bitDepth: Int? = null,
 )
 
 fun MediaRow.toLocalTrack(): LocalTrack? {
@@ -117,6 +121,8 @@ fun LocalTrack.applyTags(tags: RawTags?): LocalTrack {
         discNo = tags.discNo ?: discNo,
         durationMs = tags.durationMs ?: durationMs,
         bitrate = tags.bitrate ?: bitrate,
+        sampleRateHz = tags.sampleRateHz ?: sampleRateHz,
+        bitDepth = tags.bitDepth ?: bitDepth,
     )
 }
 
@@ -215,8 +221,6 @@ fun buildLocalImport(
     artwork: Map<String, LocalArtwork> = emptyMap(),
     playlists: List<com.exodidio.tune.sync.SyncPlaylistEntity> = emptyList(),
     planId: String = LOCAL_PLAN_ID,
-    sampleRates: Map<String, Int> = emptyMap(),
-    bitDepths: Map<String, Int> = emptyMap(),
 ): LocalImport {
     val valid = tracks.filter { it.uri.isNotBlank() && it.mediaId > 0L }
     val entities = valid.mapIndexed { index, track ->
@@ -235,7 +239,7 @@ fun buildLocalImport(
             discNumber = track.discNo,
             trackNumber = track.trackNo,
             syncOrder = index,
-            rawJson = metadataJsonFor(track, sampleRates[id], bitDepths[id]),
+            rawJson = metadataJsonFor(track, track.sampleRateHz, track.bitDepth),
         )
     }
     val audioAssets = entities.map { row ->
