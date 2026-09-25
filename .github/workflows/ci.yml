@@ -23,12 +23,16 @@ jobs:
         with:
           packages: platform-tools platforms;android-36 ndk;30.0.15729638 cmake;3.22.1
       - uses: gradle/actions/setup-gradle@v4
-      - name: Restore FFmpeg build cache
+      - name: Restore FFmpeg outputs
+        id: ffmpeg-cache
         uses: actions/cache@v4
         with:
-          path: build/ffmpeg
-          key: ffmpeg-arm64-v8a-v1
+          path: |
+            androidApp/src/main/jniLibs
+            androidApp/build/ffmpeg
+          key: ffmpeg-arm64-v8a-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
       - name: Build FFmpeg arm64-v8a
+        if: steps.ffmpeg-cache.outputs.cache-hit != 'true'
         run: bash scripts/build-ffmpeg-android.sh arm64-v8a
       - name: Unit tests
         run: ./gradlew :sharedLogic:testAndroidHostTest --no-daemon
