@@ -1,3 +1,5 @@
+<p align="center"><img src="brand/icon-source.png" width="160" alt="Tune app icon" /></p>
+
 # Tune
 
 Standalone local Android music player. Reworked by **exodi_dio**.
