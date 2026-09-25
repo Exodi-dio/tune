@@ -144,6 +144,7 @@
     <string name="library_genres">流派</string>
     <string name="library_composers">作曲家</string>
     <string name="library_search">搜索</string>
+    <string name="library_scan_local">Scan local files</string>
     <string name="library_search_placeholder">在媒体库中搜索</string>
     <string name="library_search_empty_title">在媒体库中搜索</string>
     <string name="library_search_empty_description">输入歌曲名、艺术家、专辑、播放列表或作曲家。</string>
