@@ -15,3 +15,4 @@ Cloud-only execution. No local builds/tests/runs. Ledger commits carry [skip ci]
 
 - (none yet)
 ## BLOCKED 2026-09-24 — Actions runners refused: "recent account payments have failed or spending limit needs to be increased" (run 36060749832). Owner must fix Billing & plans, then re-dispatch: gh workflow run import.yml -R Exodi-dio/tune. No code fault; plan resumes at Phase 0 Step 2.
+Task Phase0: complete (import run 36094390542 → success, tree check 5/5). Billing block cleared by owner (repo confirmed public). Ruling: proceeding on main with full autonomy per owner message (no check-ins, pre-authorized push/tag/release); ledger commits use [skip ci].
