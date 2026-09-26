@@ -54,7 +54,7 @@ class InsightViewModelTest {
     }
 
     @Test
-    fun sourceFilterAndLibraryProjectionUseTheMirroredSnapshot() {
+    fun libraryProjectionUsesMirroredSnapshot() {
         val state = buildInsightUiState(raw, InsightPeriod.SevenDays, InsightPeriod.SevenDays, LocalDate.parse("2026-01-10"))
 
         assertEquals(3, state.library.tracks)
