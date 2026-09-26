@@ -90,7 +90,7 @@ fun PlayerShellQueueMount(
  * the host composes this only while the lyrics panel is selected.
  */
 @Composable
-fun PlayerShellLyricsMount(
+internal fun PlayerShellLyricsMount(
     trackId: String,
     lyrics: String?,
     loading: Boolean,
