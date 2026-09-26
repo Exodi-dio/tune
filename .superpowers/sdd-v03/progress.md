@@ -31,3 +31,7 @@ shell T1 → queue T1+T2 → queue T3+T4 → shell T2+T3 → shell T4+T5 → (qu
 
 ## Progress
 - Setup: workspace /tmp/opencode/sdd-v03/{shell,queue}; plans fetched; impl/v0.3-player created at 9b2f61f.
+## Branch-name ruling
+- Ruling: refs like impl/v0.3-player/task-N are uncreatable (422) while impl/v0.3-player exists as a branch. All task branches use flat names impl/v0.3-player-<batch>. Cost if wrong: none.
+## Shell Task 1 completion
+- Shell Task 1: complete (commits e44a202..5802758, review clean). Contract signatures verbatim for sibling use.
