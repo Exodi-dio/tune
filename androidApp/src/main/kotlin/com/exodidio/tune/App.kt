@@ -77,6 +77,10 @@ import com.exodidio.tune.ui.components.TrackContextBottomSheet
 import com.exodidio.tune.ui.components.TrackContextBottomSheetRequest
 import com.exodidio.tune.ui.theme.TuneTheme
 import com.exodidio.tune.ui.theme.LocalTuneColors
+import android.app.ActivityManager
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
+import com.exodidio.tune.ui.components.LocalReduceMotion
 import com.exodidio.tune.player.PlaybackState
 
 private enum class EqualizerProfileSheet { Menu, Create, DeleteConfirmation }
@@ -142,10 +146,16 @@ internal fun App(
     val playbackState = playback.state
     val playbackQueue = playback.queue
     TuneTheme(themeMode = uiState.themeMode) {
+        val context = LocalContext.current
+        val isLowRamDevice = remember(context) {
+            (context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager).isLowRamDevice
+        }
+        val reduceMotion = uiState.reduceTransparency || isLowRamDevice
         CompositionLocalProvider(
             com.exodidio.tune.ui.components.LocalMoodRadioMenuActions provides com.exodidio.tune.ui.components.MoodRadioMenuActions(
                 playback.moodRadioEligibleTrackIds, playback.onStartMoodRadio,
             ),
+            LocalReduceMotion provides reduceMotion,
         ) {
         val hazeState = if (uiState.reduceTransparency) null else rememberHazeState()
         val currentStackPage = uiState.stackFor(uiState.selectedDestination).currentStackPage(uiState.selectedDestination)

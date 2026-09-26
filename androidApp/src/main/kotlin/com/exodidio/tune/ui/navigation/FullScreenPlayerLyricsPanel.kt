@@ -65,6 +65,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.exodidio.tune.R
 import com.exodidio.tune.ui.theme.LocalTuneColors
+import com.exodidio.tune.ui.components.LocalReduceMotion
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.awaitCancellation
 import com.exodidio.tune.lyrics.RomanizationUiState
@@ -203,31 +204,46 @@ internal fun FullScreenPlayerLyricsPanel(
 @Composable
 private fun LyricsLoadingState(modifier: Modifier) {
     val colors = LocalTuneColors.current
-    val transition = rememberInfiniteTransition(label = "lyrics-loading")
-    val shimmerOffset by transition.animateFloat(
-        initialValue = -220f,
-        targetValue = 500f,
-        animationSpec = infiniteRepeatable(tween(1_700, easing = LinearEasing), RepeatMode.Restart),
-        label = "lyrics-loading-shimmer",
-    )
-    val shimmer = Brush.linearGradient(
-        colors = listOf(
-            colors.foregroundSubtle.copy(alpha = .08f),
-            colors.foregroundSubtle.copy(alpha = .16f),
-            colors.foregroundSubtle.copy(alpha = .08f),
-        ),
-        start = Offset(shimmerOffset - 220f, 0f),
-        end = Offset(shimmerOffset, 0f),
-    )
-    Column(modifier = modifier.padding(top = 24.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)) {
-        listOf(280.dp, 108.dp, 238.dp, 84.dp, 264.dp).forEach { width ->
-            Box(
-                Modifier
-                    .height(20.dp)
-                    .width(width)
-                    .background(shimmer, RoundedCornerShape(8.dp))
-                    .testTag("lyrics_loading_skeleton"),
-            )
+    val reduceMotion = LocalReduceMotion.current
+    if (reduceMotion) {
+        Column(modifier = modifier.padding(top = 24.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)) {
+            listOf(280.dp, 108.dp, 238.dp, 84.dp, 264.dp).forEach { width ->
+                Box(
+                    Modifier
+                        .height(20.dp)
+                        .width(width)
+                        .background(colors.foregroundSubtle.copy(alpha = .10f), RoundedCornerShape(8.dp))
+                        .testTag("lyrics_loading_skeleton"),
+                )
+            }
+        }
+    } else {
+        val transition = rememberInfiniteTransition(label = "lyrics-loading")
+        val shimmerOffset by transition.animateFloat(
+            initialValue = -220f,
+            targetValue = 500f,
+            animationSpec = infiniteRepeatable(tween(1_700, easing = LinearEasing), RepeatMode.Restart),
+            label = "lyrics-loading-shimmer",
+        )
+        val shimmer = Brush.linearGradient(
+            colors = listOf(
+                colors.foregroundSubtle.copy(alpha = .08f),
+                colors.foregroundSubtle.copy(alpha = .16f),
+                colors.foregroundSubtle.copy(alpha = .08f),
+            ),
+            start = Offset(shimmerOffset - 220f, 0f),
+            end = Offset(shimmerOffset, 0f),
+        )
+        Column(modifier = modifier.padding(top = 24.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)) {
+            listOf(280.dp, 108.dp, 238.dp, 84.dp, 264.dp).forEach { width ->
+                Box(
+                    Modifier
+                        .height(20.dp)
+                        .width(width)
+                        .background(shimmer, RoundedCornerShape(8.dp))
+                        .testTag("lyrics_loading_skeleton"),
+                )
+            }
         }
     }
 }

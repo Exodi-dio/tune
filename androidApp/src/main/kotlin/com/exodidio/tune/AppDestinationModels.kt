@@ -1,5 +1,7 @@
 package com.exodidio.tune
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import com.exodidio.tune.lyrics.RomanizationUiState
 
 import android.net.Uri
@@ -39,12 +41,13 @@ import com.exodidio.tune.ui.screens.LibraryTracksUiState
 import com.exodidio.tune.ui.screens.PlaylistDetailsUiState
 import com.exodidio.tune.ui.screens.TrackSortOption
 
-internal data class HomeDestinationModel(
+// Function-type fields (onTrackClick, orderedTrackIds, onHeroColorChanged, etc.) are treated as stable only under @Immutable; LibraryDetailActions holds a Color callback and stays @Stable. No constructor, default, or call-site change.
+@Immutable internal data class HomeDestinationModel(
     val state: HomeUiState = HomeUiState(),
     val onTrackClick: (List<LibraryTrack>, String) -> Unit = { _, _ -> },
 )
 
-internal data class InsightDestinationModel(
+@Immutable internal data class InsightDestinationModel(
     val state: InsightUiState = InsightUiState(),
     val onLibraryPeriodSelected: (InsightPeriod) -> Unit = {},
     val onListeningPeriodSelected: (InsightPeriod) -> Unit = {},
@@ -52,7 +55,7 @@ internal data class InsightDestinationModel(
     val onTrackClick: (String) -> Unit = {},
 )
 
-internal data class LibraryTracksModel(
+@Immutable internal data class LibraryTracksModel(
     val state: LibraryTracksUiState = LibraryTracksUiState(),
     val onSortOptionSelected: (TrackSortOption) -> Unit = {},
     val onToggleSortOrder: () -> Unit = {},
@@ -62,7 +65,7 @@ internal data class LibraryTracksModel(
     val onRecentTrackClick: (String) -> Unit = {},
 )
 
-internal data class LibraryArtistsModel(
+@Immutable internal data class LibraryArtistsModel(
     val state: LibraryArtistsUiState = LibraryArtistsUiState(),
     val onSortOptionSelected: (ArtistSortOption) -> Unit = {},
     val onToggleSortOrder: () -> Unit = {},
@@ -73,7 +76,7 @@ internal data class LibraryArtistsModel(
     val orderedTrackIds: (String) -> List<String> = { emptyList() },
 )
 
-internal data class LibraryAlbumsModel(
+@Immutable internal data class LibraryAlbumsModel(
     val state: LibraryAlbumsUiState = LibraryAlbumsUiState(),
     val onSortOptionSelected: (AlbumSortOption) -> Unit = {},
     val onToggleSortOrder: () -> Unit = {},
@@ -87,7 +90,7 @@ internal data class LibraryAlbumsModel(
     val onAddToFavorites: (List<String>) -> Unit = {},
 )
 
-internal data class LibraryGenresModel(
+@Immutable internal data class LibraryGenresModel(
     val state: LibraryGenresUiState = LibraryGenresUiState(),
     val onSortOptionSelected: (GenreSortOption) -> Unit = {},
     val onToggleSortOrder: () -> Unit = {},
@@ -98,7 +101,7 @@ internal data class LibraryGenresModel(
     val orderedTrackIds: (String) -> List<String> = { emptyList() },
 )
 
-internal data class LibraryComposersModel(
+@Immutable internal data class LibraryComposersModel(
     val state: LibraryComposersUiState = LibraryComposersUiState(),
     val onSortOptionSelected: (ComposerSortOption) -> Unit = {},
     val onToggleSortOrder: () -> Unit = {},
@@ -109,7 +112,7 @@ internal data class LibraryComposersModel(
     val orderedTrackIds: (String) -> List<String> = { emptyList() },
 )
 
-internal data class LibraryPlaylistsModel(
+@Immutable internal data class LibraryPlaylistsModel(
     val state: LibraryPlaylistsUiState = LibraryPlaylistsUiState(),
     val availablePlaylists: List<LibraryPlaylist> = emptyList(),
     val onPlay: (String, Boolean) -> Unit = { _, _ -> },
@@ -125,13 +128,13 @@ internal data class LibraryPlaylistsModel(
     val onMembershipChange: (String, List<String>, Boolean) -> Unit = { _, _, _ -> },
 )
 
-internal data class LibrarySearchModel(
+@Immutable internal data class LibrarySearchModel(
     val state: LibrarySearchUiState = LibrarySearchUiState(),
     val onQueryChange: (String) -> Unit = {},
     val onTrackClick: (String) -> Unit = {},
 )
 
-internal data class LibraryDetailActions(
+@Stable internal data class LibraryDetailActions(
     val albums: AlbumDetailsUiState = AlbumDetailsUiState(),
     val playlists: PlaylistDetailsUiState = PlaylistDetailsUiState(),
     val artists: ArtistDetailsUiState = ArtistDetailsUiState(),
@@ -140,7 +143,7 @@ internal data class LibraryDetailActions(
     val onHeroColorChanged: (Color) -> Unit = {},
 )
 
-internal data class LibraryDestinationModel(
+@Immutable internal data class LibraryDestinationModel(
     val tracks: LibraryTracksModel = LibraryTracksModel(),
     val artists: LibraryArtistsModel = LibraryArtistsModel(),
     val albums: LibraryAlbumsModel = LibraryAlbumsModel(),
@@ -151,7 +154,7 @@ internal data class LibraryDestinationModel(
     val details: LibraryDetailActions = LibraryDetailActions(),
 )
 
-internal data class SettingsDestinationModel(
+@Immutable internal data class SettingsDestinationModel(
     val lastFmStatus: LastFmStatus = LastFmStatus(),
     val onLastFmConnect: () -> Unit = {},
     val onLastFmDisconnect: () -> Unit = {},
@@ -179,14 +182,14 @@ internal data class SettingsDestinationModel(
     val onEqualizerProfileDelete: (String) -> Unit = {},
 )
 
-internal data class AppDestinationModels(
+@Immutable internal data class AppDestinationModels(
     val home: HomeDestinationModel = HomeDestinationModel(),
     val insight: InsightDestinationModel = InsightDestinationModel(),
     val library: LibraryDestinationModel = LibraryDestinationModel(),
     val settings: SettingsDestinationModel = SettingsDestinationModel(),
 )
 
-internal data class PlaybackModel(
+@Immutable internal data class PlaybackModel(
     val state: PlaybackState = PlaybackState.Idle,
     val queue: PlaybackQueueSnapshot = PlaybackQueueSnapshot(),
     val queueTracks: List<LibraryTrack> = emptyList(),

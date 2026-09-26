@@ -43,6 +43,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.exodidio.tune.ui.theme.LocalTuneColors
 
+internal data class HeroBackdropStyle(val topAlpha: Float, val scrimAlpha: Float, val animate: Boolean)
+
+internal fun heroBackdropColors(reduceTransparency: Boolean): HeroBackdropStyle =
+    if (reduceTransparency) HeroBackdropStyle(topAlpha = 1f, scrimAlpha = 0f, animate = false)
+    else HeroBackdropStyle(topAlpha = 0.52f, scrimAlpha = 0.28f, animate = true)
+
 enum class DetailHeroArtworkShape { Square, Circle }
 
 /** Artwork-derived hero backdrop that fades into the active theme background. */
@@ -51,6 +57,7 @@ fun ArtworkHeroBackdrop(
     artworkPath: String?,
     modifier: Modifier = Modifier,
     onDominantColorChanged: (Color) -> Unit = {},
+    reduceTransparency: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colors = LocalTuneColors.current
@@ -60,18 +67,21 @@ fun ArtworkHeroBackdrop(
         dominant = bitmap?.let { image -> withContext(Dispatchers.Default) { artworkDominantColor(image) } } ?: colors.background
         onDominantColorChanged(dominant)
     }
-    val animatedDominant by animateColorAsState(dominant, tween(280, easing = FastOutSlowInEasing), label = "detail-hero-artwork-colour")
+    val style = heroBackdropColors(reduceTransparency)
     Box(modifier = modifier.background(colors.background)) {
-        Box(
-            Modifier.matchParentSize().background(
-                Brush.verticalGradient(
-                    0f to animatedDominant.copy(alpha = 0.52f),
-                    0.68f to colors.background.copy(alpha = 0.10f),
-                    1f to colors.background,
+        if (!reduceTransparency) {
+            val animatedDominant by animateColorAsState(dominant, tween(280, easing = FastOutSlowInEasing), label = "detail-hero-artwork-colour")
+            Box(
+                Modifier.matchParentSize().background(
+                    Brush.verticalGradient(
+                        0f to animatedDominant.copy(alpha = style.topAlpha),
+                        0.68f to colors.background.copy(alpha = 0.10f),
+                        1f to colors.background,
+                    ),
                 ),
-            ),
-        )
-        Box(Modifier.matchParentSize().background(colors.background.copy(alpha = 0.28f)))
+            )
+            Box(Modifier.matchParentSize().background(colors.background.copy(alpha = style.scrimAlpha)))
+        }
         content()
     }
 }
@@ -110,6 +120,7 @@ fun DetailHero(
     onMoreClick: () -> Unit = {},
     moreSymbol: String = MaterialSymbols.MoreVert,
     moreAction: @Composable (@Composable () -> Unit) -> Unit = { it() },
+    reduceTransparency: Boolean = false,
 ) {
     val colors = LocalTuneColors.current
     val bitmap = rememberArtworkThumbnail(artworkPath, targetPx = 480)
@@ -143,7 +154,7 @@ fun DetailHero(
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            DetailHeroGlassAction(MaterialSymbols.Shuffle, shuffleLabel, onShuffleClick)
+            DetailHeroGlassAction(MaterialSymbols.Shuffle, shuffleLabel, onShuffleClick, reduceTransparency)
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(28.dp))
@@ -157,13 +168,13 @@ fun DetailHero(
                     Text(playLabel, style = MaterialTheme.typography.labelLarge, color = colors.background)
                 }
             }
-            moreAction { DetailHeroGlassAction(moreSymbol, moreLabel, onMoreClick) }
+            moreAction { DetailHeroGlassAction(moreSymbol, moreLabel, onMoreClick, reduceTransparency) }
         }
     }
 }
 
 @Composable
-private fun DetailHeroGlassAction(symbol: String, label: String, onClick: () -> Unit) {
+private fun DetailHeroGlassAction(symbol: String, label: String, onClick: () -> Unit, reduceTransparency: Boolean = false) {
     val colors = LocalTuneColors.current
     Box(
         modifier = Modifier
@@ -174,7 +185,7 @@ private fun DetailHeroGlassAction(symbol: String, label: String, onClick: () -> 
         contentAlignment = Alignment.Center,
     ) {
         Box(
-            modifier = Modifier.size(40.dp).clip(CircleShape).background(colors.glassElevated).border(1.dp, colors.borderGlass, CircleShape),
+            modifier = Modifier.size(40.dp).clip(CircleShape).background(if (reduceTransparency) colors.glassOpaque else colors.glassElevated).border(1.dp, colors.borderGlass, CircleShape),
             contentAlignment = Alignment.Center,
         ) { MaterialSymbol(symbol, null, size = 20.dp, tint = colors.textMain, filled = true) }
     }
