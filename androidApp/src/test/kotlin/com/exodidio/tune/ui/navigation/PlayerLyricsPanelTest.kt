@@ -37,4 +37,14 @@ class PlayerLyricsPanelTest {
         assertEquals(true, shouldResetLyricsForReplay(previousPositionMs = 84_000L, currentPositionMs = 0L))
         assertEquals(72_000L, displayedLyricsPositionMs(playbackPositionMs = 12_000L, pendingSeekPositionMs = 72_000L))
     }
+
+    // F1: toggle presence mirrors the deleted panel (allowed + current + supported).
+    @Test
+    fun romanizationToggleShowsOnlyWhenAllowedCurrentAndSupported() {
+        assertEquals(true, shouldShowRomanizationToggle(romanizationAllowed = true, current = true, supported = true))
+        assertEquals(false, shouldShowRomanizationToggle(romanizationAllowed = false, current = true, supported = true))
+        assertEquals(false, shouldShowRomanizationToggle(romanizationAllowed = true, current = false, supported = true))
+        assertEquals(false, shouldShowRomanizationToggle(romanizationAllowed = true, current = true, supported = false))
+    }
 }
+

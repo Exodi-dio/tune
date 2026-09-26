@@ -136,17 +136,21 @@ internal fun PlayerQueueSectionPanel(
     onTrackContextBottomSheet: (TrackContextBottomSheetRequest) -> Unit = {},
     moodRadioEligibleTrackIds: Set<String> = emptySet(),
     onStartMoodRadio: (String) -> Unit = {},
+    // F2: real autoplay-id set threaded from the mount (splitQueue already
+    // supports it). Empty by default; the mount gates the header off when the
+    // live set is unavailable (enabled=false + empty => hidden via helper).
+    autoplayTrackIds: Set<String> = emptySet(),
     modifier: Modifier = Modifier
 ) {
     val colors = LocalTuneColors.current
     val listState = rememberLazyListState()
     val tracksById = remember(tracks) { tracks.associateBy(LibraryTrack::id) }
-    val sections = remember(queue.activeTrackIds, queue.currentIndex) {
+    val sections = remember(queue.activeTrackIds, queue.currentIndex, autoplayTrackIds) {
         splitQueue(
             activeTrackIds = queue.activeTrackIds,
             currentIndex = queue.currentIndex,
             userIds = queue.activeTrackIds.drop((queue.currentIndex + 1).coerceAtLeast(0)).toSet(),
-            autoplayIds = emptySet()
+            autoplayIds = autoplayTrackIds
         )
     }
     // Reset to the top when the track changes; the panel owns no drag state so
@@ -229,7 +233,8 @@ internal fun PlayerQueueSectionPanel(
                     QueueSectionHeader(title = "Next in queue", modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
                 }
                 // Clear-next keeps now-playing + autoplay tail (append-only invariant);
-                // autoplayIds are empty in this panel today, so this drops user/context upcoming.
+                // F4: single path via onClearNext only (the mount maps it to
+                // onReorder); calling both would double-dispatch.
                 item(key = "clear-next") {
                     Text(
                         text = stringResource(R.string.player_queue_clear_next),
@@ -244,7 +249,6 @@ internal fun PlayerQueueSectionPanel(
                                     sections.autoplayIds.toSet()
                                 )
                                 onClearNext(cleared)
-                                onReorder(cleared)
                             }
                     )
                 }
@@ -296,9 +300,33 @@ internal fun PlayerQueueSectionPanel(
                     )
                 }
             }
+            // F2: header shows if enabled OR non-empty (existing helper);
+            // gated off when the live set is unavailable (empty + disabled).
+            // Autoplay rows populate from the threaded set (splitQueue).
             if (shouldShowAutoplayHeader(sections.autoplayIds, autoplayEnabled)) {
                 item(key = "autoplay-heading") {
                     QueueSectionHeader(title = "Autoplay", modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp))
+                }
+                items(sections.autoplayIds, key = { "auto-$it" }) { id ->
+                    QueueSectionRow(
+                        trackId = id,
+                        title = tracksById[id]?.title ?: "Unavailable track",
+                        artist = tracksById[id]?.artists ?: "",
+                        track = tracksById[id],
+                        isCurrent = id == currentTrackId,
+                        isPlaying = isPlaying,
+                        queue = queue,
+                        onTrackPlayNext = onTrackPlayNext,
+                        onTrackRemoved = onTrackRemoved,
+                        onFavoriteToggle = onFavoriteToggle,
+                        onTrackGoToAlbum = onTrackGoToAlbum,
+                        onTrackGoToArtist = onTrackGoToArtist,
+                        onTrackContextBottomSheet = onTrackContextBottomSheet,
+                        moodRadioEligibleTrackIds = moodRadioEligibleTrackIds,
+                        onStartMoodRadio = onStartMoodRadio,
+                        onClick = { onTrackSelected(id) },
+                        onRemove = { onTrackRemoved(id) }
+                    )
                 }
             }
         }
@@ -488,3 +516,4 @@ internal fun shouldOpenQueueTrackContextMenu(
     rowWidthPx: Int,
     dragHandleWidthPx: Float,
 ): Boolean = longPressX < rowWidthPx - dragHandleWidthPx
+

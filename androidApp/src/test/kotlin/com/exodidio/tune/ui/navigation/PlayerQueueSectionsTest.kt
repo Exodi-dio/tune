@@ -56,6 +56,13 @@ class PlayerQueueSectionsTest {
         assertFalse(shouldShowAutoplayHeader(emptyList(), autoplayEnabled = false))
     }
 
+    // F2: when the live autoplay-id set is unavailable the mount gates the
+    // header off (empty + disabled => hidden) instead of showing an empty header.
+    @Test
+    fun autoplayHeaderGatedOffWhenLiveSetUnavailable() {
+        assertFalse(shouldShowAutoplayHeader(emptyList(), autoplayEnabled = false))
+    }
+
     @Test
     fun outOfRangeCurrentIndexYieldsEmptySections() {
         val sections = splitQueue(
@@ -68,3 +75,4 @@ class PlayerQueueSectionsTest {
         assertEquals(emptyList<String>(), sections.userIds)
     }
 }
+

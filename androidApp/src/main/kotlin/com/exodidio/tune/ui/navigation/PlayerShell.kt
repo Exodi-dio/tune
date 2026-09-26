@@ -60,7 +60,11 @@ internal fun PlayerShellDragHandle() {
  * [onRepeatModeChange] are wired to the queue header shuffle/repeat toggles
  * (old FullScreenQueuePanel location); [isPlaying] drives the current-row
  * playing indicator; the track menu callbacks restore the old queue
- * play-next/favorite/go-to/bottom-sheet entry points. No dead params remain;
+ * play-next/favorite/go-to/bottom-sheet entry points. F2: the real autoplay-id
+ * set threads via [autoplayTrackIds] into splitQueue (header shows if enabled
+ * OR non-empty via the existing helper); when the live set is unavailable the
+ * header gates off ([autoplayEnabled]=false + empty). F4: clear-next uses the
+ * single onClearNext path (mapped to onReorder here). No dead params remain;
  * the mount stays `internal` like the lyrics mount.
  */
 @Composable
@@ -81,12 +85,14 @@ internal fun PlayerShellQueueMount(
     onTrackContextBottomSheet: (TrackContextBottomSheetRequest) -> Unit = {},
     moodRadioEligibleTrackIds: Set<String> = emptySet(),
     onStartMoodRadio: (String) -> Unit = {},
+    autoplayTrackIds: Set<String> = emptySet(),
+    autoplayEnabled: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     PlayerQueueSectionPanel(
         queue = queue,
         tracks = tracks,
-        autoplayEnabled = true,
+        autoplayEnabled = autoplayEnabled,
         currentTrackId = currentTrackId,
         isPlaying = isPlaying,
         onTrackSelected = onTrackSelected,
@@ -102,6 +108,7 @@ internal fun PlayerShellQueueMount(
         onTrackContextBottomSheet = onTrackContextBottomSheet,
         moodRadioEligibleTrackIds = moodRadioEligibleTrackIds,
         onStartMoodRadio = onStartMoodRadio,
+        autoplayTrackIds = autoplayTrackIds,
         modifier = modifier,
     )
 }
@@ -219,3 +226,4 @@ fun PlayerShell(
         }
     }
 }
+
