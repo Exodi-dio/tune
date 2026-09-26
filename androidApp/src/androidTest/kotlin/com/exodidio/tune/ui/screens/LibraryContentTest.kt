@@ -1,5 +1,6 @@
 package com.exodidio.tune.ui.screens
 
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -22,13 +23,14 @@ class LibraryContentTest {
     val composeTestRule = createComposeRule()
 
     @Test
-    fun libraryContentDisplaysActionListItems() {
+    fun libraryContentDisplaysBrowseOnlyActionListItems() {
         var searchClicked = false
         var artistsClicked = false
         var albumsClicked = false
         var tracksClicked = false
         var genresClicked = false
         var composersClicked = false
+        var playlistsClicked = false
 
         composeTestRule.setContent {
             TuneTheme(themeMode = ThemeMode.Dark) {
@@ -39,11 +41,14 @@ class LibraryContentTest {
                     onTracksSelected = { tracksClicked = true },
                     onGenresSelected = { genresClicked = true },
                     onComposersSelected = { composersClicked = true },
+                    onPlaylistsSelected = { playlistsClicked = true },
                 )
             }
         }
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+        composeTestRule.onNodeWithText(context.getString(R.string.library_scan_local)).assertDoesNotExist()
 
         composeTestRule.onNodeWithText(context.getString(R.string.library_search)).assertIsDisplayed().performClick()
         assertTrue(searchClicked)
@@ -62,6 +67,9 @@ class LibraryContentTest {
 
         composeTestRule.onNodeWithText(context.getString(R.string.library_composers)).assertIsDisplayed().performClick()
         assertTrue(composersClicked)
+
+        composeTestRule.onNodeWithText(context.getString(R.string.library_playlists)).assertIsDisplayed().performClick()
+        assertTrue(playlistsClicked)
     }
 
     @Test
