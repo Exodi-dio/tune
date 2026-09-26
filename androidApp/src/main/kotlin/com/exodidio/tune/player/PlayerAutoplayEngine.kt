@@ -68,3 +68,21 @@ private fun genreTokens(track: LibraryTrack): Set<String> {
     obj["raw_genre_names"]?.let { (it as? JsonArray)?.forEach { v -> (v as? JsonPrimitive)?.content?.let(names::add) } }
     return names.map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet()
 }
+
+/**
+ * Final shell autoplay trigger (W4): refills from the picker when the upcoming
+ * tail runs low. The host appends the returned ids via the existing
+ * queue.append path only — never reorder/remove. Already-queued ids are
+ * excluded so refills terminate once the library is exhausted.
+ */
+fun autoplayRefillIds(
+    snapshot: PlaybackQueueSnapshot,
+    library: List<LibraryTrack>,
+    currentTrack: LibraryTrack?,
+    autoplayEnabled: Boolean = true,
+): List<String> {
+    if (currentTrack == null) return emptyList()
+    val upcomingCount = snapshot.activeTrackIds.size - snapshot.currentIndex - 1
+    if (!shouldRefillAutoplay(upcomingCount = upcomingCount, repeatMode = snapshot.repeatMode, autoplayEnabled = autoplayEnabled)) return emptyList()
+    return pickAutoplay(library = library, currentTrack = currentTrack, recentIds = snapshot.activeTrackIds.toSet(), limit = MaxOfflineAutoplay)
+}

@@ -44,6 +44,8 @@ import com.exodidio.tune.player.AndroidPlaybackRuntime
 import com.exodidio.tune.player.AndroidPlaybackSession
 import com.exodidio.tune.player.PlaybackService
 import com.exodidio.tune.player.PlaybackState
+import com.exodidio.tune.player.autoplayRefillIds
+import com.exodidio.tune.settings.PlayerPreferences
 import com.exodidio.tune.lastfm.AndroidLastFmRuntime
 import com.exodidio.tune.lastfm.LastFmService
 import com.exodidio.tune.lastfm.isLastFmAuthCallback
@@ -188,6 +190,8 @@ class MainActivity : ComponentActivity() {
                 initialValue = com.exodidio.tune.player.CrossfadeSettings(0, 4, true),
             )
             val showFullscreenQualityBadge by playbackPreferences.showFullscreenQualityBadge.collectAsStateWithLifecycle(initialValue = true)
+            val playerPreferences = remember { PlayerPreferences(applicationContext) }
+            val fullBleedArtwork by playerPreferences.fullBleedArtwork.collectAsStateWithLifecycle(initialValue = true)
             val normalizationSettings by normalizationPreferences.settings.collectAsStateWithLifecycle(
                 initialValue = com.exodidio.tune.player.NormalizationSettings(),
             )
@@ -206,6 +210,15 @@ class MainActivity : ComponentActivity() {
             val playbackState by playbackController.state.collectAsStateWithLifecycle()
             val playbackQueue by playbackController.queue.collectAsStateWithLifecycle()
             val moodRadioActive by playbackController.moodRadioActive.collectAsStateWithLifecycle()
+            val autoplayCurrentTrack = remember(playbackQueue, allTracks) {
+                playbackQueue.currentTrackId?.let { id -> allTracks.firstOrNull { it.id == id } }
+            }
+            val autoplayAppendIds = remember(playbackQueue, allTracks, autoplayCurrentTrack, moodRadioActive) {
+                autoplayRefillIds(playbackQueue, allTracks, autoplayCurrentTrack, autoplayEnabled = !moodRadioActive)
+            }
+            LaunchedEffect(autoplayAppendIds) {
+                if (autoplayAppendIds.isNotEmpty()) playbackController.append(autoplayAppendIds)
+            }
             val artworkCrossfade by playbackController.artworkCrossfade.collectAsStateWithLifecycle()
             val lyricsTrackId = when (val state = playbackState) {
                 is PlaybackState.Preparing -> state.item.trackId
@@ -387,6 +400,8 @@ class MainActivity : ComponentActivity() {
                     onBlendArtworkDuringCrossfadeChanged = playbackController::setBlendArtworkDuringCrossfade,
                     showFullscreenQualityBadge = showFullscreenQualityBadge,
                     onShowFullscreenQualityBadgeChanged = { enabled -> preferenceScope.launch { playbackPreferences.setShowFullscreenQualityBadge(enabled) } },
+                    fullBleedArtwork = fullBleedArtwork,
+                    onFullBleedArtworkChanged = { enabled -> preferenceScope.launch { playerPreferences.setFullBleedArtwork(enabled) } },
                     normalizationAvailable = normalizationAvailable,
                     normalization = normalizationSettings,
                     onNormalizationChanged = { settings -> preferenceScope.launch { normalizationPreferences.update { settings } } },
@@ -417,6 +432,7 @@ class MainActivity : ComponentActivity() {
                 artworkCrossfade = artworkCrossfade,
                 blendArtworkDuringCrossfade = crossfadeSettings.blendArtworkDuringCrossfade,
                 showFullscreenQualityBadge = showFullscreenQualityBadge,
+                fullBleedArtwork = fullBleedArtwork,
                 systemVolume = systemMusicVolumeState,
                 onPrevious = playbackController::previous,
                 onPlayPause = {

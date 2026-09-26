@@ -204,6 +204,7 @@ import com.exodidio.tune.ui.screens.TrackSortOption
     val artworkCrossfade: ArtworkCrossfadeTransition? = null,
     val blendArtworkDuringCrossfade: Boolean = true,
     val showFullscreenQualityBadge: Boolean = true,
+    val fullBleedArtwork: Boolean = true,
     val systemVolume: Float = 0f,
     val onPrevious: () -> Unit = {},
     val onPlayPause: () -> Unit = {},

@@ -55,7 +55,7 @@ import com.exodidio.tune.ui.navigation.ContentScrollDirection
 import com.exodidio.tune.ui.navigation.FloatingNavigationBottomMargin
 import com.exodidio.tune.ui.navigation.FloatingNavigationContentGap
 import com.exodidio.tune.ui.navigation.FloatingNavigationHeight
-import com.exodidio.tune.ui.navigation.FullScreenPlayer
+import com.exodidio.tune.ui.navigation.PlayerShellHost
 import com.exodidio.tune.ui.navigation.MiniPlayerHeight
 import com.exodidio.tune.ui.navigation.MiniPlayerNavigationGap
 import com.exodidio.tune.ui.navigation.NavigationChrome
@@ -206,7 +206,6 @@ internal fun App(
         var isFullScreenPlayerOpeningFromSwipe by remember { mutableStateOf(false) }
         var fullScreenPlayerDragProgress by remember { mutableFloatStateOf(0f) }
         var isFullScreenPlayerDragging by remember { mutableStateOf(false) }
-        var pendingFullScreenPlayerAction by remember { mutableStateOf<(() -> Unit)?>(null) }
         var trackContextSheet by remember { mutableStateOf<TrackContextBottomSheetRequest?>(null) }
         var equalizerProfileSheet by remember { mutableStateOf<EqualizerProfileSheet?>(null) }
         var isNavigationCompact by remember { mutableStateOf(false) }
@@ -220,17 +219,6 @@ internal fun App(
             // the panel. Deferring this callback to LaunchedEffect can leave it
             // stale until an unrelated playback-state recomposition occurs.
             onFullScreenPlayerVisibilityChanged(visible)
-        }
-        fun closeFullScreenPlayerThen(action: () -> Unit) {
-            if (!isFullScreenPlayerVisible) {
-                action()
-                return
-            }
-            pendingFullScreenPlayerAction = action
-            setFullScreenPlayerVisible(false)
-            isFullScreenPlayerOpeningFromSwipe = false
-            isFullScreenPlayerDragging = false
-            fullScreenPlayerDragProgress = 0f
         }
         LaunchedEffect(showsMiniPlayer) {
             if (!showsMiniPlayer) {
@@ -596,55 +584,13 @@ internal fun App(
                 currentPlayingTrack?.metadataObject()
             }
             val isCurrentFavorite = remember(currentPlayingMetadata) { isFavoriteOf(currentPlayingMetadata) }
-            FullScreenPlayer(
+            PlayerShellHost(
                 visible = isFullScreenPlayerVisible,
-                dragProgress = fullScreenPlayerDragProgress,
-                isDragging = isFullScreenPlayerDragging,
-                openingFromMiniPlayerSwipe = isFullScreenPlayerOpeningFromSwipe,
-                playbackState = playbackState,
-                queue = playbackQueue,
-                queueTracks = playback.queueTracks,
-                lyrics = playback.lyrics,
-                lyricsLoading = playback.lyricsLoading,
-                romanization = playback.romanization,
-                romanizationAllowed = playback.romanizationAllowed,
-                onRomanizationInput = playback.onRomanizationInput,
-                onRomanizationToggle = playback.onRomanizationToggle,
-                artworkCrossfade = playback.artworkCrossfade,
-                blendArtworkDuringCrossfade = playback.blendArtworkDuringCrossfade,
-                showQualityBadge = playback.showFullscreenQualityBadge,
-                volume = playback.systemVolume,
-                onSeek = playback.onSeek,
-                onVolumeChange = playback.onSystemVolumeChange,
-                onPrevious = playback.onPrevious,
-                onPlayPause = playback.onPlayPause,
-                onNext = playback.onNext,
-                onQueueTrackSelected = playback.onQueueTrackSelected,
-                onQueueReordered = playback.onQueueReordered,
-                onQueueTrackRemoved = playback.onQueueTrackRemoved,
-                onShuffleChange = playback.onShuffleChange,
-                onRepeatModeChange = playback.onRepeatModeChange,
-                moodRadioEligibleTrackIds = playback.moodRadioEligibleTrackIds,
-                onStartMoodRadio = playback.onStartMoodRadio,
-                moodRadioActive = playback.moodRadioActive,
+                playback = playback,
                 isFavorite = isCurrentFavorite,
-                onFavoriteToggle = playback.onFavoriteToggle,
-                onTrackPlayNext = playback.onTrackPlayNext,
-                onTrackAddToQueue = playback.onTrackAddToQueue,
-                onTrackGoToAlbum = { albumId -> onIntent(AppIntent.OpenAlbumDetails(albumId)) },
-                onTrackGoToArtist = { artistId -> onIntent(AppIntent.OpenArtistDetails(artistId)) },
-                onTrackContextBottomSheet = { request -> trackContextSheet = request },
-                onCloseFullscreenThen = ::closeFullScreenPlayerThen,
-                onOpenMediaOutputSwitcher = playback.onOpenMediaOutputSwitcher,
                 onDismiss = {
                     setFullScreenPlayerVisible(false)
                     isFullScreenPlayerOpeningFromSwipe = false
-                },
-                onDismissAnimationFinished = {
-                    pendingFullScreenPlayerAction?.let { action ->
-                        pendingFullScreenPlayerAction = null
-                        action()
-                    }
                 },
                 hazeState = hazeState,
             )
@@ -668,10 +614,6 @@ internal fun App(
                 )
             }
             }
-        }
-        BackHandler(enabled = isFullScreenPlayerVisible) {
-            setFullScreenPlayerVisible(false)
-            isFullScreenPlayerOpeningFromSwipe = false
         }
         }
     }

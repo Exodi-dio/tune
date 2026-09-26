@@ -38,6 +38,8 @@ import com.exodidio.tune.player.normalizeEqGain
 internal fun PlaybackSettingsContent(
     showFullscreenQualityBadge: Boolean,
     onShowFullscreenQualityBadgeChanged: (Boolean) -> Unit,
+    fullBleedArtwork: Boolean,
+    onFullBleedArtworkChanged: (Boolean) -> Unit,
     onSongTransitionSelected: () -> Unit,
     onVolumeNormalizationSelected: () -> Unit,
     onEqualizerSelected: () -> Unit,
@@ -67,6 +69,16 @@ internal fun PlaybackSettingsContent(
                         )
                     },
                     onClick = { onShowFullscreenQualityBadgeChanged(!showFullscreenQualityBadge) },
+                ),
+                ActionListItem(
+                    labelRes = R.string.playback_full_bleed_artwork,
+                    trailingContent = {
+                        Switch(
+                            checked = fullBleedArtwork,
+                            onCheckedChange = onFullBleedArtworkChanged,
+                        )
+                    },
+                    onClick = { onFullBleedArtworkChanged(!fullBleedArtwork) },
                 ),
             ),
             containerStyle = ActionListContainerStyle.Card,

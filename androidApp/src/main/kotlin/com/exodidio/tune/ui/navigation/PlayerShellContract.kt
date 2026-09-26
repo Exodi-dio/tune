@@ -11,6 +11,10 @@ internal const val PlayerShellTabletMinWidthDp = 700
 
 enum class PlayerShellPanel { LYRICS, QUEUE }
 
+// Relocated verbatim from the deleted FullScreenPlayerControls.kt: the shell
+// contract keeps bridging to the legacy panel names.
+internal enum class FullScreenPlayerPanel { Lyrics, Queue }
+
 typealias OnPlayerShellPanelSelected = (PlayerShellPanel?) -> Unit
 
 internal fun PlayerShellPanel.toLegacy(): FullScreenPlayerPanel = when (this) {

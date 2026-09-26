@@ -172,3 +172,72 @@ internal fun PlayerLyricsPanel(
         }
     }
 }
+
+// Relocated from the deleted FullScreenPlayerLyricsPanel.kt: lyric parsing,
+// seek/follow/browse policy, and active-line blur — pinned by
+// PlayerLyricsParserTest / PlayerLyricsPanelTest / PlayerShellSeekLyricsSyncTest.
+internal data class PlayerLyricLine(
+    val primary: String,
+    val secondary: String? = null,
+    val timestampSeconds: Float? = null,
+)
+
+private val TimestampedLyricLine = Regex("^\\[(\\d+):(\\d+(?:\\.\\d+)?)\\](.*)$")
+private val BilingualSeparator = Regex("\\s*\\^\\s*|\\s*/\\s*")
+
+internal enum class LyricsSeekDirection { Backward, Forward }
+
+internal fun lyricsSeekDirection(targetIndex: Int, firstVisibleIndex: Int): LyricsSeekDirection =
+    if (targetIndex < firstVisibleIndex) LyricsSeekDirection.Backward else LyricsSeekDirection.Forward
+
+internal fun parsePlayerLyrics(content: String): List<PlayerLyricLine> = content.lineSequence()
+    .mapNotNull { rawLine ->
+        val match = TimestampedLyricLine.matchEntire(rawLine)
+        val timestamp = match?.let { it.groupValues[1].toFloat() * 60f + it.groupValues[2].toFloat() }
+        val text = match?.groupValues?.get(3) ?: rawLine
+        text.trim().takeIf(String::isNotEmpty)?.let { parsePlayerLyricText(it, timestamp) }
+    }
+    .toList()
+
+internal fun hasSyncedPlayerLyrics(content: String?): Boolean = content != null && parsePlayerLyrics(content).any { it.timestampSeconds != null }
+
+/** Resume automatic following once playback reaches the tapped lyric or passes it. */
+internal fun shouldResumeLyricsAutoScroll(
+    selectedLineIndex: Int?,
+    activeIndex: Int,
+    activeIndexWhenLineSelected: Int?,
+    selectedLineAnimationComplete: Boolean,
+): Boolean = selectedLineAnimationComplete && selectedLineIndex != null &&
+    activeIndex >= selectedLineIndex && activeIndex != activeIndexWhenLineSelected
+
+/** The active line may advance beyond the visible viewport while the app is backgrounded. */
+internal fun shouldFollowLyricsActiveLine(previousActiveLineInViewport: Boolean, returnedToForeground: Boolean): Boolean =
+    previousActiveLineInViewport || returnedToForeground
+
+/** A repeat/replay restarts the same track near zero without changing its track ID. */
+internal fun shouldResetLyricsForReplay(previousPositionMs: Long, currentPositionMs: Long): Boolean =
+    previousPositionMs > 1_000L && currentPositionMs <= 1_000L
+
+/** Prefer a slider's requested position until playback confirms the seek. */
+internal fun displayedLyricsPositionMs(playbackPositionMs: Long, pendingSeekPositionMs: Long?): Long =
+    pendingSeekPositionMs ?: playbackPositionMs
+
+/** Programmatic lyric positioning must not be interpreted as manual browsing. */
+internal fun shouldEnterLyricsBrowseMode(isUserDragging: Boolean, isFollowingSelectedLine: Boolean = false): Boolean =
+    isUserDragging && !isFollowingSelectedLine
+
+/** Small finger drift on a lyric row is still a seek, not a manual browse. */
+internal fun shouldSeekFromLyricTap(dragDistancePx: Float, tapSlopPx: Float): Boolean = dragDistancePx <= tapSlopPx
+
+internal fun syncedLyricBlurRadius(distance: Int) = when (distance) {
+    0 -> 0.dp
+    1 -> 0.35.dp
+    2 -> 1.25.dp
+    else -> 2.dp
+}
+
+private fun parsePlayerLyricText(text: String, timestampSeconds: Float?): PlayerLyricLine {
+    val parts = BilingualSeparator.split(text, limit = 2)
+    val secondary = parts.getOrNull(1)?.trim()?.takeIf(String::isNotEmpty)
+    return PlayerLyricLine(primary = parts.first().trim(), secondary = secondary, timestampSeconds = timestampSeconds)
+}

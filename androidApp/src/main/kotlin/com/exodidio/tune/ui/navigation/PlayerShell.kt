@@ -12,11 +12,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -24,18 +27,36 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.unit.dp
 import com.exodidio.tune.R
+import com.exodidio.tune.lyrics.RomanizationUiState
 import com.exodidio.tune.player.PlaybackQueueSnapshot
 import com.exodidio.tune.player.RepeatMode
 import com.exodidio.tune.sync.LibraryTrack
 import com.exodidio.tune.ui.theme.LocalTuneColors
+import dev.chrisbanes.haze.HazeState
 
 internal const val PlayerShellDismissStripTestTag = "player_shell_dismiss_strip"
 internal const val PlayerShellContentTestTag = "player_shell_content"
 
+private val PlayerShellDragHandleShape = RoundedCornerShape(2.dp)
+private const val PlayerShellDragHandleTestTag = "player_shell_drag_handle"
+
+// Relocated verbatim from the deleted FullScreenPlayerGestures.kt: the shell
+// dismiss strip keeps the same handle pill.
+@Composable
+internal fun PlayerShellDragHandle() {
+    val colors = LocalTuneColors.current
+    Box(Modifier.fillMaxWidth().height(4.dp), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier.width(48.dp).height(4.dp).semantics { testTag = PlayerShellDragHandleTestTag }
+                .clip(PlayerShellDragHandleShape).background(colors.foregroundSubtle),
+        )
+    }
+}
+
 /**
- * Task 1 queue mount: renders the current queue inside the shell. Delegates to
- * the existing FullScreenQueuePanel until the sibling queue plan replaces the
- * section content; the signature below is the contract the sibling consumes.
+ * Final queue mount: renders the sectioned queue inside the shell. Backed by
+ * PlayerQueueSectionPanel (Tasks 1/3/4); shuffle/repeat callbacks stay in the
+ * contract for stability while the section panel owns no toggles.
  */
 @Composable
 fun PlayerShellQueueMount(
@@ -50,25 +71,23 @@ fun PlayerShellQueueMount(
     onRepeatModeChange: (RepeatMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    FullScreenQueuePanel(
+    PlayerQueueSectionPanel(
         queue = queue,
         tracks = tracks,
+        autoplayEnabled = true,
         currentTrackId = currentTrackId,
-        isPlaying = isPlaying,
         onTrackSelected = onTrackSelected,
         onTrackRemoved = onTrackRemoved,
         onReorder = onReorder,
-        onShuffleChange = onShuffleChange,
-        onRepeatModeChange = onRepeatModeChange,
+        onClearNext = { cleared -> onReorder(cleared) },
         modifier = modifier,
     )
 }
 
 /**
- * Task 1 lyrics mount: renders the current track lyrics inside the shell.
- * Delegates to the existing FullScreenPlayerLyricsPanel until the sibling
- * lyrics plan replaces the line content; the signature below is the contract
- * the sibling consumes.
+ * Final lyrics mount: renders the current track lyrics inside the shell.
+ * Backed by PlayerLyricsPanel (Tasks 3/4) with the live romanization state;
+ * the host composes this only while the lyrics panel is selected.
  */
 @Composable
 fun PlayerShellLyricsMount(
@@ -80,28 +99,36 @@ fun PlayerShellLyricsMount(
     onSeek: (Long) -> Unit,
     pendingSeekPositionMs: Long? = null,
     seekRequestId: Long = 0L,
+    romanization: RomanizationUiState = RomanizationUiState(),
+    romanizationAllowed: Boolean = false,
+    onRomanizationInput: (List<String>, Boolean) -> Unit = { _, _ -> },
+    onRomanizationToggle: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    FullScreenPlayerLyricsPanel(
+    if (!visible) return
+    PlayerLyricsPanel(
         trackId = trackId,
         lyrics = lyrics,
         loading = loading,
-        visible = visible,
         currentPositionMs = currentPositionMs,
         pendingSeekPositionMs = pendingSeekPositionMs,
         seekRequestId = seekRequestId,
+        romanization = romanization,
+        romanizationAllowed = romanizationAllowed,
+        onRomanizationInput = onRomanizationInput,
+        onRomanizationToggle = onRomanizationToggle,
         onSeek = onSeek,
         modifier = modifier,
     )
 }
 
 /**
- * Task 1 shell scaffold: bottom-sheet container with a dismiss strip and the
+ * Shell scaffold: bottom-sheet container with a dismiss strip and the
  * width-gated sheet (phones fill the window, wider layouts centre a capped
  * sheet). Now-playing content arrives via [content]; [selectedPanel] and
- * [onPanelSelected] are accepted for contract stability and get wired to the
- * panel switcher by later tasks. Backdrop and full-bleed artwork layering are
- * owned by Task 4, gestures by Task 2.
+ * [onPanelSelected] drive the panel switcher. The Tune blur backdrop and the
+ * lyrics > queue > dismiss back ordering mount here (W2); full-bleed art is
+ * precomputed by the host via [isFullBleedEnabled].
  */
 @Composable
 fun PlayerShell(
@@ -111,8 +138,17 @@ fun PlayerShell(
     selectedPanel: PlayerShellPanel?,
     onPanelSelected: OnPlayerShellPanelSelected,
     content: @Composable () -> Unit,
+    artworkPath: String? = null,
+    fullBleed: Boolean = false,
+    keepScreenOn: Boolean = false,
+    hazeState: HazeState? = null,
 ) {
     if (!visible) return
+    PlayerShellBackHandlers(
+        selectedPanel = selectedPanel,
+        onPanelSelected = onPanelSelected,
+        onDismiss = onDismiss,
+    )
     val colors = LocalTuneColors.current
     val dismissDescription = stringResource(R.string.bottom_sheet_dismiss)
     Box(
@@ -120,6 +156,13 @@ fun PlayerShell(
             .fillMaxSize()
             .background(colors.playerBackdrop.copy(alpha = 0.72f)),
     ) {
+        PlayerShellBackdrop(
+            artworkPath = artworkPath,
+            fullBleed = fullBleed,
+            modifier = Modifier.fillMaxSize(),
+            hazeState = hazeState,
+            keepScreenOn = keepScreenOn,
+        )
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -148,7 +191,7 @@ fun PlayerShell(
                     ),
                 contentAlignment = Alignment.Center,
             ) {
-                FullScreenPlayerDragHandle()
+                PlayerShellDragHandle()
             }
             content()
         }

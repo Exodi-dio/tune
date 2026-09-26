@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.exodidio.tune.R
 import com.exodidio.tune.player.PlaybackQueueSnapshot
 import com.exodidio.tune.sync.LibraryTrack
+import com.exodidio.tune.ui.components.TrackContextMenuActions
 import com.exodidio.tune.ui.theme.LocalTuneColors
 import kotlin.math.abs
 
@@ -233,3 +234,30 @@ private fun QueueSectionRow(
         }
     }
 }
+
+// Relocated from the deleted FullScreenPlayerQueuePanel.kt: section drags
+// commit through the existing moveQueueTrack path, and the context-menu
+// policy helpers stay pinned by FullScreenQueuePanelDragTest.
+internal fun moveQueueTrack(trackIds: List<String>, fromIndex: Int, toIndex: Int): List<String> =
+    trackIds.toMutableList().apply {
+        if (fromIndex in indices && toIndex in indices && fromIndex != toIndex) {
+            add(toIndex, removeAt(fromIndex))
+        }
+    }
+
+/** Commits the latest Compose-backed local order when a reorder drag ends. */
+internal fun commitQueueReorder(
+    latestOrderedIds: androidx.compose.runtime.State<List<String>>,
+    latestOnReorder: androidx.compose.runtime.State<(List<String>) -> Unit>,
+) = latestOnReorder.value(latestOrderedIds.value)
+
+internal fun queueTrackContextMenuActions(isCurrent: Boolean) = TrackContextMenuActions(
+    removeFromQueue = !isCurrent,
+    addToQueue = false,
+)
+
+internal fun shouldOpenQueueTrackContextMenu(
+    longPressX: Float,
+    rowWidthPx: Int,
+    dragHandleWidthPx: Float,
+): Boolean = longPressX < rowWidthPx - dragHandleWidthPx
