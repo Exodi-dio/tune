@@ -49,3 +49,9 @@
 - Parked minors: indicator static branch still allocates transition (brief-mandated); drag background change in full-transparency mode (brief-mandated); DetailHero 2dp-bar text mismatch.
 - Verified: GREEN 36215465586, 36216567589, 36216994688 all success on impl/perf/batch-3.
 - Batch 3: complete (commits 3ff02db..4fe03d4, review approved with notes).
+## Batch 4 (perf T10) completion
+- Controller release gate: run 36218856880 FAILED (tooling imports in main) — load-bearing, entered fix loop round 1.
+- Fix: previews moved to src/debug (ee563a8, ONE commit); re-review PASS; release gate re-run 36219623988 SUCCESS (assembleDevRelease + preview absent from release runtime).
+- Parked minors: proguard comment 17 vs 20; scaffold/test tautology (follow-up: consume ListContentTypes or delete); T9 partial rollout follow-up.
+- NOTE: task-branch CI runs execute ci.yml Snapshot step which force-pushes HEAD to apk-latest — apk-latest now polluted; restore to main at the end.
+- Batch 4: complete (commits 3c451e6..ee563a8 via batch-4b, review approved + release gate green). Perf plan implementation COMPLETE.
