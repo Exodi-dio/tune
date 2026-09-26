@@ -25,14 +25,6 @@
     native <methods>;
 }
 
-# ML Kit loads the bundled barcode pipeline by class name after R8 has run.
--keep class com.google.mlkit.vision.barcode.bundled.internal.** { *; }
-
-# Firebase discovers component registrars from manifest metadata and constructs
-# them reflectively. Its consumer rule keeps their names but not constructors.
--keep class * implements com.google.firebase.components.ComponentRegistrar {
-    public <init>();
-}
 
 # ---- Optional transitive dependencies not present on Android runtime ----
 # Generated from R8 missing_rules.txt — these are never used at runtime on Android.
