@@ -37,7 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.ClipOp
@@ -241,28 +241,32 @@ private fun CompactNavigationTarget(
     }
 }
 
+internal fun navPillRectPx(offsetPx: Float, widthPx: Float, heightPx: Float, radiusPx: Float): RoundRect =
+    RoundRect(
+        left = offsetPx,
+        top = 0f,
+        right = offsetPx + widthPx,
+        bottom = heightPx,
+        radiusX = radiusPx,
+        radiusY = radiusPx,
+    )
+
+// Path allocated once per size/offset change, one cached layer.
 private fun Modifier.navigationForegroundMask(
     indicatorOffset: Dp,
     itemWidth: Dp,
     clipOp: ClipOp,
-): Modifier = drawWithContent {
-    val contentDrawScope = this
+): Modifier = drawWithCache {
     val pillLeft = indicatorOffset.roundToPx().toFloat()
     val pillWidth = itemWidth.roundToPx().toFloat()
     val pillRadius = InnerPillRadius.roundToPx().toFloat()
     val pillPath = Path().apply {
-        addRoundRect(
-            RoundRect(
-                left = pillLeft,
-                top = 0f,
-                right = pillLeft + pillWidth,
-                bottom = size.height,
-                radiusX = pillRadius,
-                radiusY = pillRadius,
-            ),
-        )
+        addRoundRect(navPillRectPx(pillLeft, pillWidth, size.height, pillRadius))
     }
-    clipPath(pillPath, clipOp = clipOp) { contentDrawScope.drawContent() }
+    onDrawWithContent {
+        val contentScope = this
+        clipPath(pillPath, clipOp = clipOp) { contentScope.drawContent() }
+    }
 }
 
 @Composable

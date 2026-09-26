@@ -28,6 +28,20 @@ import com.exodidio.tune.ui.components.TrackContextBottomSheetRequest
 import com.exodidio.tune.ui.components.discGridItems
 import com.exodidio.tune.player.PlaybackQueueSnapshot
 
+internal fun albumsById(albums: List<com.exodidio.tune.sync.LibraryAlbum>): Map<String, com.exodidio.tune.sync.LibraryAlbum> =
+    albums.associateBy { it.id }
+
+internal fun albumContextTracksByAlbumId(
+    albums: List<com.exodidio.tune.sync.LibraryAlbum>,
+    tracks: List<com.exodidio.tune.sync.LibraryTrack>,
+): Map<String, List<com.exodidio.tune.sync.LibraryTrack>> =
+    albums.associate { album ->
+        album.id to albumDetailsUiStateFor(
+            AlbumDetailsUiState(albums = albums, tracks = tracks),
+            album.id,
+        ).tracks
+    }
+
 @Composable
 internal fun LibraryAlbumsContent(
     uiState: LibraryAlbumsUiState,
@@ -46,6 +60,10 @@ internal fun LibraryAlbumsContent(
     onFilterQueryChange: (String) -> Unit = {},
 ) {
     var contextAlbumId by remember { mutableStateOf<String?>(null) }
+    val albumByIdMap = remember(uiState.albums) { albumsById(uiState.albums) }
+    val albumTracksMap = remember(uiState.albums, uiState.tracks) {
+        albumContextTracksByAlbumId(uiState.albums, uiState.tracks)
+    }
     val unknownArtist = stringResource(R.string.album_unknown_artist)
     val gridItems = remember(uiState.albums, unknownArtist) {
         uiState.albums.map { album ->
@@ -116,20 +134,14 @@ internal fun LibraryAlbumsContent(
                 discGridItems(
                     items = gridItems,
                     horizontalContentPadding = 24.dp,
-                    onClick = { albumId -> uiState.albums.find { it.id == albumId }?.let { album -> onAlbumClick?.invoke(album) } },
+                    onClick = { albumId -> albumByIdMap[albumId]?.let { album -> onAlbumClick?.invoke(album) } },
                     onLongClick = { albumId -> contextAlbumId = albumId },
                     itemWrapper = { item, itemModifier, content ->
-                        val album = uiState.albums.find { it.id == item.id }
+                        val album = albumByIdMap[item.id]
                         if (album == null) {
                             content()
                         } else {
-                            val tracks = if (contextAlbumId == album.id) {
-                                remember(album.id, uiState.tracks) {
-                                    albumDetailsUiStateFor(AlbumDetailsUiState(albums = uiState.albums, tracks = uiState.tracks), album.id).tracks
-                                }
-                            } else {
-                                emptyList()
-                            }
+                            val tracks = if (contextAlbumId == album.id) albumTracksMap[album.id].orEmpty() else emptyList()
                             AlbumContextMenu(
                                 tracks = tracks,
                                 expanded = contextAlbumId == album.id,
@@ -153,13 +165,7 @@ internal fun LibraryAlbumsContent(
             null
         },
     ) { album ->
-        val tracks = if (contextAlbumId == album.id) {
-            remember(album.id, uiState.tracks) {
-                albumDetailsUiStateFor(AlbumDetailsUiState(albums = uiState.albums, tracks = uiState.tracks), album.id).tracks
-            }
-        } else {
-            emptyList()
-        }
+        val tracks = if (contextAlbumId == album.id) albumTracksMap[album.id].orEmpty() else emptyList()
         AlbumContextMenu(
             tracks = tracks,
             expanded = contextAlbumId == album.id,
