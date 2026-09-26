@@ -19,8 +19,9 @@ jobs:
           target: default
           arch: x86_64
           profile: pixel_6
-          avd-config: |
-            hw.ramSize=2048
-            vm.heapSize=256
+          ram-size: 2048M
+          heap-size: 256M
+          disable-animations: true
+          emulator-options: -no-snapshot -no-audio -no-boot-anim -no-window -gpu swiftshader_indirect
           script: ./gradlew :androidApp:connectedDevDebugAndroidTest --no-daemon
 
