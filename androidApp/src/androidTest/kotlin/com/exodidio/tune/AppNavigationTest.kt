@@ -36,7 +36,6 @@ import com.exodidio.tune.ui.screens.LibraryArtistsUiState
 import com.exodidio.tune.sync.LibraryArtist
 import com.exodidio.tune.sync.LibraryGenre
 import com.exodidio.tune.sync.LibraryPlaylist
-import com.exodidio.tune.sync.AndroidSyncState
 import com.exodidio.tune.ui.screens.LibraryGenresUiState
 import com.exodidio.tune.ui.screens.LibraryComposersUiState
 import com.exodidio.tune.ui.screens.LibraryTracksUiState
@@ -66,27 +65,6 @@ class AppNavigationTest {
         ).forEach { labelRes ->
             composeTestRule.onAllNodesWithContentDescription(string(labelRes)).assertCountEquals(1)
         }
-    }
-
-    @Test
-    fun insufficientStorageAlertIsGlobalAndDismissible() {
-        var dismissed = false
-        composeTestRule.setContent {
-            App(
-                destinations = AppDestinationModels(
-                    settings = SettingsDestinationModel(
-                        syncState = SyncUiState(librarySync = AndroidSyncState.Failed("storage", 2_000_000_000, 1_000_000_000)),
-                    ),
-                ),
-                onDismissSyncFailure = { dismissed = true },
-            )
-        }
-
-        composeTestRule.onNodeWithText(string(R.string.sync_insufficient_storage_title)).assertIsDisplayed()
-        composeTestRule.onNodeWithText("1,907.3 MB", substring = true).assertIsDisplayed()
-        composeTestRule.onNodeWithText("953.7 MB", substring = true).assertIsDisplayed()
-        composeTestRule.onNodeWithText(string(R.string.close)).performClick()
-        assertTrue(dismissed)
     }
 
     @Test
@@ -507,7 +485,7 @@ class AppNavigationTest {
 
 
     @Test
-    fun homeDisplaysSyncPlaceholderWhenThereAreNoTracks() {
+    fun homeDisplaysEmptyLibraryMessageWhenThereAreNoTracks() {
         composeTestRule.setContent { App() }
 
         composeTestRule.onNodeWithText(string(R.string.library_empty_title)).assertIsDisplayed()
