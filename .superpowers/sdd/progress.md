@@ -43,3 +43,9 @@
 ## Batch 2 (perf T5+T6) completion
 - Fix round 1/5: all 4 findings ADDRESSED, no new breakage (scoped re-review clean).
 - Batch 2: complete (commits c48dcfa..e8f3a203e34d4b881a2f8a4d003e1836fe72d34a via batch-2b, review clean after 1 fix round).
+## Batch 3 (perf T7+T8+T9) rulings + completion
+- Correction: T8 final byte-check test never demonstrated RED on final code (RED ran on KClass-annotations variant); RED-proof is by reasoning. Do not claim TDD RED for its final version. Test itself valid.
+- Ruling: 7-commit history accepted (disclosed brief-bug fix; force-push disallowed). T9 partial rollout (other detail screens default reduced=false) is out of brief scope — parked as follow-up concern for final review.
+- Parked minors: indicator static branch still allocates transition (brief-mandated); drag background change in full-transparency mode (brief-mandated); DetailHero 2dp-bar text mismatch.
+- Verified: GREEN 36215465586, 36216567589, 36216994688 all success on impl/perf/batch-3.
+- Batch 3: complete (commits 3ff02db..4fe03d4, review approved with notes).
