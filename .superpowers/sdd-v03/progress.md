@@ -44,3 +44,5 @@ shell T1 → queue T1+T2 → queue T3+T4 → shell T2+T3 → shell T4+T5 → (qu
 - Queue batch 2: complete (review clean after 1 fix round).
 ## Shell batch 2 (T2+T3) completion
 - Shell batch 2: complete (commits 8ca80d5..8205a63d, review clean). Carries to Task 5 batch: seek→lyrics pending-seek sync wiring + integration test; crossfade threading (outgoing/incoming/progress); extract sleeve constants; reuse shared time formatter.
+## Shell batch 3 (T4+T5) completion
+- Shell batch 3: complete (commits 3cc07d1..fa64fa22, review clean). Carries to FINAL batch: confirmSeek wiring; backdrop/back-handler insertion; full-bleed toggle wiring (PlayerPreferences→isFullBleedEnabled→backdrop).
