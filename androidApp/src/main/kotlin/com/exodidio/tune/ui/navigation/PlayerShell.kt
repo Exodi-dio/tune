@@ -78,6 +78,8 @@ fun PlayerShellLyricsMount(
     visible: Boolean,
     currentPositionMs: Long,
     onSeek: (Long) -> Unit,
+    pendingSeekPositionMs: Long? = null,
+    seekRequestId: Long = 0L,
     modifier: Modifier = Modifier,
 ) {
     FullScreenPlayerLyricsPanel(
@@ -86,6 +88,8 @@ fun PlayerShellLyricsMount(
         loading = loading,
         visible = visible,
         currentPositionMs = currentPositionMs,
+        pendingSeekPositionMs = pendingSeekPositionMs,
+        seekRequestId = seekRequestId,
         onSeek = onSeek,
         modifier = modifier,
     )
