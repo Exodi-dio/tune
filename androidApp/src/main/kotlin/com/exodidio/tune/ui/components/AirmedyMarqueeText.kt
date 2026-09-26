@@ -25,6 +25,9 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import kotlin.math.roundToInt
 
+internal fun shouldAnimateMarquee(travelPx: Int, reduceMotion: Boolean): Boolean =
+    !reduceMotion && travelPx > 0
+
 /** A single-line marquee that travels to the end of overflowing text and reverses direction. */
 @Composable
 fun TuneMarqueeText(
@@ -58,35 +61,46 @@ fun TuneMarqueeText(
         val pauseEndMs = (totalDurationMs * 0.55f).roundToInt()
         val moveBackMs = (totalDurationMs * 0.85f).roundToInt()
 
-        val transition = rememberInfiniteTransition(label = "tune-marquee")
-        val translationX by transition.animateFloat(
-            initialValue = 0f,
-            targetValue = targetOffset,
-            animationSpec = infiniteRepeatable(
-                animation = keyframes {
-                    durationMillis = totalDurationMs
-                    0f at 0 using FastOutSlowInEasing
-                    0f at pauseStartMs using FastOutSlowInEasing
-                    targetOffset at moveEndMs using FastOutSlowInEasing
-                    targetOffset at pauseEndMs using FastOutSlowInEasing
-                    0f at moveBackMs using FastOutSlowInEasing
-                    0f at totalDurationMs
-                },
-                repeatMode = RepeatMode.Restart,
-            ),
-            label = "tune-marquee-translation",
-        )
-
-        Text(
-            text = text,
-            modifier = Modifier
-                .wrapContentWidth(align = Alignment.Start, unbounded = true)
-                .graphicsLayer { this.translationX = translationX },
-            color = color,
-            style = style,
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Clip,
-        )
+        val reduceMotion = LocalReduceMotion.current
+        if (!shouldAnimateMarquee(travelDistancePx, reduceMotion)) {
+            Text(
+                text = text,
+                modifier = Modifier.wrapContentWidth(align = Alignment.Start, unbounded = true),
+                color = color,
+                style = style,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+            )
+        } else {
+            val transition = rememberInfiniteTransition(label = "tune-marquee")
+            val translationX by transition.animateFloat(
+                initialValue = 0f,
+                targetValue = targetOffset,
+                animationSpec = infiniteRepeatable(
+                    animation = keyframes {
+                        durationMillis = totalDurationMs
+                        0f at 0 using FastOutSlowInEasing
+                        0f at pauseStartMs using FastOutSlowInEasing
+                        targetOffset at moveEndMs using FastOutSlowInEasing
+                        targetOffset at pauseEndMs using FastOutSlowInEasing
+                        0f at moveBackMs using FastOutSlowInEasing
+                        0f at totalDurationMs
+                    },
+                    repeatMode = RepeatMode.Restart,
+                ),
+                label = "tune-marquee-translation",
+            )
+            Text(
+                text = text,
+                modifier = Modifier.wrapContentWidth(align = Alignment.Start, unbounded = true)
+                    .graphicsLayer { this.translationX = translationX },
+                color = color,
+                style = style,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Clip,
+            )
+        }
     }
 }

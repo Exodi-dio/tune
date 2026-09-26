@@ -26,6 +26,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.exodidio.tune.ui.theme.LocalTuneColors
 
+internal fun shouldAnimateIndicator(isPlaying: Boolean, reduceMotion: Boolean): Boolean =
+    isPlaying && !reduceMotion
+
 /** Three-bar now-playing indicator, animated only while playback is active. */
 @Composable
 fun TunePlayingIndicator(
@@ -33,11 +36,17 @@ fun TunePlayingIndicator(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalTuneColors.current
+    val reduceMotion = LocalReduceMotion.current
+    val animate = shouldAnimateIndicator(isPlaying, reduceMotion)
     val transition = rememberInfiniteTransition(label = "playing-indicator")
-    val scales = listOf(
+    val scales = if (animate) listOf(
         transition.animateScale(0.3f, 0.8f, 800, "playing-indicator-first"),
         transition.animateScale(1f, 0.4f, 600, "playing-indicator-second"),
         transition.animateScale(0.6f, 0.9f, 700, "playing-indicator-third"),
+    ) else listOf(
+        transition.animateScale(0.55f, 0.55f, 800, "playing-indicator-first"),
+        transition.animateScale(0.55f, 0.55f, 600, "playing-indicator-second"),
+        transition.animateScale(0.55f, 0.55f, 700, "playing-indicator-third"),
     )
     val playbackProgress by animateFloatAsState(
         targetValue = if (isPlaying) 1f else 0f,
