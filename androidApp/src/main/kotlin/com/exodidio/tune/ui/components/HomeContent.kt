@@ -156,7 +156,7 @@ private fun HomeTrackSection(
             horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            items(tracks.size, key = { index -> tracks[index].id }) { index ->
+            items(tracks.size, key = { index -> tracks[index].id }, contentType = { "home_track" }) { index ->
                 val track = tracks[index]
                 TrackContextMenu(
                     track = track,

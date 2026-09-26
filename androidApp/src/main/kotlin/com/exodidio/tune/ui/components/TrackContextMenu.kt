@@ -316,7 +316,7 @@ private fun PlaylistPickerContent(
             Text(stringResource(R.string.track_context_no_editable_playlists), modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp), color = colors.textMuted)
         } else {
             LazyColumn(Modifier.fillMaxWidth().heightIn(max = 360.dp)) {
-                items(editable, key = LibraryPlaylist::id) { playlist ->
+                items(editable, key = LibraryPlaylist::id, contentType = { "playlist_picker_row" }) { playlist ->
                     // Genre-scope adds deliberately skip membership inspection. The
                     // mutation/projection layer deduplicates playlist track IDs, so
                     // checking every selected track here only adds query/work cost.

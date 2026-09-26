@@ -169,7 +169,7 @@ private fun <T> LazyListScope.searchSection(
                 contentPadding = PaddingValues(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                gridItems(values, key = { searchItemKey(title, key(it)) }) { item ->
+                gridItems(values, key = { searchItemKey(title, key(it)) }, contentType = { "search_grid_$title" }) { item ->
                     Box(Modifier.widthIn(max = SearchTrackColumnMaxWidth)) { row(item) }
                 }
             }
@@ -179,7 +179,7 @@ private fun <T> LazyListScope.searchSection(
                 contentPadding = PaddingValues(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                rowItems(values, key = { searchItemKey(title, key(it)) }) { item ->
+                rowItems(values, key = { searchItemKey(title, key(it)) }, contentType = { "search_row_$title" }) { item ->
                     Box(Modifier.width(160.dp)) { row(item) }
                 }
             }

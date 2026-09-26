@@ -140,3 +140,14 @@
 
 # sun.security (JDK internal, not on Android)
 -dontwarn sun.security.x509.X509Key
+
+# Release hygiene: strip all Android Log calls (17 interpolated calls in PlaybackService).
+-assumenosideeffects class android.util.Log {
+    public static boolean isLoggable(java.lang.String, int);
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+    public static int w(...);
+    public static int e(...);
+    public static int wtf(...);
+}

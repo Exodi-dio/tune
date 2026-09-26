@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
 import java.time.LocalTime
@@ -679,9 +678,3 @@ internal fun App(
 }
 
 internal fun formatSyncStorageMegabytes(bytes: Long): String = "%,.1f MB".format(bytes / 1024.0 / 1024.0)
-
-@Preview(showBackground = true)
-@Composable
-private fun AppPreview() {
-    App()
-}

@@ -210,7 +210,7 @@ internal fun TrackInfoContent(track: LibraryTrack, modifier: Modifier = Modifier
             item {
                 Text(stringResource(R.string.track_info_details), modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp), style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), color = colors.textMuted)
             }
-            items(details, key = { it.labelRes }) { detail ->
+            items(details, key = { it.labelRes }, contentType = { "track_info_row" }) { detail ->
                 Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 9.dp), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) {
                     Text(stringResource(detail.labelRes), Modifier.weight(0.42f), style = MaterialTheme.typography.bodySmall, color = colors.textMuted)
                     Text(detail.value, Modifier.weight(0.58f), style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = colors.textMain, textAlign = TextAlign.End)

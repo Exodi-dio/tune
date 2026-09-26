@@ -169,7 +169,7 @@ internal fun PlaylistDetailsContent(
                 )
             }
         }
-        items(orderedTrackIds, key = { it }) { trackId ->
+        items(orderedTrackIds, key = { it }, contentType = { "playlist_track" }) { trackId ->
             val track = tracksById[trackId] ?: return@items
             Box(Modifier.fillMaxWidth().padding(horizontal = 22.dp).height(1.dp).background(colors.borderGlass).testTag(PlaylistTrackDividerTag))
             if (isReordering) {

@@ -130,7 +130,7 @@ internal fun AlbumDetailsContent(
                 )
             }
         }
-        itemsIndexed(uiState.tracks, key = { _, track -> track.id }) { index, track ->
+        itemsIndexed(uiState.tracks, key = { _, track -> track.id }, contentType = { _, _ -> "album_track" }) { index, track ->
             Box(
                 Modifier
                     .fillMaxWidth()

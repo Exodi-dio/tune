@@ -94,7 +94,7 @@ internal fun FindLyricsContent(
                 Text(stringResource(R.string.find_lyrics_no_results), Modifier.align(Alignment.CenterHorizontally).padding(top = 36.dp), color = colors.textMuted)
             } else {
                 LazyColumn(Modifier.weight(1f).padding(top = 24.dp)) {
-                    itemsIndexed(state.results) { index, result ->
+                    itemsIndexed(state.results, key = { index, result -> result.provider + ":" + result.trackName + ":" + index }, contentType = { _, _ -> "lyrics_result" }) { index, result ->
                         if (index == 0) Box(Modifier.fillMaxWidth().height(1.dp).background(colors.borderGlass))
                         Row(
                             Modifier.fillMaxWidth().heightIn(min = 56.dp)
