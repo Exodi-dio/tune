@@ -55,3 +55,8 @@
 - Parked minors: proguard comment 17 vs 20; scaffold/test tautology (follow-up: consume ListContentTypes or delete); T9 partial rollout follow-up.
 - NOTE: task-branch CI runs execute ci.yml Snapshot step which force-pushes HEAD to apk-latest — apk-latest now polluted; restore to main at the end.
 - Batch 4: complete (commits 3c451e6..ee563a8 via batch-4b, review approved + release gate green). Perf plan implementation COMPLETE.
+## Settings batch (T1-T4) rulings + completion
+- Ruling: reviewer contentDescription-vs-text concern resolved by inspection — ActionListRow sets mergeDescendants contentDescription=label AND renders Text(label); both query styles match the same merged node. No fix.
+- Ruling: spec-§7 emulator smoke test has no owning task (plan defect) — folded into strip batch 8 (with T6 androidTest fixes): create permanent workflow_dispatch emulator-smoke.yml (2GB AVD, API 34) + run it once pre-release executing the androidTest suite incl. the 3 new cases. This also satisfies the reviewer's on-device gate.
+- Noted for batch 8: MusicSyncContentTest assert(...) → Assert.assertTrue hygiene fix (drive-by, ruling: trivial, same area).
+- Settings batch: complete (commits 5b403da..93b98e2, review approved).
