@@ -17,6 +17,9 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - name: tmp-grep-gate task-4
+        run: |
+          ! grep -rn "LyricsSource\.Desktop\|lyrics_source_desktop\|desktopLyrics" androidApp/src/main/kotlin/com/exodidio/tune/MainActivity.kt androidApp/src/main/kotlin/com/exodidio/tune/ui/screens/IntegrationContent.kt androidApp/src/main/kotlin/com/exodidio/tune/lyrics/LyricsPreferences.kt androidApp/src/main/res androidApp/src/test --include="*.kt" --include="*.xml"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
