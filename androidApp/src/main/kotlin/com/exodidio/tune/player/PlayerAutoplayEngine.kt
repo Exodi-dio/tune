@@ -4,7 +4,7 @@ import com.exodidio.tune.sync.LibraryTrack
 import com.exodidio.tune.sync.metadataObject
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.JsonPrimitive
 
 const val MaxOfflineAutoplay: Int = 10
 
@@ -63,8 +63,8 @@ private fun artistTokens(artists: String): Set<String> =
 private fun genreTokens(track: LibraryTrack): Set<String> {
     val obj: JsonObject = track.metadataObject() ?: return emptySet()
     val names = mutableSetOf<String>()
-    (obj["genres"] as? JsonArray)?.forEach { (it as? JsonObject)?.get("name")?.jsonPrimitive?.content?.let(names::add) }
-    (obj["genre"] as? JsonObject)?.get("name")?.jsonPrimitive?.content?.let(names::add)
-    obj["raw_genre_names"]?.let { (it as? JsonArray)?.forEach { v -> v.jsonPrimitive.content.let(names::add) } }
+    (obj["genres"] as? JsonArray)?.forEach { (it as? JsonObject)?.get("name")?.let { name -> (name as? JsonPrimitive)?.content }?.let(names::add) }
+    (obj["genre"] as? JsonObject)?.get("name")?.let { name -> (name as? JsonPrimitive)?.content }?.let(names::add)
+    obj["raw_genre_names"]?.let { (it as? JsonArray)?.forEach { v -> (v as? JsonPrimitive)?.content?.let(names::add) } }
     return names.map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet()
 }

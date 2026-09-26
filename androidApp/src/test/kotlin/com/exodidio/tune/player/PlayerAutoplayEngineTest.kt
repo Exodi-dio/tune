@@ -70,4 +70,18 @@ class PlayerAutoplayEngineTest {
         assertTrue(shouldRefillAutoplay(upcomingCount = 1, repeatMode = RepeatMode.Off, autoplayEnabled = true))
         assertFalse(shouldRefillAutoplay(upcomingCount = 2, repeatMode = RepeatMode.Off, autoplayEnabled = true))
     }
+
+    @Test
+    fun malformedGenreMetadataIsIgnoredNeverThrows() {
+        val bad = "{\"genres\":[{\"name\":{}}],\"raw_genre_names\":[null,42]}"
+        val current = track("cur", "Adele").copy(metadataJson = bad)
+        val library = listOf(
+            track("a1", "Adele").copy(metadataJson = bad),
+            track("f1", "Far"),
+            current
+        )
+        val picked = pickAutoplay(library, current, recentIds = emptySet(), limit = 10)
+        assertFalse(picked.contains("cur"))
+        assertTrue(picked.contains("a1"))
+    }
 }
