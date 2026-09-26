@@ -128,7 +128,7 @@
     <string name="playlist_sync_failed">Не удалось обновить этот плейлист</string>
     <string name="playlist_details_title">Плейлист</string>
     <string name="playlist_details_empty_title">Плейлист недоступен</string>
-    <string name="playlist_details_empty_description">Этого плейлиста больше нет в синхронизированной медиатеке.</string>
+    <string name="playlist_details_empty_description">Этого плейлиста больше нет в медиатеке.</string>
     <string name="playlist_details_metadata">%1$s · %2$s</string>
     <string name="playlist_duration_day">%1$d д</string>
     <string name="playlist_duration_hour">%1$d ч</string>
@@ -368,3 +368,4 @@
     <string name="player_romanization_hint">Романизация офлайн: китайский и корейский.</string>
     <string name="player_romanization_mandarin">Текст только с иероглифами Han читается на мандаринском. Имена могут читаться иначе.</string>
 </resources>
+

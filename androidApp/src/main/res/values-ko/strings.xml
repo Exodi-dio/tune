@@ -128,7 +128,7 @@
     <string name="playlist_sync_failed">이 재생 목록을 업데이트할 수 없습니다</string>
     <string name="playlist_details_title">재생 목록</string>
     <string name="playlist_details_empty_title">재생 목록을 사용할 수 없음</string>
-    <string name="playlist_details_empty_description">이 재생 목록은 더 이상 동기화된 라이브러리에 없습니다.</string>
+    <string name="playlist_details_empty_description">이 재생 목록은 더 이상 라이브러리에 없습니다.</string>
     <string name="playlist_details_metadata">%1$s · %2$s</string>
     <string name="playlist_duration_day">%1$d일</string>
     <string name="playlist_duration_hour">%1$d시간</string>
@@ -344,3 +344,4 @@
     <string name="player_romanization_hint">오프라인 로마자 표기: 중국어 및 한국어.</string>
     <string name="player_romanization_mandarin">한자만 있는 가사는 기본적으로 중국어 표준어로 처리됩니다. 이름의 발음은 다를 수 있습니다.</string>
 </resources>
+

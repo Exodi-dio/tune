@@ -128,7 +128,7 @@
     <string name="playlist_sync_failed">Impossible de mettre à jour cette playlist</string>
     <string name="playlist_details_title">Playlist</string>
     <string name="playlist_details_empty_title">Playlist indisponible</string>
-    <string name="playlist_details_empty_description">Cette playlist n\'est plus dans la bibliothèque synchronisée.</string>
+    <string name="playlist_details_empty_description">Cette playlist n\'est plus dans la bibliothèque.</string>
     <string name="playlist_details_metadata">%1$s · %2$s</string>
     <string name="playlist_duration_day">%1$d j</string>
     <string name="playlist_duration_hour">%1$d h</string>
@@ -352,3 +352,4 @@
     <string name="player_romanization_hint">Romanisation hors ligne : chinois et coréen.</string>
     <string name="player_romanization_mandarin">Les paroles en caractères Han seuls utilisent le mandarin. Les noms peuvent avoir une autre lecture.</string>
 </resources>
+

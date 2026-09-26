@@ -40,6 +40,7 @@ internal fun GenreDetailsContent(
     listState: LazyListState,
     contentPadding: PaddingValues = PaddingValues(),
     hazeState: HazeState? = null,
+    reduceTransparency: Boolean = false,
     onHeroColorChanged: (Color) -> Unit = {},
     onPlay: () -> Unit = {},
     onShuffle: () -> Unit = {},
@@ -66,7 +67,7 @@ internal fun GenreDetailsContent(
         contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
     ) {
         item("hero") {
-            ArtworkHeroBackdrop(null, Modifier.fillMaxWidth(), onHeroColorChanged) {
+            ArtworkHeroBackdrop(null, Modifier.fillMaxWidth(), onHeroColorChanged, reduceTransparency = reduceTransparency) {
                 GenreContextMenu(
                     trackIds = uiState.tracks.map { it.id },
                     expanded = menuExpanded,
@@ -95,6 +96,7 @@ internal fun GenreDetailsContent(
                         bottom = 20.dp,
                     ),
                     showArtwork = false,
+                    reduceTransparency = reduceTransparency,
                     onPlayClick = onPlay,
                     onShuffleClick = onShuffle,
                     onMoreClick = { menuExpanded = true },
@@ -114,3 +116,4 @@ internal fun GenreDetailsContent(
         }
     }
 }
+

@@ -41,6 +41,7 @@ internal fun ArtistDetailsContent(
     listState: LazyListState,
     contentPadding: PaddingValues = PaddingValues(),
     hazeState: HazeState? = null,
+    reduceTransparency: Boolean = false,
     onHeroColorChanged: (Color) -> Unit = {},
     onPlay: () -> Unit = {},
     onShuffle: () -> Unit = {},
@@ -67,7 +68,7 @@ internal fun ArtistDetailsContent(
         contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
     ) {
         item("hero") {
-            ArtworkHeroBackdrop(artist.artworkPath, Modifier.fillMaxWidth(), onHeroColorChanged) {
+            ArtworkHeroBackdrop(artist.artworkPath, Modifier.fillMaxWidth(), onHeroColorChanged, reduceTransparency = reduceTransparency) {
                 ArtistContextMenu(
                     trackIds = uiState.tracks.map { it.id },
                     expanded = menuExpanded,
@@ -100,6 +101,7 @@ internal fun ArtistDetailsContent(
                     artworkShape = DetailHeroArtworkShape.Circle,
                     artworkSize = 144.dp,
                     fallbackSymbol = MaterialSymbols.Person,
+                    reduceTransparency = reduceTransparency,
                     onPlayClick = onPlay,
                     onShuffleClick = onShuffle,
                     onMoreClick = { menuExpanded = true },
@@ -119,3 +121,4 @@ internal fun ArtistDetailsContent(
         }
     }
 }
+

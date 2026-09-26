@@ -128,7 +128,7 @@
     <string name="playlist_sync_failed">ไม่สามารถอัปเดตเพลย์ลิสต์นี้ได้</string>
     <string name="playlist_details_title">เพลย์ลิสต์</string>
     <string name="playlist_details_empty_title">เพลย์ลิสต์ไม่พร้อมใช้งาน</string>
-    <string name="playlist_details_empty_description">เพลย์ลิสต์นี้ไม่ได้อยู่ในคลังเพลงที่ซิงค์แล้ว</string>
+    <string name="playlist_details_empty_description">เพลย์ลิสต์นี้ไม่ได้อยู่ในคลังเพลง</string>
     <string name="playlist_details_metadata">%1$s · %2$s</string>
     <string name="playlist_duration_day">%1$d วัน</string>
     <string name="playlist_duration_hour">%1$d ชม</string>
@@ -344,3 +344,4 @@
     <string name="player_romanization_hint">ถอดเสียงออฟไลน์: จีนและเกาหลี</string>
     <string name="player_romanization_mandarin">เนื้อเพลงที่มีเฉพาะอักษรฮั่นใช้ภาษาจีนกลางเป็นค่าเริ่มต้น ชื่ออาจมีการอ่านที่ต่างกัน</string>
 </resources>
+

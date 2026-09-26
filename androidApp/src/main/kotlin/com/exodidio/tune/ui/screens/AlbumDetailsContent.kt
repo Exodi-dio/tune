@@ -47,6 +47,7 @@ internal fun AlbumDetailsContent(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
     hazeState: HazeState? = null,
+    reduceTransparency: Boolean = false,
     onHeroColorChanged: (Color) -> Unit = {},
     onPlay: () -> Unit = {},
     onShuffle: () -> Unit = {},
@@ -92,7 +93,7 @@ internal fun AlbumDetailsContent(
     )
     LazyColumn(modifier.fillMaxSize(), contentPadding = listPadding) {
         item("hero") {
-            ArtworkHeroBackdrop(album.artworkPath, Modifier.fillMaxWidth(), onHeroColorChanged) {
+            ArtworkHeroBackdrop(album.artworkPath, Modifier.fillMaxWidth(), onHeroColorChanged, reduceTransparency = reduceTransparency) {
                 DetailHero(
                     album.title,
                     album.artist.ifBlank { stringResource(R.string.album_unknown_artist) },
@@ -108,6 +109,7 @@ internal fun AlbumDetailsContent(
                     ),
                     album.artworkPath,
                     artworkSize = trackInfoArtworkSize,
+                    reduceTransparency = reduceTransparency,
                     onPlayClick = onPlay,
                     onShuffleClick = onShuffle,
                     onMoreClick = { albumMenuExpanded = true },
@@ -184,3 +186,4 @@ internal fun AlbumDetailsContent(
         }
     }
 }
+

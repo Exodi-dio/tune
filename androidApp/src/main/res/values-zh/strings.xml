@@ -128,7 +128,7 @@
     <string name="playlist_sync_failed">无法更新此播放列表</string>
     <string name="playlist_details_title">播放列表</string>
     <string name="playlist_details_empty_title">播放列表不可用</string>
-    <string name="playlist_details_empty_description">该播放列表已不在已同步的媒体库中。</string>
+    <string name="playlist_details_empty_description">该播放列表已不在媒体库中。</string>
     <string name="playlist_details_metadata">%1$s · %2$s</string>
     <string name="playlist_duration_day">%1$d 天</string>
     <string name="playlist_duration_hour">%1$d 小时</string>
@@ -344,3 +344,4 @@
     <string name="player_romanization_hint">离线罗马化：中文和韩语。</string>
     <string name="player_romanization_mandarin">仅含汉字的歌词默认按普通话处理。姓名的读音可能不同。</string>
 </resources>
+

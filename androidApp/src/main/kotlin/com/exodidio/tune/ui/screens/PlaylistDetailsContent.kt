@@ -44,6 +44,7 @@ import com.exodidio.tune.ui.components.PlaylistContextMenu
 import com.exodidio.tune.ui.components.TuneDialog
 import com.exodidio.tune.ui.components.TunePillButtonVariant
 import com.exodidio.tune.ui.components.trackInfoArtworkSize
+import com.exodidio.tune.ui.components.liquidGlassBackground
 import com.exodidio.tune.player.PlaybackQueueSnapshot
 import com.exodidio.tune.ui.theme.LocalTuneColors
 import sh.calvin.reorderable.ReorderableItem
@@ -179,9 +180,10 @@ internal fun PlaylistDetailsContent(
                         artist = track.artists,
                         artworkPath = track.artworkPath,
                         modifier = Modifier.fillMaxWidth().then(
-                            if (isDragging) Modifier.background(
-                                if (reduceTransparency) colors.glassOpaque else colors.glassElevated,
-                            ).border(1.dp, colors.borderGlass) else Modifier,
+                            if (isDragging) {
+                                if (reduceTransparency) Modifier.background(colors.glassOpaque).border(1.dp, colors.borderGlass)
+                                else Modifier.liquidGlassBackground(hazeState, colors, hazeBlurRadius = 30.dp, glassTint = colors.glassElevated).border(1.dp, colors.borderGlass)
+                            } else Modifier,
                         ),
                         trailingContent = {
                             PlaylistDragHandle(
@@ -274,3 +276,4 @@ internal fun movePlaylistTrack(trackIds: List<String>, fromIndex: Int, toIndex: 
 
 // The playlist hero occupies LazyColumn index 0; track rows begin immediately after it.
 internal fun playlistTrackIndex(lazyListIndex: Int): Int = lazyListIndex - 1
+

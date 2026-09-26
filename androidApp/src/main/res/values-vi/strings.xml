@@ -128,7 +128,7 @@
     <string name="playlist_sync_failed">Không thể cập nhật danh sách phát này</string>
     <string name="playlist_details_title">Danh sách phát</string>
     <string name="playlist_details_empty_title">Danh sách phát không khả dụng</string>
-    <string name="playlist_details_empty_description">Danh sách phát này không còn trong thư viện đã đồng bộ.</string>
+    <string name="playlist_details_empty_description">Danh sách phát này không còn trong thư viện.</string>
     <string name="playlist_details_metadata">%1$s · %2$s</string>
     <string name="playlist_duration_day">%1$d ngày</string>
     <string name="playlist_duration_hour">%1$d giờ</string>
@@ -344,3 +344,4 @@
     <string name="player_romanization_hint">Phiên âm offline: tiếng Trung và Hàn.</string>
     <string name="player_romanization_mandarin">Lời chỉ có chữ Hán mặc định dùng Mandarin. Tên riêng có thể có cách đọc khác.</string>
 </resources>
+

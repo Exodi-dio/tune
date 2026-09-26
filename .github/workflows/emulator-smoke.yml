@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: "21" }
       - uses: android-actions/setup-android@v3
-        with: { packages: platform-tools platforms;android-36 }
+        with: { packages: platform-tools platforms;android-34 system-images;android-34;google_apis;x86_64 }
       - uses: gradle/actions/setup-gradle@v4
       - name: Run instrumented tests on 2GB AVD
         uses: reactivecircus/android-emulator-runner@v2
@@ -21,3 +21,4 @@ jobs:
             hw.ramSize=2048
             vm.heapSize=256
           script: ./gradlew :androidApp:connectedDevDebugAndroidTest --no-daemon
+

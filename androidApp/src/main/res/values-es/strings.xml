@@ -128,7 +128,7 @@
     <string name="playlist_sync_failed">No se pudo actualizar esta lista</string>
     <string name="playlist_details_title">Lista de reproducción</string>
     <string name="playlist_details_empty_title">Lista no disponible</string>
-    <string name="playlist_details_empty_description">Esta lista ya no está en la biblioteca sincronizada.</string>
+    <string name="playlist_details_empty_description">Esta lista ya no está en la biblioteca.</string>
     <string name="playlist_details_metadata">%1$s · %2$s</string>
     <string name="playlist_duration_day">%1$d d</string>
     <string name="playlist_duration_hour">%1$d h</string>
@@ -352,3 +352,4 @@
     <string name="player_romanization_hint">Romanización sin conexión: chino y coreano.</string>
     <string name="player_romanization_mandarin">Las letras solo con caracteres Han usan mandarín. Los nombres pueden tener otras lecturas.</string>
 </resources>
+
