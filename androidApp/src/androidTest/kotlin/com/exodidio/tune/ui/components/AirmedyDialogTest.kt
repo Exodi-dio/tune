@@ -22,18 +22,18 @@ class TuneDialogTest {
         composeTestRule.setContent {
             TuneTheme(themeMode = ThemeMode.Dark) {
                 TuneDialog(
-                    title = "Disconnect desktop?",
-                    description = "The desktop remains authorized until revoked there.",
+                    title = "Delete this item?",
+                    description = "This permanently removes the selected item.",
                     dismissLabel = "Cancel",
                     onDismiss = {},
-                    confirmLabel = "Revoke",
+                    confirmLabel = "Delete",
                     onConfirm = { confirmed = true },
                     confirmVariant = TunePillButtonVariant.Destructive,
                 )
             }
         }
 
-        composeTestRule.onNodeWithText("Revoke").performClick()
+        composeTestRule.onNodeWithText("Delete").performClick()
         assertTrue(confirmed)
     }
 
@@ -43,8 +43,8 @@ class TuneDialogTest {
         composeTestRule.setContent {
             TuneTheme(themeMode = ThemeMode.Dark) {
                 TuneDialog(
-                    title = "Not enough storage",
-                    description = "Needs 2 GB, 1 GB available.",
+                    title = "Something went wrong",
+                    description = "Please try again later.",
                     dismissLabel = "Close",
                     onDismiss = { dismissed = true },
                 )

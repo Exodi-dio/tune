@@ -7,6 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.exodidio.tune.R
 import com.exodidio.tune.settings.ThemeMode
 import com.exodidio.tune.ui.theme.TuneTheme
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -31,7 +32,7 @@ class MusicSyncContentTest {
     fun musicSyncContentShowsTheMusicSyncTitleString() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
 
-        assert(context.getString(R.string.music_sync_title).isNotBlank())
-        assert(context.getString(R.string.settings_music_sync).isNotBlank())
+        assertTrue(context.getString(R.string.music_sync_title).isNotBlank())
+        assertTrue(context.getString(R.string.settings_music_sync).isNotBlank())
     }
 }

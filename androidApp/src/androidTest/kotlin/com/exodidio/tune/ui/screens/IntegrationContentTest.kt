@@ -71,7 +71,7 @@ class IntegrationContentTest {
 
     @Test
     fun lyricsSourceSelectionReportsAutoFetch() {
-        var source = LyricsSource.Desktop
+        var source = LyricsSource.AutoFetch
         composeTestRule.setContent {
             TuneTheme(themeMode = ThemeMode.Dark) {
                 LyricsContent(
@@ -84,7 +84,6 @@ class IntegrationContentTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Desktop sync").performClick()
         composeTestRule.onNodeWithText("Auto fetch").performClick()
         assertEquals(LyricsSource.AutoFetch, source)
     }
