@@ -30,7 +30,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import android.os.Handler
@@ -584,10 +583,4 @@ internal fun showSystemOutputSwitcher(router: MediaRouter2, sessionToken: MediaS
         }
     }
     return router.showSystemOutputSwitcher()
-}
-
-@Preview
-@Composable
-fun AppAndroidPreview() {
-    App()
 }
