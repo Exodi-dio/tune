@@ -39,3 +39,6 @@ shell T1 → queue T1+T2 → queue T3+T4 → shell T2+T3 → shell T4+T5 → (qu
 - Ruling: T1 extra fix commit waived (forced by brief self-contradiction + no-force-push; behavior preserved per review).
 - Fix round 1/5: genreTokens guard ADDRESSED, no breakage (re-review PASS).
 - Queue batch 1: complete (commits 45114dc..c087595c via queue-1 + fix, review clean after 1 fix round).
+## Queue batch 2 (T3+T4) completion
+- Fix round 1/5: F1 tap-to-seek, F2 string resource, F3 history — ALL ADDRESSED, no breakage.
+- Queue batch 2: complete (review clean after 1 fix round).
