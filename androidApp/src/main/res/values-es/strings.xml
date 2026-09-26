@@ -156,7 +156,7 @@
     <string name="library_playlists">Listas de reproducción</string>
     <string name="library_favorites">Favoritos</string>
     <string name="playlists_empty_title">Sin listas de reproducción</string>
-    <string name="playlists_empty_description">Sincroniza listas desde tu escritorio conectado para verlas aquí.</string>
+    <string name="playlists_empty_description">Crea una lista para verla aquí.</string>
     <string name="playlist_row_open">Abrir lista de reproducción</string>
     <string name="playlist_create">Crear lista de reproducción</string>
     <string name="playlist_create_title">Crear lista de reproducción</string>
@@ -172,7 +172,7 @@
     <string name="bottom_sheet_back">Atrás</string>
     <string name="create">Crear</string>
     <string name="save">Guardar</string>
-    <string name="playlist_sync_failed">No se pudo sincronizar esta lista con el escritorio</string>
+    <string name="playlist_sync_failed">No se pudo actualizar esta lista</string>
     <string name="playlist_details_title">Lista de reproducción</string>
     <string name="playlist_details_empty_title">Lista no disponible</string>
     <string name="playlist_details_empty_description">Esta lista ya no está en la biblioteca sincronizada.</string>
@@ -186,8 +186,8 @@
         <item quantity="other">%d pistas</item>
     </plurals>
     <string name="library_recently_added">Añadido recientemente</string>
-    <string name="library_empty_title">Sin música sincronizada</string>
-    <string name="library_empty_description">Inicia la sincronización en tu escritorio para traer tu biblioteca aquí.</string>
+    <string name="library_empty_title">Aún no hay música</string>
+    <string name="library_empty_description">Analiza la música de este dispositivo en Ajustes → Sincronización de música.</string>
     <string name="cancel">Cancelar</string>
     <string name="settings_playback">Reproducción</string>
     <string name="playback_settings_title">Reproducción</string>

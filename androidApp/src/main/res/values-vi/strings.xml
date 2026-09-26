@@ -156,7 +156,7 @@
     <string name="library_playlists">Danh sách phát</string>
     <string name="library_favorites">Yêu thích</string>
     <string name="playlists_empty_title">Chưa có danh sách phát trong thư viện</string>
-    <string name="playlists_empty_description">Đồng bộ danh sách phát từ máy tính đã kết nối để xem tại đây.</string>
+    <string name="playlists_empty_description">Tạo danh sách phát để xem tại đây.</string>
     <string name="playlist_row_open">Mở danh sách phát</string>
     <string name="playlist_create">Tạo danh sách phát</string>
     <string name="playlist_create_title">Tạo danh sách phát</string>
@@ -172,7 +172,7 @@
     <string name="bottom_sheet_back">Quay lại</string>
     <string name="create">Tạo</string>
     <string name="save">Lưu</string>
-    <string name="playlist_sync_failed">Không thể đồng bộ danh sách phát này với máy tính</string>
+    <string name="playlist_sync_failed">Không thể cập nhật danh sách phát này</string>
     <string name="playlist_details_title">Danh sách phát</string>
     <string name="playlist_details_empty_title">Danh sách phát không khả dụng</string>
     <string name="playlist_details_empty_description">Danh sách phát này không còn trong thư viện đã đồng bộ.</string>
@@ -185,8 +185,8 @@
         <item quantity="other">%d bài hát</item>
     </plurals>
     <string name="library_recently_added">Thêm gần đây</string>
-    <string name="library_empty_title">Chưa có bản nhạc nào được đồng bộ</string>
-    <string name="library_empty_description">Bắt đầu đồng bộ trên máy tính đã kết nối để chuyển thư viện nhạc sang đây.</string>
+    <string name="library_empty_title">Chưa có bản nhạc nào</string>
+    <string name="library_empty_description">Quét nhạc trên thiết bị này trong Cài đặt → Đồng bộ nhạc.</string>
     <string name="cancel">Hủy</string>
     <string name="settings_playback">Phát nhạc</string>
     <string name="playback_settings_title">Phát nhạc</string>

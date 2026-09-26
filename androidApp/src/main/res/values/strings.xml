@@ -156,7 +156,7 @@
     <string name="library_playlists">Playlists</string>
     <string name="library_favorites">Favorites</string>
     <string name="playlists_empty_title">No playlists in library</string>
-    <string name="playlists_empty_description">Sync playlists from your connected desktop to see them here.</string>
+    <string name="playlists_empty_description">Create a playlist to see it here.</string>
     <string name="playlist_row_open">Open playlist</string>
     <string name="playlist_create">Create playlist</string>
     <string name="playlist_create_title">Create playlist</string>
@@ -172,7 +172,7 @@
     <string name="bottom_sheet_back">Back</string>
     <string name="create">Create</string>
     <string name="save">Save</string>
-    <string name="playlist_sync_failed">Could not sync this playlist to desktop</string>
+    <string name="playlist_sync_failed">Could not update this playlist</string>
     <string name="playlist_details_title">Playlist</string>
     <string name="playlist_details_empty_title">Playlist unavailable</string>
     <string name="playlist_details_empty_description">This playlist is no longer in the synced library.</string>
@@ -186,8 +186,8 @@
         <item quantity="other">%d tracks</item>
     </plurals>
     <string name="library_recently_added">Recently Added</string>
-    <string name="library_empty_title">No synced music yet</string>
-    <string name="library_empty_description">Start Sync on your connected desktop to bring your library here.</string>
+    <string name="library_empty_title">No music yet</string>
+    <string name="library_empty_description">Scan the music on this device from Settings → Music sync.</string>
     <string name="cancel">Cancel</string>
     <string name="settings_playback">Playback</string>
     <string name="playback_settings_title">Playback</string>
@@ -228,6 +228,12 @@
     <string name="playback_normalization_target_maximum">-5 LUFS</string>
     <string name="settings_integration">Integration</string>
     <string name="integration_title">Integration</string>
+    <string name="settings_music_sync">Music sync</string>
+    <string name="music_sync_title">Music sync</string>
+    <string name="music_sync_permission_rationale">Tune needs audio access to find music on this device. Allow access, then scan again.</string>
+    <string name="music_sync_permission_denied">Audio access is off. Turn it on in system Settings to scan for music.</string>
+    <string name="music_sync_last_result">Found %1$d tracks · skipped %2$d</string>
+    <string name="music_sync_error">Scan failed: %1$s</string>
     <string name="lastfm_title">Last.fm</string>
     <string name="lastfm_description">Scrobble your plays and sync favorite tracks with Last.fm.</string>
     <string name="lastfm_connected_as">Connected as %1$s</string>

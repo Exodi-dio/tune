@@ -156,7 +156,7 @@
     <string name="library_playlists">播放列表</string>
     <string name="library_favorites">收藏</string>
     <string name="playlists_empty_title">媒体库中暂无播放列表</string>
-    <string name="playlists_empty_description">从已连接的电脑同步播放列表以在此处查看。</string>
+    <string name="playlists_empty_description">创建播放列表后将在此处显示。</string>
     <string name="playlist_row_open">打开播放列表</string>
     <string name="playlist_create">创建播放列表</string>
     <string name="playlist_create_title">创建播放列表</string>
@@ -172,7 +172,7 @@
     <string name="bottom_sheet_back">返回</string>
     <string name="create">创建</string>
     <string name="save">保存</string>
-    <string name="playlist_sync_failed">无法将此播放列表同步到电脑端</string>
+    <string name="playlist_sync_failed">无法更新此播放列表</string>
     <string name="playlist_details_title">播放列表</string>
     <string name="playlist_details_empty_title">播放列表不可用</string>
     <string name="playlist_details_empty_description">该播放列表已不在已同步的媒体库中。</string>
@@ -185,8 +185,8 @@
         <item quantity="other">%d 首曲目</item>
     </plurals>
     <string name="library_recently_added">最近添加</string>
-    <string name="library_empty_title">暂无已同步的音乐</string>
-    <string name="library_empty_description">在已连接的电脑端启动同步，将媒体库传输至此手机。</string>
+    <string name="library_empty_title">暂无音乐</string>
+    <string name="library_empty_description">前往“设置”→“音乐同步”，扫描此设备上的音乐。</string>
     <string name="cancel">取消</string>
     <string name="settings_playback">播放</string>
     <string name="playback_settings_title">播放</string>

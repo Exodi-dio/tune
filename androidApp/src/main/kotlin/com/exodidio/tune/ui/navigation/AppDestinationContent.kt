@@ -58,6 +58,7 @@ import com.exodidio.tune.ui.screens.SettingsContent
 import com.exodidio.tune.ui.screens.IntegrationContent
 import com.exodidio.tune.ui.screens.LastFmContent
 import com.exodidio.tune.ui.screens.LyricsContent
+import com.exodidio.tune.ui.screens.MusicSyncContent
 import com.exodidio.tune.ui.screens.PlaybackSettingsContent
 import com.exodidio.tune.ui.screens.VolumeNormalizationContent
 import com.exodidio.tune.ui.screens.SongTransitionContent
@@ -428,6 +429,9 @@ internal fun AppDestinationContent(
                                 onLyricsSelected = { onIntent(AppIntent.OpenPage(AppStackPage.SettingsLyrics)) },
                                 modifier = settingsPageModifier,
                             )
+                            AppStackPage.SettingsMusicSync -> MusicSyncContent(
+                                modifier = settingsPageModifier,
+                            )
                             AppStackPage.SettingsLastFm -> LastFmContent(
                                 status = lastFmStatus,
                                 onConnect = onLastFmConnect,
@@ -451,6 +455,9 @@ internal fun AppDestinationContent(
                                 },
                                 onIntegrationSelected = {
                                     onIntent(AppIntent.OpenPage(AppStackPage.SettingsIntegration))
+                                },
+                                onMusicSyncSelected = {
+                                    onIntent(AppIntent.OpenPage(AppStackPage.SettingsMusicSync))
                                 },
                                 onAboutSelected = {
                                     onIntent(AppIntent.OpenPage(AppStackPage.SettingsAbout))

@@ -156,7 +156,7 @@
     <string name="library_playlists">Плейлисты</string>
     <string name="library_favorites">Избранное</string>
     <string name="playlists_empty_title">В медиатеке нет плейлистов</string>
-    <string name="playlists_empty_description">Синхронизируйте плейлисты с компьютера, чтобы они появились здесь.</string>
+    <string name="playlists_empty_description">Создайте плейлист, чтобы увидеть его здесь.</string>
     <string name="playlist_row_open">Открыть плейлист</string>
     <string name="playlist_create">Создать плейлист</string>
     <string name="playlist_create_title">Создать плейлист</string>
@@ -172,7 +172,7 @@
     <string name="bottom_sheet_back">Назад</string>
     <string name="create">Создать</string>
     <string name="save">Сохранить</string>
-    <string name="playlist_sync_failed">Не удалось синхронизировать этот плейлист с компьютером</string>
+    <string name="playlist_sync_failed">Не удалось обновить этот плейлист</string>
     <string name="playlist_details_title">Плейлист</string>
     <string name="playlist_details_empty_title">Плейлист недоступен</string>
     <string name="playlist_details_empty_description">Этого плейлиста больше нет в синхронизированной медиатеке.</string>
@@ -188,8 +188,8 @@
         <item quantity="other">%d треков</item>
     </plurals>
     <string name="library_recently_added">Недавно добавленные</string>
-    <string name="library_empty_title">Музыка пока не синхронизирована</string>
-    <string name="library_empty_description">Запустите синхронизацию на компьютере, чтобы перенести медиатеку сюда.</string>
+    <string name="library_empty_title">Музыки пока нет</string>
+    <string name="library_empty_description">Просканируйте музыку на этом устройстве в разделе «Настройки» → «Синхронизация музыки».</string>
     <string name="cancel">Отмена</string>
     <string name="settings_playback">Воспроизведение</string>
     <string name="playback_settings_title">Воспроизведение</string>
