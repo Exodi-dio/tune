@@ -17,9 +17,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: tmp-grep-gate task-7 sponsor
-        run: |
-          ! grep -rnE "about_sponsor|Sponsor Tune|GitHub Sponsors|Ko-fi|Buy Me a Coffee|Patreon|sponsors/exodidio|ko-fi\.com|buymeacoffee|patreon\.com" androidApp/src sharedLogic/src --include="*.kt" --include="*.xml"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
