@@ -91,6 +91,7 @@
     <string name="playlist_reorder_done">Done reordering</string>
     <string name="player_queue_current">Currently playing</string>
     <string name="player_queue_unknown_track">Unavailable track</string>
+    <string name="player_queue_clear_next">Clear next</string>
     <string name="library_artists">Artists</string>
     <string name="library_albums">Albums</string>
     <string name="library_tracks">Tracks</string>

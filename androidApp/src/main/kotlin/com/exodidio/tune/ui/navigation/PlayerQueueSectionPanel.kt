@@ -138,7 +138,7 @@ internal fun PlayerQueueSectionPanel(
                 // autoplayIds are empty in this panel today, so this drops user/context upcoming.
                 item(key = "clear-next") {
                     Text(
-                        text = "Clear next",
+                        text = stringResource(R.string.player_queue_clear_next),
                         color = colors.foregroundSubtle,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier
