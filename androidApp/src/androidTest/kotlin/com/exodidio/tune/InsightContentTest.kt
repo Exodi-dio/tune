@@ -23,7 +23,6 @@ import com.exodidio.tune.ui.screens.InsightPeriod
 import com.exodidio.tune.ui.screens.InsightLineChart
 import com.exodidio.tune.ui.screens.InsightDonut
 import com.exodidio.tune.ui.screens.InsightPoint
-import com.exodidio.tune.ui.screens.InsightSourceFilter
 import com.exodidio.tune.ui.screens.InsightTopTrack
 import com.exodidio.tune.ui.screens.InsightTopArtist
 import com.exodidio.tune.ui.screens.InsightUiState
@@ -43,7 +42,6 @@ class InsightContentTest {
     fun insightReplacesPlaceholderAndExposesFiltersAndExpandableTracks() {
         var state by mutableStateOf(
             InsightUiState(
-                hasOtherSources = true,
                 library = LibraryInsightState(tracks = 6),
                 listening = ListeningInsightState(
                     listenedSeconds = 3_600,
@@ -61,7 +59,6 @@ class InsightContentTest {
                     insight = InsightDestinationModel(
                         state = state,
                         onListeningPeriodSelected = { state = state.copy(listeningPeriod = it) },
-                        onSourceSelected = { state = state.copy(sourceFilter = it) },
                     ),
                 ),
             )
@@ -75,9 +72,6 @@ class InsightContentTest {
         composeTestRule.onAllNodesWithText("7D").onLast().performClick()
         composeTestRule.onNodeWithText("30D").performClick()
         assertEquals(InsightPeriod.ThirtyDays, state.listeningPeriod)
-        composeTestRule.onNodeWithText("All devices").performClick()
-        composeTestRule.onNodeWithText("Other synced devices").performClick()
-        assertEquals(InsightSourceFilter.Other, state.sourceFilter)
         composeTestRule.onNodeWithText("Artist name").performScrollTo()
         composeTestRule.onNodeWithText("Artist name").assertIsDisplayed()
         composeTestRule.onAllNodesWithText("Track 6").assertCountEquals(0)

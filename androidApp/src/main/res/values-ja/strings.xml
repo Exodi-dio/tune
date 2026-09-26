@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7日間</string>
     <string name="insight_range_30d">30日間</string>
     <string name="insight_range_all">すべて</string>
-    <string name="insight_all_devices">すべてのデバイス</string>
-    <string name="insight_this_phone">この端末</string>
-    <string name="insight_desktop">デスクトップ</string>
-    <string name="insight_other_devices">その他の同期済みデバイス</string>
     <string name="insight_library_growth">ライブラリの増加</string>
     <string name="insight_audio_quality">音質</string>
     <string name="insight_library_size">ライブラリのサイズ</string>
@@ -337,11 +333,10 @@
     <string name="lyrics_data_sources">データソース</string>
     <string name="lyrics_preferred_source">優先するソース</string>
     <string name="lyrics_romanization">ローマ字表記を有効にする</string>
-    <string name="lyrics_source_desktop">デスクトップ同期</string>
     <string name="lyrics_source_auto_fetch">自動取得</string>
     <string name="lyrics_info_action">歌詞情報</string>
     <string name="lyrics_info_title">歌詞のデータソース</string>
-    <string name="lyrics_info_description">デスクトップの歌詞を優先するか、自動取得するかを選択できます。モバイルで自動取得した歌詞はデスクトップに同期されません。</string>
+    <string name="lyrics_info_description">Lyrics are fetched automatically from the enabled providers.</string>
     <string name="player_romanization_show">ローマ字を表示</string>
     <string name="player_romanization_hide">ローマ字を非表示</string>
     <string name="player_romanization_loading">ローマ字に変換中…</string>

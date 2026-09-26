@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7N</string>
     <string name="insight_range_30d">30N</string>
     <string name="insight_range_all">Tất cả</string>
-    <string name="insight_all_devices">Tất cả thiết bị</string>
-    <string name="insight_this_phone">Điện thoại này</string>
-    <string name="insight_desktop">Máy tính</string>
-    <string name="insight_other_devices">Thiết bị đồng bộ khác</string>
     <string name="insight_library_growth">Tăng trưởng thư viện</string>
     <string name="insight_audio_quality">Chất lượng âm thanh</string>
     <string name="insight_library_size">Dung lượng thư viện</string>
@@ -337,11 +333,10 @@
     <string name="lyrics_data_sources">Nguồn dữ liệu</string>
     <string name="lyrics_preferred_source">Nguồn ưu tiên</string>
     <string name="lyrics_romanization">Bật phiên âm</string>
-    <string name="lyrics_source_desktop">Đồng bộ từ desktop</string>
     <string name="lyrics_source_auto_fetch">Tự động tìm</string>
     <string name="lyrics_info_action">Thông tin lời bài hát</string>
     <string name="lyrics_info_title">Nguồn lời bài hát</string>
-    <string name="lyrics_info_description">Bạn có thể chọn ưu tiên lời bài hát từ desktop hoặc tự động tìm lời. Lời bài hát được tự động tìm trên mobile sẽ không đồng bộ ngược lại desktop.</string>
+    <string name="lyrics_info_description">Lyrics are fetched automatically from the enabled providers.</string>
     <string name="player_romanization_show">Hiện phiên âm</string>
     <string name="player_romanization_hide">Ẩn phiên âm</string>
     <string name="player_romanization_loading">Đang phiên âm…</string>

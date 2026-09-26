@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7T</string>
     <string name="insight_range_30d">30T</string>
     <string name="insight_range_all">Alle</string>
-    <string name="insight_all_devices">Alle Geräte</string>
-    <string name="insight_this_phone">Dieses Smartphone</string>
-    <string name="insight_desktop">Desktop</string>
-    <string name="insight_other_devices">Andere synchronisierte Geräte</string>
     <string name="insight_library_growth">Mediathek-Wachstum</string>
     <string name="insight_audio_quality">Audioqualität</string>
     <string name="insight_library_size">Mediathek-Größe</string>
@@ -345,11 +341,10 @@
     <string name="lyrics_data_sources">Datenquellen</string>
     <string name="lyrics_preferred_source">Bevorzugte Quelle</string>
     <string name="lyrics_romanization">Romanisierung aktivieren</string>
-    <string name="lyrics_source_desktop">Desktop-Synchronisierung</string>
     <string name="lyrics_source_auto_fetch">Automatisch abrufen</string>
     <string name="lyrics_info_action">Songtextinformationen</string>
     <string name="lyrics_info_title">Songtextquellen</string>
-    <string name="lyrics_info_description">Du kannst wählen, ob Songtexte vom Desktop bevorzugt oder automatisch abgerufen werden sollen. Auf dem Mobilgerät automatisch abgerufene Songtexte werden nicht zurück zum Desktop synchronisiert.</string>
+    <string name="lyrics_info_description">Lyrics are fetched automatically from the enabled providers.</string>
     <string name="player_romanization_show">Romanisierung anzeigen</string>
     <string name="player_romanization_hide">Romanisierung ausblenden</string>
     <string name="player_romanization_loading">Romanisierung läuft…</string>

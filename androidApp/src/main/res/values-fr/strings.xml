@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7J</string>
     <string name="insight_range_30d">30J</string>
     <string name="insight_range_all">Tout</string>
-    <string name="insight_all_devices">Tous les appareils</string>
-    <string name="insight_this_phone">Ce téléphone</string>
-    <string name="insight_desktop">Bureau</string>
-    <string name="insight_other_devices">Autres appareils synchronisés</string>
     <string name="insight_library_growth">Croissance de la bibliothèque</string>
     <string name="insight_audio_quality">Qualité audio</string>
     <string name="insight_library_size">Taille de la bibliothèque</string>
@@ -345,11 +341,10 @@
     <string name="lyrics_data_sources">Sources de données</string>
     <string name="lyrics_preferred_source">Source privilégiée</string>
     <string name="lyrics_romanization">Activer la romanisation</string>
-    <string name="lyrics_source_desktop">Synchronisation du bureau</string>
     <string name="lyrics_source_auto_fetch">Récupération automatique</string>
     <string name="lyrics_info_action">Informations sur les paroles</string>
     <string name="lyrics_info_title">Sources des paroles</string>
-    <string name="lyrics_info_description">Vous pouvez choisir de privilégier les paroles du bureau ou de les récupérer automatiquement. Les paroles récupérées automatiquement sur mobile ne sont pas synchronisées vers le bureau.</string>
+    <string name="lyrics_info_description">Lyrics are fetched automatically from the enabled providers.</string>
     <string name="player_romanization_show">Afficher la romanisation</string>
     <string name="player_romanization_hide">Masquer la romanisation</string>
     <string name="player_romanization_loading">Romanisation en cours…</string>

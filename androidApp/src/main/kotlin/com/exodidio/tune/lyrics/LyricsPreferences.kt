@@ -14,26 +14,22 @@ private val RomanizationKey = booleanPreferencesKey("enable_romanization")
 private val PreferredSourceKey = stringPreferencesKey("preferred_source")
 
 internal enum class LyricsSource(val storageValue: String) {
-    Desktop("desktop"),
     AutoFetch("auto_fetch"),
     ;
 
     companion object {
-        fun fromStorage(value: String?) = entries.firstOrNull { it.storageValue == value } ?: Desktop
+        fun fromStorage(value: String?) = entries.firstOrNull { it.storageValue == value } ?: AutoFetch
     }
 }
 
 internal data class LyricsSettings(
-    val preferredSource: LyricsSource = LyricsSource.Desktop,
+    val preferredSource: LyricsSource = LyricsSource.AutoFetch,
     val lrclib: Boolean = true,
     val kugou: Boolean = true,
     val romanizationEnabled: Boolean = false,
 )
 
-internal fun preferredLyrics(source: LyricsSource, desktop: String?, provider: String?): String? = when (source) {
-    LyricsSource.Desktop -> desktop ?: provider
-    LyricsSource.AutoFetch -> provider ?: desktop
-}
+internal fun preferredLyrics(provider: String?): String? = provider
 
 internal class LyricsPreferences(private val context: Context) {
     val settings = context.lyricsDataStore.data.map {

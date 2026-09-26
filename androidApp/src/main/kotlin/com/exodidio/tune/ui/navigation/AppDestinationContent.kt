@@ -52,7 +52,6 @@ import com.exodidio.tune.ui.screens.LibrarySearchContent
 import com.exodidio.tune.ui.screens.LibrarySearchUiState
 import com.exodidio.tune.ui.screens.InsightContent
 import com.exodidio.tune.ui.screens.InsightPeriod
-import com.exodidio.tune.ui.screens.InsightSourceFilter
 import com.exodidio.tune.ui.screens.InsightUiState
 import com.exodidio.tune.ui.screens.SettingsContent
 import com.exodidio.tune.ui.screens.IntegrationContent
@@ -190,7 +189,6 @@ internal fun AppDestinationContent(
     val onHomeTrackClick = destinations.home.onTrackClick
     val onInsightLibraryPeriodSelected = destinations.insight.onLibraryPeriodSelected
     val onInsightListeningPeriodSelected = destinations.insight.onListeningPeriodSelected
-    val onInsightSourceSelected = destinations.insight.onSourceSelected
     val onInsightTrackClick = destinations.insight.onTrackClick
     val onSortOptionSelected = library.tracks.onSortOptionSelected
     val onToggleSortOrder = library.tracks.onToggleSortOrder
@@ -351,7 +349,6 @@ internal fun AppDestinationContent(
                                 contentPadding = contentPadding,
                                 onLibraryPeriodSelected = onInsightLibraryPeriodSelected,
                                 onListeningPeriodSelected = onInsightListeningPeriodSelected,
-                                onSourceSelected = onInsightSourceSelected,
                                 onArtistClick = { onIntent(AppIntent.OpenArtistDetails(it)) },
                                 onTrackClick = onInsightTrackClick,
                                 modifier = Modifier.fillMaxSize(),

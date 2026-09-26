@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7 วัน</string>
     <string name="insight_range_30d">30 วัน</string>
     <string name="insight_range_all">ทั้งหมด</string>
-    <string name="insight_all_devices">อุปกรณ์ทั้งหมด</string>
-    <string name="insight_this_phone">โทรศัพท์นี้</string>
-    <string name="insight_desktop">เดสก์ท็อป</string>
-    <string name="insight_other_devices">อุปกรณ์ที่ซิงค์อื่นๆ</string>
     <string name="insight_library_growth">การเติบโตของคลังเพลง</string>
     <string name="insight_audio_quality">คุณภาพเสียง</string>
     <string name="insight_library_size">ขนาดคลังเพลง</string>
@@ -337,11 +333,10 @@
     <string name="lyrics_data_sources">แหล่งข้อมูล</string>
     <string name="lyrics_preferred_source">แหล่งข้อมูลที่ต้องการ</string>
     <string name="lyrics_romanization">เปิดใช้การถอดเสียง</string>
-    <string name="lyrics_source_desktop">ซิงค์จากเดสก์ท็อป</string>
     <string name="lyrics_source_auto_fetch">ดึงข้อมูลอัตโนมัติ</string>
     <string name="lyrics_info_action">ข้อมูลเนื้อเพลง</string>
     <string name="lyrics_info_title">แหล่งข้อมูลเนื้อเพลง</string>
-    <string name="lyrics_info_description">คุณสามารถเลือกให้เนื้อเพลงจากเดสก์ท็อปมีความสำคัญก่อน หรือให้แอปดึงเนื้อเพลงโดยอัตโนมัติ เนื้อเพลงที่ดึงโดยอัตโนมัติบนมือถือจะไม่ซิงค์กลับไปยังเดสก์ท็อป</string>
+    <string name="lyrics_info_description">Lyrics are fetched automatically from the enabled providers.</string>
     <string name="player_romanization_show">แสดงคำอ่าน</string>
     <string name="player_romanization_hide">ซ่อนคำอ่าน</string>
     <string name="player_romanization_loading">กำลังถอดเสียง…</string>

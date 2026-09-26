@@ -75,22 +75,6 @@ internal fun InsightPeriodSelector(selected: InsightPeriod, onSelected: (Insight
 }
 
 @Composable
-internal fun SourceControl(state: InsightUiState, onSelected: (InsightSourceFilter) -> Unit, modifier: Modifier = Modifier) {
-    val options = buildList<SelectionOption<InsightSourceFilter>> {
-        add(SelectionOption(InsightSourceFilter.All, R.string.insight_all_devices))
-        add(SelectionOption(InsightSourceFilter.ThisPhone, R.string.insight_this_phone))
-        if (state.hasDesktopSource) add(SelectionOption(InsightSourceFilter.Desktop, R.string.insight_desktop, state.desktopName))
-        if (state.hasOtherSources) add(SelectionOption(InsightSourceFilter.Other, R.string.insight_other_devices))
-    }
-    Selection(
-        options = options,
-        selectedValue = state.sourceFilter,
-        onValueSelected = onSelected,
-        modifier = modifier,
-    )
-}
-
-@Composable
 internal fun MetricPair(
     first: Pair<Int, String>,
     second: Pair<Int, String>,

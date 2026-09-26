@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7天</string>
     <string name="insight_range_30d">30天</string>
     <string name="insight_range_all">全部</string>
-    <string name="insight_all_devices">所有设备</string>
-    <string name="insight_this_phone">此手机</string>
-    <string name="insight_desktop">桌面端</string>
-    <string name="insight_other_devices">其他已同步设备</string>
     <string name="insight_library_growth">媒体库增长</string>
     <string name="insight_audio_quality">音质分布</string>
     <string name="insight_library_size">媒体库大小</string>
@@ -337,11 +333,10 @@
     <string name="lyrics_data_sources">数据源</string>
     <string name="lyrics_preferred_source">首选来源</string>
     <string name="lyrics_romanization">启用罗马化</string>
-    <string name="lyrics_source_desktop">桌面同步</string>
     <string name="lyrics_source_auto_fetch">自动获取</string>
     <string name="lyrics_info_action">歌词信息</string>
     <string name="lyrics_info_title">歌词数据源</string>
-    <string name="lyrics_info_description">你可以选择优先使用桌面端的歌词，或自动获取歌词。在移动端自动获取的歌词不会同步回桌面端。</string>
+    <string name="lyrics_info_description">Lyrics are fetched automatically from the enabled providers.</string>
     <string name="player_romanization_show">显示罗马化</string>
     <string name="player_romanization_hide">隐藏罗马化</string>
     <string name="player_romanization_loading">正在罗马化…</string>

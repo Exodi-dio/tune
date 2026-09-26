@@ -1,9 +1,6 @@
 package com.exodidio.tune.ui.screens
 
 import java.time.LocalDate
-import com.exodidio.tune.pairing.MobileIdentity
-import com.exodidio.tune.pairing.MobilePlatform
-import com.exodidio.tune.pairing.PairedDesktop
 import com.exodidio.tune.player.DailyPlaybackAttemptStat
 import com.exodidio.tune.player.DailyTrackListeningStat
 import com.exodidio.tune.sync.LibraryAlbum
@@ -39,13 +36,11 @@ class InsightViewModelTest {
             DailyPlaybackAttemptStat("phone", "2026-01-10", 2, 1, 1, 0, 500),
             DailyPlaybackAttemptStat("desktop", "2026-01-09", 1, 0, 0, 1, 200),
         ),
-        identity = MobileIdentity("phone", "Phone", MobilePlatform.Android, byteArrayOf()),
-        desktop = PairedDesktop("desktop", "Studio Mac", byteArrayOf()),
     )
 
     @Test
     fun mirrorsDesktopListeningCalculationsAndRankings() {
-        val state = buildInsightUiState(raw, InsightPeriod.SevenDays, InsightPeriod.SevenDays, InsightSourceFilter.All, LocalDate.parse("2026-01-10"))
+        val state = buildInsightUiState(raw, InsightPeriod.SevenDays, InsightPeriod.SevenDays, LocalDate.parse("2026-01-10"))
 
         assertEquals(960, state.listening.listenedSeconds)
         assertEquals(6, state.listening.plays)
@@ -60,13 +55,8 @@ class InsightViewModelTest {
 
     @Test
     fun sourceFilterAndLibraryProjectionUseTheMirroredSnapshot() {
-        val state = buildInsightUiState(raw, InsightPeriod.SevenDays, InsightPeriod.SevenDays, InsightSourceFilter.ThisPhone, LocalDate.parse("2026-01-10"))
+        val state = buildInsightUiState(raw, InsightPeriod.SevenDays, InsightPeriod.SevenDays, LocalDate.parse("2026-01-10"))
 
-        assertEquals(600, state.listening.listenedSeconds)
-        assertEquals(1, state.listening.streakDays)
-        assertEquals("Studio Mac", state.desktopName)
-        assertTrue(state.hasDesktopSource)
-        assertTrue(state.hasOtherSources)
         assertEquals(3, state.library.tracks)
         assertEquals(2, state.library.albums)
         assertEquals(1, state.library.playlists)
@@ -79,7 +69,7 @@ class InsightViewModelTest {
     @Test
     fun longerListeningRangesKeepTheActivityData() {
         listOf(InsightPeriod.ThirtyDays, InsightPeriod.All).forEach { period ->
-            val state = buildInsightUiState(raw, InsightPeriod.SevenDays, period, InsightSourceFilter.All, LocalDate.parse("2026-01-10"))
+            val state = buildInsightUiState(raw, InsightPeriod.SevenDays, period, LocalDate.parse("2026-01-10"))
 
             assertTrue(state.listening.listenedSeconds > 0)
             assertTrue(state.listening.activity.any { it.value > 0 })

@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7G</string>
     <string name="insight_range_30d">30G</string>
     <string name="insight_range_all">Tutto</string>
-    <string name="insight_all_devices">Tutti i dispositivi</string>
-    <string name="insight_this_phone">Questo telefono</string>
-    <string name="insight_desktop">Desktop</string>
-    <string name="insight_other_devices">Altri dispositivi sincronizzati</string>
     <string name="insight_library_growth">Crescita libreria</string>
     <string name="insight_audio_quality">Qualità audio</string>
     <string name="insight_library_size">Dimensioni libreria</string>
@@ -345,11 +341,10 @@
     <string name="lyrics_data_sources">Fonti dati</string>
     <string name="lyrics_preferred_source">Fonte preferita</string>
     <string name="lyrics_romanization">Abilita romanizzazione</string>
-    <string name="lyrics_source_desktop">Sincronizzazione desktop</string>
     <string name="lyrics_source_auto_fetch">Recupero automatico</string>
     <string name="lyrics_info_action">Informazioni sui testi</string>
     <string name="lyrics_info_title">Fonti dei testi</string>
-    <string name="lyrics_info_description">Puoi scegliere se dare priorità ai testi dal desktop o recuperarli automaticamente. I testi recuperati automaticamente sul mobile non vengono sincronizzati con il desktop.</string>
+    <string name="lyrics_info_description">Lyrics are fetched automatically from the enabled providers.</string>
     <string name="player_romanization_show">Mostra romanizzazione</string>
     <string name="player_romanization_hide">Nascondi romanizzazione</string>
     <string name="player_romanization_loading">Romanizzazione in corso…</string>

@@ -126,7 +126,6 @@ internal fun LyricsContent(
         Selection(
             labelRes = R.string.lyrics_preferred_source,
             options = listOf(
-                SelectionOption(LyricsSource.Desktop, R.string.lyrics_source_desktop),
                 SelectionOption(LyricsSource.AutoFetch, R.string.lyrics_source_auto_fetch),
             ),
             selectedValue = settings.preferredSource,

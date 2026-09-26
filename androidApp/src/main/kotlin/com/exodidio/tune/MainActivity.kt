@@ -213,25 +213,19 @@ class MainActivity : ComponentActivity() {
                 is PlaybackState.Paused -> state.item.trackId
                 else -> null
             }
-            val desktopLyricsFlow = remember(lyricsTrackId) {
-                lyricsTrackId?.let(AndroidSyncRuntime.syncStore()::desktopLyrics) ?: flowOf(null)
-            }
             val providerLyricsFlow = remember(lyricsTrackId) {
                 lyricsTrackId?.let(AndroidSyncRuntime.syncStore()::providerLyrics) ?: flowOf(null)
             }
-            val desktopLyrics by desktopLyricsFlow.collectAsStateWithLifecycle(initialValue = null)
             val providerLyrics by providerLyricsFlow.collectAsStateWithLifecycle(initialValue = null)
             var manualLyricsOverride by remember { mutableStateOf<ManualLyricsOverride?>(null) }
             LaunchedEffect(lyricsTrackId) {
                 if (manualLyricsOverride?.trackId != lyricsTrackId) manualLyricsOverride = null
             }
             val lyrics = manualLyricsOverride?.takeIf { it.trackId == lyricsTrackId }?.content
-                ?: com.exodidio.tune.lyrics.preferredLyrics(lyricsSettings.preferredSource, desktopLyrics, providerLyrics)
+                ?: com.exodidio.tune.lyrics.preferredLyrics(providerLyrics)
             var lyricsLoadingTrackId by remember { mutableStateOf<String?>(null) }
-            LaunchedEffect(lyricsTrackId, desktopLyrics, providerLyrics, lyricsSettings, manualLyricsOverride) {
-                if (lyricsTrackId == null || manualLyricsOverride?.trackId == lyricsTrackId || !providerLyrics.isNullOrBlank() ||
-                    (lyricsSettings.preferredSource == com.exodidio.tune.lyrics.LyricsSource.Desktop && !desktopLyrics.isNullOrBlank())
-                ) return@LaunchedEffect
+            LaunchedEffect(lyricsTrackId, providerLyrics, lyricsSettings, manualLyricsOverride) {
+                if (lyricsTrackId == null || manualLyricsOverride?.trackId == lyricsTrackId || !providerLyrics.isNullOrBlank()) return@LaunchedEffect
                 lyricsLoadingTrackId = lyricsTrackId
                 try {
                     lyricsService.fetch(lyricsTrackId, lyricsSettings)
@@ -286,7 +280,6 @@ class MainActivity : ComponentActivity() {
                     state = insightUiState,
                     onLibraryPeriodSelected = insightViewModel::setLibraryPeriod,
                     onListeningPeriodSelected = insightViewModel::setListeningPeriod,
-                    onSourceSelected = insightViewModel::setSourceFilter,
                     onTrackClick = insightViewModel::playTopTrack,
                 ),
                 library = LibraryDestinationModel(

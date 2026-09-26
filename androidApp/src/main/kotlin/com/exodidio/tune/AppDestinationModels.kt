@@ -29,7 +29,6 @@ import com.exodidio.tune.ui.screens.GenreDetailsUiState
 import com.exodidio.tune.ui.screens.GenreSortOption
 import com.exodidio.tune.ui.screens.HomeUiState
 import com.exodidio.tune.ui.screens.InsightPeriod
-import com.exodidio.tune.ui.screens.InsightSourceFilter
 import com.exodidio.tune.ui.screens.InsightUiState
 import com.exodidio.tune.ui.screens.LibraryAlbumsUiState
 import com.exodidio.tune.ui.screens.LibraryArtistsUiState
@@ -51,7 +50,6 @@ import com.exodidio.tune.ui.screens.TrackSortOption
     val state: InsightUiState = InsightUiState(),
     val onLibraryPeriodSelected: (InsightPeriod) -> Unit = {},
     val onListeningPeriodSelected: (InsightPeriod) -> Unit = {},
-    val onSourceSelected: (InsightSourceFilter) -> Unit = {},
     val onTrackClick: (String) -> Unit = {},
 )
 
