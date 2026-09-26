@@ -198,11 +198,6 @@
     <string name="about_version">เวอร์ชัน</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">สัญญาอนุญาต</string>
-    <string name="about_sponsor">สนับสนุน Tune</string>
-    <string name="about_sponsor_github">GitHub Sponsors</string>
-    <string name="about_sponsor_kofi">Ko-fi</string>
-    <string name="about_sponsor_bmac">Buy Me a Coffee</string>
-    <string name="about_sponsor_patreon">Patreon</string>
     <string name="theme_system">ระบบ</string>
     <string name="theme_light">สว่าง</string>
     <string name="theme_dark">มืด</string>

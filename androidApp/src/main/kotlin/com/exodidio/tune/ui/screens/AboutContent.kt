@@ -19,15 +19,10 @@ import com.exodidio.tune.ui.components.ActionListContainerStyle
 import com.exodidio.tune.ui.components.ActionListDividerStyle
 import com.exodidio.tune.ui.components.ActionListItem
 import com.exodidio.tune.ui.components.HeroCard
-import com.exodidio.tune.ui.components.LabeledCard
 import com.exodidio.tune.ui.theme.LocalTuneColors
 
 private const val TuneGithubUrl = "https://github.com/Exodi-dio/tune"
 private const val TuneLicenseUrl = "https://github.com/Exodi-dio/tune/blob/master/LICENSE"
-private const val TuneGithubSponsorsUrl = "https://github.com/sponsors/exodidio"
-private const val TuneKofiUrl = "https://ko-fi.com/exodidio"
-private const val TuneBuyMeACoffeeUrl = "https://buymeacoffee.com/exodidio2"
-private const val TunePatreonUrl = "https://www.patreon.com/c/exodidio"
 
 @Composable
 internal fun AboutContent(
@@ -73,32 +68,5 @@ internal fun AboutContent(
             containerStyle = ActionListContainerStyle.Card,
             dividerStyle = ActionListDividerStyle.FullWidth,
         )
-        LabeledCard(
-            label = stringResource(R.string.about_sponsor),
-            modifier = Modifier.padding(top = 8.dp),
-        ) {
-            ActionList(
-                items = listOf(
-                    ActionListItem(
-                        labelRes = R.string.about_sponsor_github,
-                        onClick = { onOpenExternalUrl(TuneGithubSponsorsUrl) },
-                    ),
-                    ActionListItem(
-                        labelRes = R.string.about_sponsor_kofi,
-                        onClick = { onOpenExternalUrl(TuneKofiUrl) },
-                    ),
-                    ActionListItem(
-                        labelRes = R.string.about_sponsor_bmac,
-                        onClick = { onOpenExternalUrl(TuneBuyMeACoffeeUrl) },
-                    ),
-                    ActionListItem(
-                        labelRes = R.string.about_sponsor_patreon,
-                        onClick = { onOpenExternalUrl(TunePatreonUrl) },
-                    ),
-                ),
-                containerStyle = ActionListContainerStyle.Plain,
-                dividerStyle = ActionListDividerStyle.FullWidth,
-            )
-        }
     }
 }

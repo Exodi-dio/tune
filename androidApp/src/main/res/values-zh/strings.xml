@@ -198,11 +198,6 @@
     <string name="about_version">版本</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">开源许可</string>
-    <string name="about_sponsor">赞助 Tune</string>
-    <string name="about_sponsor_github">GitHub Sponsors</string>
-    <string name="about_sponsor_kofi">Ko-fi</string>
-    <string name="about_sponsor_bmac">Buy Me a Coffee</string>
-    <string name="about_sponsor_patreon">Patreon</string>
     <string name="theme_system">系统</string>
     <string name="theme_light">浅色</string>
     <string name="theme_dark">深色</string>
