@@ -8,6 +8,13 @@ import kotlinx.serialization.json.JsonPrimitive
 
 const val MaxOfflineAutoplay: Int = 10
 
+/**
+ * Fix wave (C4): bound for autoplay growth. Long sessions on Repeat.All
+ * otherwise grow the queue up to library size; refills stop once the active
+ * queue reaches this size. All other trigger behavior is identical.
+ */
+const val MaxAutoplayQueueSize: Int = 200
+
 fun shouldSuppressAutoplay(repeatMode: RepeatMode): Boolean =
     repeatMode == RepeatMode.One
 
@@ -82,6 +89,9 @@ fun autoplayRefillIds(
     autoplayEnabled: Boolean = true,
 ): List<String> {
     if (currentTrack == null) return emptyList()
+    // C4: skip refill once the queue reaches the autoplay bound, even when the
+    // upcoming tail is low (Repeat.All would otherwise grow it to library size).
+    if (snapshot.activeTrackIds.size >= MaxAutoplayQueueSize) return emptyList()
     val upcomingCount = snapshot.activeTrackIds.size - snapshot.currentIndex - 1
     if (!shouldRefillAutoplay(upcomingCount = upcomingCount, repeatMode = snapshot.repeatMode, autoplayEnabled = autoplayEnabled)) return emptyList()
     return pickAutoplay(library = library, currentTrack = currentTrack, recentIds = snapshot.activeTrackIds.toSet(), limit = MaxOfflineAutoplay)

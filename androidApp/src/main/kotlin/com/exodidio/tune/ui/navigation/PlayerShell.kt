@@ -31,6 +31,7 @@ import com.exodidio.tune.lyrics.RomanizationUiState
 import com.exodidio.tune.player.PlaybackQueueSnapshot
 import com.exodidio.tune.player.RepeatMode
 import com.exodidio.tune.sync.LibraryTrack
+import com.exodidio.tune.ui.components.TrackContextBottomSheetRequest
 import com.exodidio.tune.ui.theme.LocalTuneColors
 import dev.chrisbanes.haze.HazeState
 
@@ -55,20 +56,31 @@ internal fun PlayerShellDragHandle() {
 
 /**
  * Final queue mount: renders the sectioned queue inside the shell. Backed by
- * PlayerQueueSectionPanel (Tasks 1/3/4); shuffle/repeat callbacks stay in the
- * contract for stability while the section panel owns no toggles.
+ * PlayerQueueSectionPanel (Tasks 1/3/4). Fix wave: [onShuffleChange] and
+ * [onRepeatModeChange] are wired to the queue header shuffle/repeat toggles
+ * (old FullScreenQueuePanel location); [isPlaying] drives the current-row
+ * playing indicator; the track menu callbacks restore the old queue
+ * play-next/favorite/go-to/bottom-sheet entry points. No dead params remain;
+ * the mount stays `internal` like the lyrics mount.
  */
 @Composable
-fun PlayerShellQueueMount(
+internal fun PlayerShellQueueMount(
     queue: PlaybackQueueSnapshot,
     tracks: List<LibraryTrack>,
     currentTrackId: String,
     isPlaying: Boolean,
     onTrackSelected: (String) -> Unit,
     onTrackRemoved: (String) -> Unit,
+    onTrackPlayNext: (String) -> Unit = {},
     onReorder: (List<String>) -> Unit,
     onShuffleChange: (Boolean) -> Unit,
     onRepeatModeChange: (RepeatMode) -> Unit,
+    onFavoriteToggle: (String, Boolean) -> Unit = { _, _ -> },
+    onTrackGoToAlbum: (String) -> Unit = {},
+    onTrackGoToArtist: (String) -> Unit = {},
+    onTrackContextBottomSheet: (TrackContextBottomSheetRequest) -> Unit = {},
+    moodRadioEligibleTrackIds: Set<String> = emptySet(),
+    onStartMoodRadio: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     PlayerQueueSectionPanel(
@@ -76,10 +88,20 @@ fun PlayerShellQueueMount(
         tracks = tracks,
         autoplayEnabled = true,
         currentTrackId = currentTrackId,
+        isPlaying = isPlaying,
         onTrackSelected = onTrackSelected,
         onTrackRemoved = onTrackRemoved,
+        onTrackPlayNext = onTrackPlayNext,
         onReorder = onReorder,
         onClearNext = { cleared -> onReorder(cleared) },
+        onShuffleChange = onShuffleChange,
+        onRepeatModeChange = onRepeatModeChange,
+        onFavoriteToggle = onFavoriteToggle,
+        onTrackGoToAlbum = onTrackGoToAlbum,
+        onTrackGoToArtist = onTrackGoToArtist,
+        onTrackContextBottomSheet = onTrackContextBottomSheet,
+        moodRadioEligibleTrackIds = moodRadioEligibleTrackIds,
+        onStartMoodRadio = onStartMoodRadio,
         modifier = modifier,
     )
 }

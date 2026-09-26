@@ -23,7 +23,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -203,9 +202,6 @@ internal fun App(
         val isForwardHeaderTransition = currentStackPage.index >= previousStackPage.index
         val showsMiniPlayer = playbackState.showsMiniPlayer()
         var isFullScreenPlayerVisible by rememberSaveable { mutableStateOf(false) }
-        var isFullScreenPlayerOpeningFromSwipe by remember { mutableStateOf(false) }
-        var fullScreenPlayerDragProgress by remember { mutableFloatStateOf(0f) }
-        var isFullScreenPlayerDragging by remember { mutableStateOf(false) }
         var trackContextSheet by remember { mutableStateOf<TrackContextBottomSheetRequest?>(null) }
         var equalizerProfileSheet by remember { mutableStateOf<EqualizerProfileSheet?>(null) }
         var isNavigationCompact by remember { mutableStateOf(false) }
@@ -228,9 +224,6 @@ internal fun App(
                 isNavigationCompact = false
                 navigationScrollAccumulator.reset()
                 setFullScreenPlayerVisible(false)
-                isFullScreenPlayerOpeningFromSwipe = false
-                isFullScreenPlayerDragging = false
-                fullScreenPlayerDragProgress = 0f
             }
         }
         val navigationChromeHeight = when {
@@ -550,20 +543,13 @@ internal fun App(
                     playback.onMiniPlayerDismiss()
                 },
                 onOpenFullScreenPlayer = {
-                    isFullScreenPlayerOpeningFromSwipe = false
                     setFullScreenPlayerVisible(true)
                 },
-                onFullScreenPlayerDrag = { progress ->
-                    isFullScreenPlayerDragging = true
-                    fullScreenPlayerDragProgress = progress
-                },
+                // Fix wave (C8): the MiniPlayer drag callbacks are write-only
+                // against the shell (it owns no drag gesture), so only the
+                // release decision reaches the overlay; drag progress uses the
+                // NavigationChrome default (no-op).
                 onFullScreenPlayerDragEnd = { shouldOpen ->
-                    isFullScreenPlayerDragging = false
-                    // A partial pull must not remain as the overlay's source of truth
-                    // once the pointer is released. The overlay then animates to either
-                    // its closed or fully-open resting state.
-                    fullScreenPlayerDragProgress = 0f
-                    isFullScreenPlayerOpeningFromSwipe = shouldOpen
                     setFullScreenPlayerVisible(shouldOpen)
                 },
                 modifier = Modifier
@@ -590,9 +576,13 @@ internal fun App(
                 isFavorite = isCurrentFavorite,
                 onDismiss = {
                     setFullScreenPlayerVisible(false)
-                    isFullScreenPlayerOpeningFromSwipe = false
                 },
                 hazeState = hazeState,
+                // Fix wave (C3): re-thread the navigation entry points dropped
+                // with the old player (go-to-album/artist + bottom-sheet).
+                onTrackGoToAlbum = { albumId -> onIntent(AppIntent.OpenAlbumDetails(albumId)) },
+                onTrackGoToArtist = { artistId -> onIntent(AppIntent.OpenArtistDetails(artistId)) },
+                onTrackContextBottomSheet = { request -> trackContextSheet = request },
             )
             trackContextSheet?.let { request ->
                 TrackContextBottomSheet(

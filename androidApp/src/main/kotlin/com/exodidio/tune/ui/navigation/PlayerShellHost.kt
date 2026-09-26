@@ -11,6 +11,7 @@ import com.exodidio.tune.PlaybackModel
 import com.exodidio.tune.player.PlaybackItem
 import com.exodidio.tune.player.PlaybackState
 import com.exodidio.tune.sync.metadataObject
+import com.exodidio.tune.ui.components.TrackContextBottomSheetRequest
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.serialization.json.JsonPrimitive
@@ -70,6 +71,12 @@ internal fun PlayerShellHost(
     isFavorite: Boolean = false,
     onDismiss: () -> Unit,
     hazeState: HazeState? = null,
+    // Fix wave (C3): navigation entry points dropped with the old player are
+    // re-threaded here from App.kt (onIntent/trackContextSheet) instead of
+    // the PlaybackModel, which stays service-layer-only.
+    onTrackGoToAlbum: (String) -> Unit = {},
+    onTrackGoToArtist: (String) -> Unit = {},
+    onTrackContextBottomSheet: (TrackContextBottomSheetRequest) -> Unit = {},
 ) {
     val queue = playback.queue
     val item = playback.state.shellItemOrNull() ?: return
@@ -152,6 +159,15 @@ internal fun PlayerShellHost(
                 onOpenMediaOutputSwitcher = playback.onOpenMediaOutputSwitcher,
                 isFavorite = isFavorite,
                 onFavoriteToggle = playback.onFavoriteToggle,
+                contextTrack = contextTrack,
+                showQualityBadge = playback.showFullscreenQualityBadge,
+                moodRadioEligibleTrackIds = playback.moodRadioEligibleTrackIds,
+                onTrackPlayNext = playback.onTrackPlayNext,
+                onTrackAddToQueue = playback.onTrackAddToQueue,
+                onStartMoodRadio = playback.onStartMoodRadio,
+                onTrackGoToAlbum = onTrackGoToAlbum,
+                onTrackGoToArtist = onTrackGoToArtist,
+                onTrackContextBottomSheet = onTrackContextBottomSheet,
                 outgoingArtworkPath = activeArtworkCrossfade?.fromArtworkPath,
                 incomingArtworkPath = activeArtworkCrossfade?.toArtworkPath,
                 crossfadeProgress = crossfadeProgress,
@@ -165,9 +181,16 @@ internal fun PlayerShellHost(
                     isPlaying = isPlaying,
                     onTrackSelected = playback.onQueueTrackSelected,
                     onTrackRemoved = playback.onQueueTrackRemoved,
+                    onTrackPlayNext = playback.onTrackPlayNext,
                     onReorder = playback.onQueueReordered,
                     onShuffleChange = playback.onShuffleChange,
                     onRepeatModeChange = playback.onRepeatModeChange,
+                    onFavoriteToggle = playback.onFavoriteToggle,
+                    onTrackGoToAlbum = onTrackGoToAlbum,
+                    onTrackGoToArtist = onTrackGoToArtist,
+                    onTrackContextBottomSheet = onTrackContextBottomSheet,
+                    moodRadioEligibleTrackIds = playback.moodRadioEligibleTrackIds,
+                    onStartMoodRadio = playback.onStartMoodRadio,
                 )
             }
             if (selectedPanel == PlayerShellPanel.LYRICS) {

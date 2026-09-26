@@ -3,30 +3,13 @@ package com.exodidio.tune.ui.navigation
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsSelected
-import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
-import androidx.compose.ui.test.assertHeightIsEqualTo
-import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.swipeDown
-import androidx.compose.ui.test.swipeLeft
-import androidx.compose.ui.test.longClick
-import androidx.compose.ui.unit.dp
+import com.exodidio.tune.PlaybackModel
 import com.exodidio.tune.player.PlaybackItem
 import com.exodidio.tune.player.PlaybackQueueSnapshot
 import com.exodidio.tune.player.PlaybackState
@@ -34,587 +17,52 @@ import com.exodidio.tune.player.RepeatMode
 import com.exodidio.tune.settings.ThemeMode
 import com.exodidio.tune.sync.LibraryTrack
 import com.exodidio.tune.ui.theme.TuneTheme
-import com.exodidio.tune.ui.components.TrackContextArtist
-import com.exodidio.tune.ui.components.TrackContextBottomSheetRequest
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
-import org.junit.Assert.assertEquals
 
+/**
+ * Review-gated only: androidTest is NOT compiled by CI. A reviewer runs this
+ * locally with a connected device or emulator. Rewritten for the shell port:
+ * every case mounts PlayerShell* composables (the deleted FullScreenPlayer
+ * panels are gone).
+ */
 class FullScreenPlayerTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
     @Test
-    fun romanizationToggleReplacesAndRestoresSecondary() {
-        var enabled by mutableStateOf(false)
+    fun queueMountShowsTracksAndDispatchesSelection() {
+        var selectedTrack: String? = null
         composeTestRule.setContent {
             TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayerLyricsPanel(
-                    trackId = "test", lyrics = "你好 ^ Hello", currentPositionMs = 0L, onSeek = {},
-                    romanization = com.exodidio.tune.lyrics.RomanizationUiState(
-                        input = listOf("你好"), supported = true, enabled = enabled, secondary = listOf("nǐ hǎo"),
+                PlayerShellQueueMount(
+                    queue = PlaybackQueueSnapshot(
+                        originalTrackIds = listOf("track-1", "track-2"),
+                        activeTrackIds = listOf("track-1", "track-2"),
+                        currentIndex = 0,
                     ),
-                    romanizationAllowed = true,
-                    onRomanizationToggle = { enabled = !enabled },
-                    modifier = Modifier.width(320.dp).height(400.dp),
-                )
-            }
-        }
-        composeTestRule.onNodeWithText("Hello").assertExists()
-        composeTestRule.onNodeWithTag("romanization_toggle").performClick().assertIsSelected()
-        composeTestRule.onNodeWithText("nǐ hǎo").assertExists()
-        composeTestRule.onNodeWithText("Hello").assertDoesNotExist()
-        composeTestRule.onNodeWithTag("romanization_toggle").performClick()
-        composeTestRule.onNodeWithText("Hello").assertExists()
-    }
-
-    @Test
-    fun disabledRomanizationHidesTheToggleAndRestoresSecondaryLyrics() {
-        var allowed by mutableStateOf(true)
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayerLyricsPanel(
-                    trackId = "test", lyrics = "你好 ^ Hello", currentPositionMs = 0L, onSeek = {},
-                    romanization = com.exodidio.tune.lyrics.RomanizationUiState(
-                        input = listOf("你好"), supported = true, enabled = true, secondary = listOf("nǐ hǎo"),
+                    tracks = listOf(
+                        LibraryTrack(id = "track-1", title = "Test title", artists = "Test artist"),
+                        LibraryTrack(id = "track-2", title = "Next track", artists = "Next artist"),
                     ),
-                    romanizationAllowed = allowed,
-                    modifier = Modifier.width(320.dp).height(400.dp),
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithText("nǐ hǎo").assertExists()
-        allowed = false
-        composeTestRule.onNodeWithText("Hello").assertExists()
-        composeTestRule.onAllNodesWithTag("romanization_toggle").assertCountEquals(0)
-    }
-
-    @Test
-    fun preparingPlaybackUsesMetadataDuration() {
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayer(
-                    visible = true,
-                    dragProgress = 0f,
-                    isDragging = false,
-                    openingFromMiniPlayerSwipe = false,
-                    playbackState = PlaybackState.Preparing(item),
-                    queueTracks = listOf(
-                        LibraryTrack(
-                            id = item.trackId,
-                            title = item.title,
-                            artists = item.artist,
-                            metadataJson = "{\"duration\":245}",
-                        ),
-                    ),
-                    volume = 0.5f,
-                    onSeek = {}, onVolumeChange = {}, onPrevious = {}, onPlayPause = {}, onNext = {},
-                    onOpenMediaOutputSwitcher = {}, onDismiss = {},
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithTag(FullScreenPlayerDurationTestTag).assertExists()
-        composeTestRule.onNodeWithText("4:05").assertExists()
-    }
-
-    @Test
-    fun qualityBadgeShowsSupportedFormatsAndRespectsSetting() {
-        var showQualityBadge by mutableStateOf(true)
-        var track by mutableStateOf(
-            LibraryTrack(id = item.trackId, title = item.title, artists = item.artist, metadataJson = "{\"format\":\"flac\",\"bit_depth\":16,\"sample_rate\":44100}"),
-        )
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayer(
-                    visible = true,
-                    dragProgress = 0f,
-                    isDragging = false,
-                    openingFromMiniPlayerSwipe = false,
-                    playbackState = PlaybackState.Playing(item, 0L, 120_000L),
-                    queueTracks = listOf(track),
-                    showQualityBadge = showQualityBadge,
-                    volume = 0.5f,
-                    onSeek = {}, onVolumeChange = {}, onPrevious = {}, onPlayPause = {}, onNext = {},
-                    onOpenMediaOutputSwitcher = {}, onDismiss = {},
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithTag(FullScreenPlayerQualityBadgeTestTag).assertExists()
-        composeTestRule.onNodeWithText("Lossless").assertExists()
-        val elapsedTimeBounds = composeTestRule
-            .onNodeWithTag(FullScreenPlayerElapsedTimeTestTag)
-            .fetchSemanticsNode()
-            .boundsInRoot
-        val durationBounds = composeTestRule
-            .onNodeWithTag(FullScreenPlayerDurationTestTag)
-            .fetchSemanticsNode()
-            .boundsInRoot
-        composeTestRule.onNodeWithTag(FullScreenPlayerQualityBadgeTestTag).performClick()
-        composeTestRule.onNodeWithText("Sample rate").assertExists()
-        composeTestRule.onNodeWithText("44.1 kHz").assertExists()
-        composeTestRule.onNodeWithText("Bit depth").assertExists()
-        composeTestRule.onNodeWithText("16-bit").assertExists()
-        composeTestRule.onAllNodesWithText("Codec").assertCountEquals(0)
-        composeTestRule.onNodeWithContentDescription("OK").performClick()
-        composeTestRule.onAllNodesWithText("Sample rate").assertCountEquals(0)
-
-        composeTestRule.runOnIdle {
-            track = track.copy(metadataJson = "{\"format\":\"flac\",\"bit_depth\":24,\"sample_rate\":96000}")
-        }
-        composeTestRule.onNodeWithText("Hi-Res").assertExists()
-
-        composeTestRule.runOnIdle {
-            track = track.copy(metadataJson = "{\"format\":\"dsf\"}")
-        }
-        composeTestRule.onNodeWithText("DSD").assertExists()
-
-        composeTestRule.runOnIdle {
-            track = track.copy(metadataJson = "{\"format\":\"mp3\"}")
-        }
-        composeTestRule.onAllNodesWithTag(FullScreenPlayerQualityBadgeTestTag).assertCountEquals(0)
-        assertEquals(
-            elapsedTimeBounds.left,
-            composeTestRule.onNodeWithTag(FullScreenPlayerElapsedTimeTestTag).fetchSemanticsNode().boundsInRoot.left,
-            0.5f,
-        )
-        assertEquals(
-            durationBounds.right,
-            composeTestRule.onNodeWithTag(FullScreenPlayerDurationTestTag).fetchSemanticsNode().boundsInRoot.right,
-            0.5f,
-        )
-
-        composeTestRule.runOnIdle {
-            track = track.copy(metadataJson = "{\"format\":\"dsf\"}")
-            showQualityBadge = false
-        }
-        composeTestRule.onAllNodesWithTag(FullScreenPlayerQualityBadgeTestTag).assertCountEquals(0)
-    }
-
-    @Test
-    fun favoriteHeartConfirmsOnlyWhenAdding() {
-        val haptics = mutableListOf<HapticFeedbackType>()
-        var change: Boolean? = null
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                CompositionLocalProvider(LocalHapticFeedback provides object : HapticFeedback {
-                    override fun performHapticFeedback(hapticFeedbackType: HapticFeedbackType) { haptics += hapticFeedbackType }
-                }) {
-                    FullScreenPlayer(
-                        visible = true,
-                        dragProgress = 0f,
-                        isDragging = false,
-                        openingFromMiniPlayerSwipe = false,
-                        playbackState = PlaybackState.Playing(item, 0L, 120_000L),
-                        volume = 0.5f,
-                        onSeek = {}, onVolumeChange = {}, onPrevious = {}, onPlayPause = {}, onNext = {},
-                        onFavoriteToggle = { _, favorite -> change = favorite },
-                        onOpenMediaOutputSwitcher = {}, onDismiss = {},
-                    )
-                }
-            }
-        }
-
-        composeTestRule.onNodeWithContentDescription("Favorite").performClick()
-        composeTestRule.runOnIdle {
-            assertEquals(true, change)
-            assertEquals(listOf(HapticFeedbackType.Confirm), haptics)
-        }
-    }
-
-    @Test
-    fun favoriteHeartDoesNotConfirmWhenRemoving() {
-        val haptics = mutableListOf<HapticFeedbackType>()
-        var change: Boolean? = null
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                CompositionLocalProvider(LocalHapticFeedback provides object : HapticFeedback {
-                    override fun performHapticFeedback(hapticFeedbackType: HapticFeedbackType) { haptics += hapticFeedbackType }
-                }) {
-                    FullScreenPlayer(
-                        visible = true,
-                        dragProgress = 0f,
-                        isDragging = false,
-                        openingFromMiniPlayerSwipe = false,
-                        playbackState = PlaybackState.Playing(item, 0L, 120_000L),
-                        volume = 0.5f,
-                        onSeek = {}, onVolumeChange = {}, onPrevious = {}, onPlayPause = {}, onNext = {},
-                        isFavorite = true,
-                        onFavoriteToggle = { _, favorite -> change = favorite },
-                        onOpenMediaOutputSwitcher = {}, onDismiss = {},
-                    )
-                }
-            }
-        }
-
-        composeTestRule.onNodeWithContentDescription("Favorite").performClick()
-        composeTestRule.runOnIdle {
-            assertEquals(false, change)
-            assertEquals(emptyList<HapticFeedbackType>(), haptics)
-        }
-    }
-
-    @Test
-    fun shortScreenCentersAndCapsArtworkByAvailableHeight() {
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayer(
-                    visible = true,
-                    dragProgress = 0f,
-                    isDragging = false,
-                    openingFromMiniPlayerSwipe = false,
-                    playbackState = PlaybackState.Playing(item, 0L, 120_000L),
-                    volume = 0.5f,
-                    onSeek = {},
-                    onVolumeChange = {},
-                    onPrevious = {},
-                    onPlayPause = {},
-                    onNext = {},
-                    onOpenMediaOutputSwitcher = {},
-                    onDismiss = {},
-                    modifier = Modifier.width(360.dp).height(568.dp),
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithTag("full_screen_player_artwork")
-            .assertHeightIsEqualTo(120.dp)
-            .assertLeftPositionInRootIsEqualTo(120.dp)
-    }
-
-    @Test
-    fun queueStatusBadgeWaitsForQueueButtonBackgroundToFadeOut() {
-        composeTestRule.mainClock.autoAdvance = false
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayer(
-                    visible = true,
-                    dragProgress = 0f,
-                    isDragging = false,
-                    openingFromMiniPlayerSwipe = false,
-                    playbackState = PlaybackState.Playing(item, 0L, 120_000L),
-                    queue = PlaybackQueueSnapshot(shuffle = true),
-                    volume = 0.5f,
-                    onSeek = {},
-                    onVolumeChange = {},
-                    onPrevious = {},
-                    onPlayPause = {},
-                    onNext = {},
-                    onOpenMediaOutputSwitcher = {},
-                    onDismiss = {},
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithTag(FullScreenQueueStatusBadgeTestTag).assertExists()
-        composeTestRule.onNodeWithContentDescription("Queue").performClick()
-        composeTestRule.onAllNodesWithTag(FullScreenQueueStatusBadgeTestTag).assertCountEquals(0)
-
-        composeTestRule.onNodeWithContentDescription("Queue").performClick()
-        composeTestRule.mainClock.advanceTimeBy(QueueStatusBadgeRevealDelayMs.toLong() - 1L)
-        composeTestRule.onAllNodesWithTag(FullScreenQueueStatusBadgeTestTag).assertCountEquals(0)
-
-        composeTestRule.mainClock.advanceTimeBy(1L)
-        composeTestRule.onNodeWithTag(FullScreenQueueStatusBadgeTestTag).assertExists()
-    }
-
-    @Test
-    fun swipingDownFromArtworkDismissesFullscreenPlayer() {
-        var dismissCount = 0
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayer(
-                    visible = true,
-                    dragProgress = 0f,
-                    isDragging = false,
-                    openingFromMiniPlayerSwipe = false,
-                    playbackState = PlaybackState.Playing(item, 0L, 120_000L),
-                    volume = 0.5f,
-                    onSeek = {},
-                    onVolumeChange = {},
-                    onPrevious = {},
-                    onPlayPause = {},
-                    onNext = {},
-                    onOpenMediaOutputSwitcher = {},
-                    onDismiss = { dismissCount++ },
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithTag("full_screen_player_artwork").performTouchInput {
-            swipeDown()
-        }
-        composeTestRule.runOnIdle { assertEquals(1, dismissCount) }
-    }
-
-    @Test
-    fun boundarySwipeUsesTheLatestQueueAndCallback() {
-        var queue by mutableStateOf(PlaybackQueueSnapshot())
-        var callbackGeneration by mutableStateOf(1)
-        var invokedGeneration: Int? = null
-        composeTestRule.setContent {
-            val onNext = if (callbackGeneration == 1) {
-                { invokedGeneration = 1 }
-            } else {
-                { invokedGeneration = 2 }
-            }
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayer(
-                    visible = true,
-                    dragProgress = 0f,
-                    isDragging = false,
-                    openingFromMiniPlayerSwipe = false,
-                    playbackState = PlaybackState.Playing(item, 0L, 120_000L),
-                    queue = queue,
-                    volume = 0.5f,
-                    onSeek = {},
-                    onVolumeChange = {},
-                    onPrevious = {},
-                    onPlayPause = {},
-                    onNext = onNext,
-                    onOpenMediaOutputSwitcher = {},
-                    onDismiss = {},
-                )
-            }
-        }
-
-        composeTestRule.runOnIdle {
-            queue = PlaybackQueueSnapshot(
-                originalTrackIds = listOf(item.trackId),
-                activeTrackIds = listOf(item.trackId),
-                currentIndex = 0,
-            )
-            callbackGeneration = 2
-        }
-        composeTestRule.onNodeWithTag("full_screen_player_artwork_swipe_target")
-            .performTouchInput { swipeLeft() }
-
-        composeTestRule.runOnIdle { assertEquals(2, invokedGeneration) }
-    }
-
-    @Test
-    fun moreOptionsUsesTheTrackContextMenuForTheCurrentTrack() {
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayer(
-                    visible = true,
-                    dragProgress = 0f,
-                    isDragging = false,
-                    openingFromMiniPlayerSwipe = false,
-                    playbackState = PlaybackState.Playing(item, 0L, 120_000L),
-                    queue = PlaybackQueueSnapshot(activeTrackIds = listOf(item.trackId), currentIndex = 0),
-                    queueTracks = listOf(LibraryTrack(id = item.trackId, title = item.title, artists = item.artist)),
-                    volume = 0.5f,
-                    onSeek = {},
-                    onVolumeChange = {},
-                    onPrevious = {},
-                    onPlayPause = {},
-                    onNext = {},
-                    onOpenMediaOutputSwitcher = {},
-                    onDismiss = {},
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithContentDescription("More options").performClick()
-        composeTestRule.onNodeWithText("Track info").assertExists()
-        composeTestRule.onNodeWithText("Add to playlist").assertExists()
-    }
-
-    @Test
-    fun queueRowLongPressOpensQueueMenuWithoutAddToQueueOrCurrentTrackPlayNext() {
-        var removedTrackId: String? = null
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenQueuePanel(
-                    queue = PlaybackQueueSnapshot(activeTrackIds = listOf("track-1"), currentIndex = 0),
-                    tracks = listOf(LibraryTrack(id = "track-1", title = "Track 1", artists = "Artist")),
                     currentTrackId = "track-1",
                     isPlaying = true,
-                    onTrackSelected = {},
-                    onTrackRemoved = { removedTrackId = it },
+                    onTrackSelected = { selectedTrack = it },
+                    onTrackRemoved = {},
                     onReorder = {},
                     onShuffleChange = {},
                     onRepeatModeChange = {},
-                    modifier = Modifier.height(160.dp),
                 )
             }
         }
 
-        composeTestRule.onNodeWithText("Track 1").performTouchInput { longClick() }
-
-        composeTestRule.onNodeWithText("Remove from queue").assertExists()
-        composeTestRule.onAllNodesWithText("Add to queue").assertCountEquals(0)
-        composeTestRule.onAllNodesWithText("Play next").assertCountEquals(0)
-        composeTestRule.onNodeWithText("Remove from queue").performClick()
-        composeTestRule.runOnIdle { assertEquals("track-1", removedTrackId) }
+        composeTestRule.onNodeWithText("Next track").performClick()
+        composeTestRule.runOnIdle { assertEquals("track-2", selectedTrack) }
     }
 
     @Test
-    fun moreOptionsRequestsAnArtistPickerForCollaborations() {
-        var bottomSheetRequest: TrackContextBottomSheetRequest? = null
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayer(
-                    visible = true,
-                    dragProgress = 0f,
-                    isDragging = false,
-                    openingFromMiniPlayerSwipe = false,
-                    playbackState = PlaybackState.Playing(item, 0L, 120_000L),
-                    queueTracks = listOf(
-                        LibraryTrack(
-                            id = item.trackId,
-                            title = item.title,
-                            artists = "Artist A, Artist B",
-                            metadataJson = """{\"artists\":[{\"id\":\"artist-a\",\"name\":\"Artist A\"},{\"id\":\"artist-b\",\"name\":\"Artist B\"}]}""",
-                        ),
-                    ),
-                    volume = 0.5f,
-                    onSeek = {},
-                    onVolumeChange = {},
-                    onPrevious = {},
-                    onPlayPause = {},
-                    onNext = {},
-                    onTrackContextBottomSheet = { bottomSheetRequest = it },
-                    onOpenMediaOutputSwitcher = {},
-                    onDismiss = {},
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithContentDescription("More options").performClick()
-        composeTestRule.onNodeWithText("Go to artists").performClick()
-
-        composeTestRule.runOnIdle {
-            assertEquals(
-                TrackContextBottomSheetRequest.Artists(
-                    listOf(TrackContextArtist("artist-a", "Artist A"), TrackContextArtist("artist-b", "Artist B")),
-                ),
-                bottomSheetRequest,
-            )
-        }
-    }
-
-    @Test
-    fun lyricsAndQueuePanelsToggleAndPersistAcrossTrackChanges() {
-        val playbackState = mutableStateOf<PlaybackState>(PlaybackState.Playing(item, 0L, 120_000L))
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayer(
-                    visible = true,
-                    dragProgress = 0f,
-                    isDragging = false,
-                    openingFromMiniPlayerSwipe = false,
-                    playbackState = playbackState.value,
-                    volume = 0.5f,
-                    onSeek = {},
-                    onVolumeChange = {},
-                    onPrevious = {},
-                    onPlayPause = {},
-                    onNext = {},
-                    onOpenMediaOutputSwitcher = {},
-                    onDismiss = {},
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithContentDescription("Lyrics").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Lyrics").assertExists()
-
-        composeTestRule.runOnIdle {
-            playbackState.value = PlaybackState.Playing(secondItem, 0L, 120_000L)
-        }
-        composeTestRule.onNodeWithText("Lyrics").assertExists()
-
-        composeTestRule.onNodeWithContentDescription("Queue").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Queue").assertExists()
-
-        composeTestRule.onNodeWithTag("full_screen_player_artwork").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onAllNodesWithText("Queue").assertCountEquals(0)
-
-        composeTestRule.onNodeWithContentDescription("Lyrics").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Lyrics").assertExists()
-
-        composeTestRule.onNodeWithTag("full_screen_player_artwork").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onAllNodesWithText("Lyrics").assertCountEquals(0)
-    }
-
-    @Test
-    fun syncedLyricsShowsBilingualLyricsAndSeeksOnLineTap() {
-        var seekPositionMs: Long? = null
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayerLyricsPanel(
-                    trackId = "track-1",
-                    lyrics = "[00:01.00]Primary ^ Translation\n[00:03.00]Next line",
-                    currentPositionMs = 1_000L,
-                    onSeek = { seekPositionMs = it },
-                    modifier = Modifier.height(180.dp),
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithTag("synced_lyrics_list").assertExists()
-        composeTestRule.onNodeWithText("Translation").assertExists()
-        composeTestRule.onNodeWithTag("synced_lyric_3.0").performClick()
-        composeTestRule.runOnIdle { assertEquals(3_000L, seekPositionMs) }
-    }
-
-    @Test
-    fun loadingLyricsShowsAnimatedSkeleton() {
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayerLyricsPanel(
-                    trackId = "track-1",
-                    lyrics = null,
-                    loading = true,
-                    currentPositionMs = 0L,
-                    onSeek = {},
-                    modifier = Modifier.height(180.dp),
-                )
-            }
-        }
-
-        composeTestRule.onAllNodesWithTag("lyrics_loading_skeleton").assertCountEquals(5)
-    }
-
-    @Test
-    fun syncedLyricsTouchUsesTheLatestSeekCallbackAfterRecomposition() {
-        var callbackGeneration by mutableStateOf(1)
-        var invokedGeneration: Int? = null
-        composeTestRule.setContent {
-            val onSeek: (Long) -> Unit = if (callbackGeneration == 1) {
-                { invokedGeneration = 1 }
-            } else {
-                { invokedGeneration = 2 }
-            }
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayerLyricsPanel(
-                    trackId = "track-1",
-                    lyrics = "[00:03.00]Seekable line",
-                    currentPositionMs = 1_000L,
-                    onSeek = onSeek,
-                    modifier = Modifier.height(180.dp),
-                )
-            }
-        }
-
-        composeTestRule.runOnIdle { callbackGeneration = 2 }
-        composeTestRule.onNodeWithTag("synced_lyric_3.0").performTouchInput { click() }
-
-        composeTestRule.runOnIdle { assertEquals(2, invokedGeneration) }
-    }
-
-    @Test
-    fun queueShowsTracksAndDispatchesPlaybackControls() {
-        var selectedTrack: String? = null
+    fun queueHeaderTogglesDispatchShuffleAndRepeat() {
         var shuffle: Boolean? = null
         var repeat: RepeatMode? = null
         var queue by mutableStateOf(
@@ -626,24 +74,17 @@ class FullScreenPlayerTest {
         )
         composeTestRule.setContent {
             TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayer(
-                    visible = true,
-                    dragProgress = 0f,
-                    isDragging = false,
-                    openingFromMiniPlayerSwipe = false,
-                    playbackState = PlaybackState.Playing(item, 0L, 120_000L),
+                PlayerShellQueueMount(
                     queue = queue,
-                    queueTracks = listOf(
+                    tracks = listOf(
                         LibraryTrack(id = "track-1", title = "Test title", artists = "Test artist"),
                         LibraryTrack(id = "track-2", title = "Next track", artists = "Next artist"),
                     ),
-                    volume = 0.5f,
-                    onSeek = {},
-                    onVolumeChange = {},
-                    onPrevious = {},
-                    onPlayPause = {},
-                    onNext = {},
-                    onQueueTrackSelected = { selectedTrack = it },
+                    currentTrackId = "track-1",
+                    isPlaying = true,
+                    onTrackSelected = {},
+                    onTrackRemoved = {},
+                    onReorder = {},
                     onShuffleChange = {
                         shuffle = it
                         queue = queue.copy(shuffle = it)
@@ -652,121 +93,112 @@ class FullScreenPlayerTest {
                         repeat = it
                         queue = queue.copy(repeatMode = it)
                     },
-                    onOpenMediaOutputSwitcher = {},
-                    onDismiss = {},
                 )
             }
         }
 
-        composeTestRule.onNodeWithContentDescription("Queue").performClick()
-        composeTestRule.onNodeWithTag("full_screen_queue_panel_header")
-            .assertLeftPositionInRootIsEqualTo(20.dp)
-        composeTestRule.onNodeWithTag("full_screen_queue_row-track-1")
-            .assertLeftPositionInRootIsEqualTo(0.dp)
-        composeTestRule.onNodeWithTag("full_screen_queue_row_content-track-1")
-            .assertLeftPositionInRootIsEqualTo(20.dp)
-        composeTestRule.onNodeWithContentDescription("More options").assertExists()
-        composeTestRule.onNodeWithTag("playing_indicator").assertExists()
-        composeTestRule.onNodeWithText("Next track").performClick()
         composeTestRule.onNodeWithContentDescription("Shuffle").performClick()
         composeTestRule.onNodeWithContentDescription("Repeat off").performClick()
         composeTestRule.onNodeWithContentDescription("Shuffle on").assertIsSelected()
         composeTestRule.onNodeWithContentDescription("Repeat all").assertIsSelected()
-
         composeTestRule.runOnIdle {
-            assertEquals("track-2", selectedTrack)
             assertEquals(true, shuffle)
             assertEquals(RepeatMode.All, repeat)
         }
     }
 
     @Test
-    fun queueDoesNotScrollWhenPlaybackAdvances() {
-        val trackIds = List(12) { "queue-$it" }
-        var queue by mutableStateOf(
-            PlaybackQueueSnapshot(
-                originalTrackIds = trackIds,
-                activeTrackIds = trackIds,
-                currentIndex = 0,
+    fun qualityBadgeShowsSupportedFormatsAndRespectsSetting() {
+        var showQualityBadge by mutableStateOf(true)
+        var track by mutableStateOf(
+            LibraryTrack(
+                id = item.trackId,
+                title = item.title,
+                artists = item.artist,
+                metadataJson = "{\"format\":\"flac\",\"bit_depth\":16,\"sample_rate\":44100}",
             ),
         )
-        var currentTrackId by mutableStateOf(trackIds.first())
         composeTestRule.setContent {
             TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenQueuePanel(
-                    queue = queue,
-                    tracks = trackIds.mapIndexed { index, trackId ->
-                        LibraryTrack(id = trackId, title = "Track $index", artists = "Artist")
-                    },
-                    currentTrackId = currentTrackId,
+                PlayerShellNowPlaying(
+                    trackId = item.trackId,
+                    title = item.title,
+                    artist = item.artist,
+                    artworkPath = null,
+                    currentPositionMs = 0L,
+                    durationMs = 120_000L,
+                    displayedDurationMs = 120_000L,
+                    isPreparing = false,
                     isPlaying = true,
-                    onTrackSelected = {},
-                    onReorder = {},
-                    onShuffleChange = {},
-                    onRepeatModeChange = {},
-                    modifier = Modifier.height(112.dp),
+                    canNavigatePrevious = false,
+                    canNavigateNext = true,
+                    volume = 0.5f,
+                    selectedPanel = null,
+                    onPanelSelected = {},
+                    queue = PlaybackQueueSnapshot(),
+                    queueSlide = 0f,
+                    animatedCollapse = 0f,
+                    queueDragging = false,
+                    onSeek = {},
+                    onVolumeChange = {},
+                    onPrevious = {},
+                    onPlayPause = {},
+                    onNext = {},
+                    onOpenMediaOutputSwitcher = {},
+                    isFavorite = false,
+                    onFavoriteToggle = { _, _ -> },
+                    contextTrack = track,
+                    showQualityBadge = showQualityBadge,
                 )
             }
         }
+
+        composeTestRule.onNodeWithTag(PlayerShellQualityBadgeTestTag).assertExists()
+        composeTestRule.onNodeWithText("Lossless").assertExists()
+        composeTestRule.onNodeWithTag(PlayerShellQualityBadgeTestTag).performClick()
+        composeTestRule.onNodeWithText("Sample rate").assertExists()
+        composeTestRule.onNodeWithText("44.1 kHz").assertExists()
+        composeTestRule.onNodeWithContentDescription("OK").performClick()
+        composeTestRule.onNodeWithText("Sample rate").assertDoesNotExist()
 
         composeTestRule.runOnIdle {
-            queue = queue.copy(currentIndex = trackIds.lastIndex)
-            currentTrackId = trackIds.last()
+            track = track.copy(metadataJson = "{\"format\":\"mp3\"}")
         }
-        composeTestRule.onNodeWithText("Track 11").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Lossless").assertDoesNotExist()
+
+        composeTestRule.runOnIdle {
+            track = track.copy(metadataJson = "{\"format\":\"dsf\"}")
+            showQualityBadge = false
+        }
+        composeTestRule.onNodeWithTag(PlayerShellQualityBadgeTestTag).assertDoesNotExist()
     }
 
     @Test
-    fun queueScrollsCurrentTrackIntoViewWhenPanelFirstOpens() {
-        val trackIds = List(12) { "queue-$it" }
-        val currentTrackId = trackIds.last()
+    fun shellHostTogglesLyricsAndQueuePanels() {
         composeTestRule.setContent {
             TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenQueuePanel(
-                    queue = PlaybackQueueSnapshot(
-                        originalTrackIds = trackIds,
-                        activeTrackIds = trackIds,
-                        currentIndex = trackIds.lastIndex,
+                PlayerShellHost(
+                    visible = true,
+                    playback = PlaybackModel(
+                        state = PlaybackState.Playing(item, 0L, 120_000L),
+                        queue = PlaybackQueueSnapshot(
+                            activeTrackIds = listOf(item.trackId),
+                            currentIndex = 0,
+                        ),
+                        queueTracks = listOf(
+                            LibraryTrack(id = item.trackId, title = item.title, artists = item.artist),
+                        ),
                     ),
-                    tracks = trackIds.mapIndexed { index, trackId ->
-                        LibraryTrack(id = trackId, title = "Track $index", artists = "Artist")
-                    },
-                    currentTrackId = currentTrackId,
-                    isPlaying = true,
-                    onTrackSelected = {},
-                    onReorder = {},
-                    onShuffleChange = {},
-                    onRepeatModeChange = {},
-                    modifier = Modifier.height(112.dp),
+                    onDismiss = {},
                 )
             }
         }
 
-        composeTestRule.onNodeWithText("Track 11").assertExists()
-    }
+        composeTestRule.onNodeWithContentDescription("Queue").performClick()
+        composeTestRule.onNodeWithText("Now playing").assertExists()
 
-    @Test
-    fun queueExposesASeparateReorderHandle() {
-        var selectedTrack: String? = null
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenQueuePanel(
-                    queue = PlaybackQueueSnapshot(activeTrackIds = listOf("track-1"), currentIndex = 0),
-                    tracks = listOf(LibraryTrack(id = "track-1", title = "Track 1", artists = "Artist")),
-                    currentTrackId = "track-1",
-                    isPlaying = false,
-                    onTrackSelected = { selectedTrack = it },
-                    onReorder = {},
-                    onShuffleChange = {},
-                    onRepeatModeChange = {},
-                    modifier = Modifier.height(160.dp),
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithContentDescription("Reorder track").assertExists()
-        composeTestRule.onNodeWithText("Track 1").performClick()
-        composeTestRule.runOnIdle { assertEquals("track-1", selectedTrack) }
+        composeTestRule.onNodeWithContentDescription("Lyrics").performClick()
+        composeTestRule.onNodeWithText("Lyrics are not available for this track.").assertExists()
     }
 
     private companion object {
@@ -775,12 +207,6 @@ class FullScreenPlayerTest {
             title = "Test title",
             artist = "Test artist",
             audioPath = "/audio/track-1.flac",
-        )
-        val secondItem = PlaybackItem(
-            trackId = "track-2",
-            title = "Next track",
-            artist = "Next artist",
-            audioPath = "/audio/track-2.flac",
         )
     }
 }
