@@ -203,11 +203,10 @@
     <string name="lyrics_data_sources">Data sources</string>
     <string name="lyrics_preferred_source">Preferred source</string>
     <string name="lyrics_romanization">Enable romanization</string>
-    <string name="lyrics_source_desktop">Desktop sync</string>
     <string name="lyrics_source_auto_fetch">Auto fetch</string>
     <string name="lyrics_info_action">Lyrics information</string>
     <string name="lyrics_info_title">Lyrics sources</string>
-    <string name="lyrics_info_description">You can choose to prioritize lyrics from desktop or fetch them automatically. Lyrics fetched automatically on mobile are not synced back to desktop.</string>
+    <string name="lyrics_info_description">Lyrics are fetched automatically from the enabled providers.</string>
     <string name="lyrics_lrclib">LRCLIB</string>
     <string name="lyrics_kugou">KuGou</string>
     <string name="settings_about">About</string>

@@ -345,11 +345,10 @@
     <string name="lyrics_data_sources">Fuentes de datos</string>
     <string name="lyrics_preferred_source">Fuente preferida</string>
     <string name="lyrics_romanization">Activar romanización</string>
-    <string name="lyrics_source_desktop">Sincronización de escritorio</string>
     <string name="lyrics_source_auto_fetch">Obtener automáticamente</string>
     <string name="lyrics_info_action">Información de letras</string>
     <string name="lyrics_info_title">Fuentes de letras</string>
-    <string name="lyrics_info_description">Puedes elegir si priorizar las letras del escritorio o buscarlas automáticamente. Las letras obtenidas automáticamente en el móvil no se sincronizan con el escritorio.</string>
+    <string name="lyrics_info_description">Lyrics are fetched automatically from the enabled providers.</string>
     <string name="player_romanization_show">Mostrar romanización</string>
     <string name="player_romanization_hide">Ocultar romanización</string>
     <string name="player_romanization_loading">Romanizando…</string>
