@@ -19,10 +19,6 @@ material3 = "1.11.0-alpha07"
 datastore = "1.1.7"
 haze = "2.0.0-alpha03"
 serialization = "1.9.0"
-cameraX = "1.5.1"
-mlkitBarcode = "17.3.0"
-hivemq = "1.3.14"
-eddsa = "0.3.0"
 room = "2.8.4"
 ksp = "2.3.11"
 reorderable = "3.1.0"
@@ -55,13 +51,6 @@ compose-uiTestManifest = { module = "androidx.compose.ui:ui-test-manifest", vers
 haze-core = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 haze-blur = { module = "dev.chrisbanes.haze:haze-blur", version.ref = "haze" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
-androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraX" }
-androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraX" }
-androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "cameraX" }
-androidx-camera-mlkit = { module = "androidx.camera:camera-mlkit-vision", version.ref = "cameraX" }
-mlkit-barcode = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkitBarcode" }
-hivemq-mqtt = { module = "com.hivemq:hivemq-mqtt-client", version.ref = "hivemq" }
-eddsa = { module = "net.i2p.crypto:eddsa", version.ref = "eddsa" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }

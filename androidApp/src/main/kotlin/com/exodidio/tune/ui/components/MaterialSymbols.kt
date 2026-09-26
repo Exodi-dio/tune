@@ -95,7 +95,6 @@ object MaterialSymbols {
     const val Refresh = "refresh"
     const val Info = "info"
     const val Power = "power"
-    const val DesktopWindows = "desktop_windows"
     const val Sync = "sync"
     const val Add = "add"
     const val Image = "image"

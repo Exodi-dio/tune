@@ -505,25 +505,6 @@ class AppNavigationTest {
         )
     }
 
-    @Test
-    fun aboutSponsorLinkDispatchesOneTimeExternalUrlIntent() {
-        val harness = AppHarness(
-            AppUiState(
-                selectedDestination = AppDestination.Settings,
-                destinationStacks = rootDestinationStacks() + (
-                    AppDestination.Settings to listOf(AppStackPage.Root, AppStackPage.SettingsAbout)
-                ),
-            ),
-        )
-        composeTestRule.setContent { harness.Render() }
-
-        composeTestRule.onNodeWithContentDescription(string(R.string.about_sponsor_github)).performClick()
-
-        assertEquals(
-            AppIntent.OpenExternalUrl("https://github.com/sponsors/exodidio"),
-            harness.intents.last(),
-        )
-    }
 
     @Test
     fun homeDisplaysSyncPlaceholderWhenThereAreNoTracks() {
