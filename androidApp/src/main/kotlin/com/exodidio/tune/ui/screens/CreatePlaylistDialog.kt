@@ -116,21 +116,25 @@ private fun PlaylistEditorBottomSheet(
         val key = ArtworkThumbnailCache.cacheKey(uri.toString(), 336)
         ArtworkThumbnailCache.get(key)?.let { artwork = it; return@LaunchedEffect }
         if (!ArtworkThumbnailCache.claimInFlight(key)) return@LaunchedEffect
-        val loaded = withContext(Dispatchers.IO) {
-            runCatching {
-                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
-                val sample = playlistPickerSampleSize(bounds.outWidth, bounds.outHeight, 336)
-                context.contentResolver.openInputStream(uri)?.use { stream ->
-                    BitmapFactory.decodeStream(stream, null, BitmapFactory.Options().apply {
-                        inSampleSize = sample
-                        inPreferredConfig = Bitmap.Config.RGB_565
-                    })
-                }?.asImageBitmap()
-            }.getOrNull()
+        var loaded: androidx.compose.ui.graphics.ImageBitmap? = null
+        try {
+            loaded = withContext(Dispatchers.IO) {
+                runCatching {
+                    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                    context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+                    val sample = playlistPickerSampleSize(bounds.outWidth, bounds.outHeight, 336)
+                    context.contentResolver.openInputStream(uri)?.use { stream ->
+                        BitmapFactory.decodeStream(stream, null, BitmapFactory.Options().apply {
+                            inSampleSize = sample
+                            inPreferredConfig = Bitmap.Config.RGB_565
+                        })
+                    }?.asImageBitmap()
+                }.getOrNull()
+            }
+            if (loaded != null) { ArtworkThumbnailCache.put(key, loaded); artwork = loaded }
+        } finally {
+            if (loaded == null) ArtworkThumbnailCache.releaseInFlight(key)
         }
-        if (loaded != null) { ArtworkThumbnailCache.put(key, loaded); artwork = loaded }
-        else ArtworkThumbnailCache.releaseInFlight(key)
     }
     val existingArtwork = rememberArtworkThumbnail(artworkPath, targetPx = 336)
     val valid = !showNameInput || name.trim().isNotEmpty()
@@ -215,3 +219,4 @@ private fun CreatePlaylistSheetIconButton(
         )
     }
 }
+

@@ -124,31 +124,34 @@ internal fun rememberArtworkThumbnail(
     LaunchedEffect(cacheKey) {
         if (bitmap != null) return@LaunchedEffect
         if (!ArtworkThumbnailCache.claimInFlight(cacheKey)) return@LaunchedEffect
-        val loaded = withContext(Dispatchers.IO) {
-            val file = File(absolutePath)
-            if (!file.isFile) return@withContext null
-            runCatching {
-                val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                BitmapFactory.decodeFile(file.absolutePath, boundsOptions)
-                var sampleSize = 1
-                while (boundsOptions.outWidth / (sampleSize * 2) >= targetPx &&
-                    boundsOptions.outHeight / (sampleSize * 2) >= targetPx
-                ) {
-                    sampleSize *= 2
-                }
-                val decodeOptions = BitmapFactory.Options().apply {
-                    inSampleSize = sampleSize
-                    inPreferredConfig = Bitmap.Config.RGB_565
-                }
-                BitmapFactory.decodeFile(file.absolutePath, decodeOptions)?.asImageBitmap()
-            }.getOrNull()
-        }
-        if (loaded != null) {
-            // put happens on the IO result, never on the main dispatcher.
-            ArtworkThumbnailCache.put(cacheKey, loaded)
-            bitmap = loaded
-        } else {
-            ArtworkThumbnailCache.releaseInFlight(cacheKey)
+        var loaded: ImageBitmap? = null
+        try {
+            loaded = withContext(Dispatchers.IO) {
+                val file = File(absolutePath)
+                if (!file.isFile) return@withContext null
+                runCatching {
+                    val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                    BitmapFactory.decodeFile(file.absolutePath, boundsOptions)
+                    var sampleSize = 1
+                    while (boundsOptions.outWidth / (sampleSize * 2) >= targetPx &&
+                        boundsOptions.outHeight / (sampleSize * 2) >= targetPx
+                    ) {
+                        sampleSize *= 2
+                    }
+                    val decodeOptions = BitmapFactory.Options().apply {
+                        inSampleSize = sampleSize
+                        inPreferredConfig = Bitmap.Config.RGB_565
+                    }
+                    BitmapFactory.decodeFile(file.absolutePath, decodeOptions)?.asImageBitmap()
+                }.getOrNull()
+            }
+            if (loaded != null) {
+                // put happens on the IO result, never on the main dispatcher.
+                ArtworkThumbnailCache.put(cacheKey, loaded)
+                bitmap = loaded
+            }
+        } finally {
+            if (loaded == null) ArtworkThumbnailCache.releaseInFlight(cacheKey)
         }
     }
     return bitmap
@@ -254,3 +257,4 @@ fun TrackRow(
         }
     }
 }
+

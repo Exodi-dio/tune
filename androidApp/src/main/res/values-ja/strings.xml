@@ -128,7 +128,7 @@
     <string name="playlist_sync_failed">このプレイリストを更新できませんでした</string>
     <string name="playlist_details_title">プレイリスト</string>
     <string name="playlist_details_empty_title">プレイリストを利用できません</string>
-    <string name="playlist_details_empty_description">このプレイリストは同期済みライブラリ内に存在しません。</string>
+    <string name="playlist_details_empty_description">このプレイリストはライブラリ内に存在しません。</string>
     <string name="playlist_details_metadata">%1$s · %2$s</string>
     <string name="playlist_duration_day">%1$d日</string>
     <string name="playlist_duration_hour">%1$d時間</string>
@@ -344,3 +344,4 @@
     <string name="player_romanization_hint">オフラインのローマ字表記：中国語と韓国語。</string>
     <string name="player_romanization_mandarin">漢字のみの歌詞は中国語（標準語）として扱います。名前の読み方は異なる場合があります。</string>
 </resources>
+
