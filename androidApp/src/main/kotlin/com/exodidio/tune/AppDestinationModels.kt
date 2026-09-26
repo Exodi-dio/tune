@@ -168,6 +168,8 @@ import com.exodidio.tune.ui.screens.TrackSortOption
     val onBlendArtworkDuringCrossfadeChanged: (Boolean) -> Unit = {},
     val showFullscreenQualityBadge: Boolean = true,
     val onShowFullscreenQualityBadgeChanged: (Boolean) -> Unit = {},
+    val fullBleedArtwork: Boolean = true,
+    val onFullBleedArtworkChanged: (Boolean) -> Unit = {},
     val normalizationAvailable: Boolean = false,
     val normalization: NormalizationSettings = NormalizationSettings(),
     val onNormalizationChanged: (NormalizationSettings) -> Unit = {},

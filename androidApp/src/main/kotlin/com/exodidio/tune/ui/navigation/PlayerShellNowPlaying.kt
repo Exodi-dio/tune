@@ -45,6 +45,11 @@ internal fun shellArtworkScale(isPlaying: Boolean): Float =
 internal fun shellNowPlayingOrder(): List<String> =
     listOf("credits", "scrubber", "transport", "volume", "bottomRow")
 
+// Sleeve footprint: expanded now-playing cover collapsing to the compact
+// panel-open size (previously inline 288f/80f magic).
+internal const val ShellSleeveExpandedDp = 288f
+internal const val ShellSleeveCollapsedDp = 80f
+
 /**
  * Now-playing column in reference order. Keeps every existing now-playing
  * callback (seek, volume, previous/play-pause/next, favorite, panel selection,
@@ -77,6 +82,10 @@ fun PlayerShellNowPlaying(
     onOpenMediaOutputSwitcher: () -> Unit,
     isFavorite: Boolean,
     onFavoriteToggle: (String, Boolean) -> Unit,
+    outgoingArtworkPath: String? = null,
+    incomingArtworkPath: String? = null,
+    crossfadeProgress: Float = 1f,
+    isArtworkCrossfading: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalTuneColors.current
@@ -93,7 +102,9 @@ fun PlayerShellNowPlaying(
         label = "shell-artwork-scale",
     )
     val artwork = rememberFullscreenArtwork(artworkPath)
-    val artworkSize = (288f * (1f - collapse) + 80f * collapse).dp
+    val outgoingArtwork = rememberFullscreenArtwork(outgoingArtworkPath, keepPrevious = false)
+    val incomingArtwork = rememberFullscreenArtwork(incomingArtworkPath, keepPrevious = false)
+    val artworkSize = (ShellSleeveExpandedDp * (1f - collapse) + ShellSleeveCollapsedDp * collapse).dp
     val seekLabel = stringResource(R.string.player_seek)
     val volumeLabel = stringResource(R.string.player_volume)
     var pendingSeekFraction by remember(trackId) { mutableStateOf<Float?>(null) }
@@ -104,10 +115,10 @@ fun PlayerShellNowPlaying(
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             FullScreenPlayerArtwork(
                 artwork = artwork,
-                outgoingArtwork = null,
-                incomingArtwork = null,
-                crossfadeProgress = 1f,
-                isArtworkCrossfading = false,
+                outgoingArtwork = outgoingArtwork,
+                incomingArtwork = incomingArtwork,
+                crossfadeProgress = crossfadeProgress,
+                isArtworkCrossfading = isArtworkCrossfading,
                 modifier = Modifier
                     .size(artworkSize)
                     .graphicsLayer {
@@ -153,14 +164,14 @@ fun PlayerShellNowPlaying(
         )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
-                text = formatShellPlaybackTime(
+                text = formatPlaybackTime(
                     pendingSeekFraction?.let { (durationMs * it).toLong() } ?: currentPositionMs,
                 ),
                 color = colors.foregroundSubtle,
                 style = MaterialTheme.typography.labelSmall,
             )
             Text(
-                text = displayedDurationMs?.let(::formatShellPlaybackTime) ?: "--:--",
+                text = displayedDurationMs?.let(::formatPlaybackTime) ?: "--:--",
                 color = colors.foregroundSubtle,
                 style = MaterialTheme.typography.labelSmall,
             )
@@ -244,9 +255,4 @@ fun PlayerShellNowPlaying(
             }
         }
     }
-}
-
-private fun formatShellPlaybackTime(timeMs: Long): String {
-    val seconds = (timeMs.coerceAtLeast(0L) / 1000).toInt()
-    return "%d:%02d".format(seconds / 60, seconds % 60)
 }

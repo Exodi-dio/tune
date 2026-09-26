@@ -331,7 +331,8 @@ internal fun FullScreenTransportButton(
     }
 }
 
-private fun formatPlaybackTime(timeMs: Long): String {
+// Shared playback time formatter, reused by the shell now-playing scrubber.
+internal fun formatPlaybackTime(timeMs: Long): String {
     val seconds = (timeMs.coerceAtLeast(0L) / 1000).toInt()
     return "%d:%02d".format(seconds / 60, seconds % 60)
 }
