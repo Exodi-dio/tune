@@ -44,7 +44,6 @@ import com.exodidio.tune.ui.components.PlaylistContextMenu
 import com.exodidio.tune.ui.components.TuneDialog
 import com.exodidio.tune.ui.components.TunePillButtonVariant
 import com.exodidio.tune.ui.components.trackInfoArtworkSize
-import com.exodidio.tune.ui.components.liquidGlassBackground
 import com.exodidio.tune.player.PlaybackQueueSnapshot
 import com.exodidio.tune.ui.theme.LocalTuneColors
 import sh.calvin.reorderable.ReorderableItem
@@ -59,6 +58,7 @@ internal fun PlaylistDetailsContent(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
     hazeState: HazeState? = null,
+    reduceTransparency: Boolean = false,
     onHeroColorChanged: (Color) -> Unit = {},
     onPlay: () -> Unit = {},
     onShuffle: () -> Unit = {},
@@ -127,7 +127,7 @@ internal fun PlaylistDetailsContent(
         contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
     ) {
         item("hero") {
-            ArtworkHeroBackdrop(uiState.artworkPaths.firstOrNull(), Modifier.fillMaxWidth(), onHeroColorChanged) {
+            ArtworkHeroBackdrop(uiState.artworkPaths.firstOrNull(), Modifier.fillMaxWidth(), onHeroColorChanged, reduceTransparency = reduceTransparency) {
                 DetailHero(
                     title = name,
                     metadata = stringResource(R.string.playlist_details_metadata, count, duration),
@@ -142,6 +142,7 @@ internal fun PlaylistDetailsContent(
                         bottom = 20.dp,
                     ),
                     artworkSize = trackInfoArtworkSize,
+                    reduceTransparency = reduceTransparency,
                     fallbackSymbol = if (playlist.id == FavoritesPlaylistId) MaterialSymbols.Favorite else MaterialSymbols.QueueMusic,
                     artworkContent = {
                         PlaylistArtwork(playlist.id, uiState.artworkPaths, size = trackInfoArtworkSize)
@@ -178,8 +179,8 @@ internal fun PlaylistDetailsContent(
                         artist = track.artists,
                         artworkPath = track.artworkPath,
                         modifier = Modifier.fillMaxWidth().then(
-                            if (isDragging) Modifier.liquidGlassBackground(
-                                hazeState, colors, hazeBlurRadius = 30.dp, glassTint = colors.glassElevated,
+                            if (isDragging) Modifier.background(
+                                if (reduceTransparency) colors.glassOpaque else colors.glassElevated,
                             ).border(1.dp, colors.borderGlass) else Modifier,
                         ),
                         trailingContent = {

@@ -617,6 +617,7 @@ internal fun AppDestinationContent(
                                 contentPadding = contentPadding,
                                 modifier = Modifier.fillMaxSize(),
                                 hazeState = hazeState,
+                                reduceTransparency = reduceTransparency,
                                 onHeroColorChanged = onAlbumHeroColorChanged,
                                 onPlay = { selectedPlaylistId?.let { onPlaylistPlay(it, false) } },
                                 onShuffle = { selectedPlaylistId?.let { onPlaylistPlay(it, true) } },
