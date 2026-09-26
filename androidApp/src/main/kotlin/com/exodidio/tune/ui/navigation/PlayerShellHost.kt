@@ -119,6 +119,21 @@ internal fun PlayerShellHost(
     // blur source stays isolated (mirrors the fullscreen panel discipline).
     val shellHazeState = rememberHazeState()
     val glassHazeState = shellHazeState.takeIf { hazeState != null }
+    // F3: close-then-act (mirrors deleted closeFullScreenPlayerThen): dismiss
+    // the shell before firing go-to-album/go-to-artist/bottom-sheet so the
+    // shell never stays open over the destination/sheet.
+    val closeThenGoToAlbum: (String) -> Unit = { albumId ->
+        onDismiss()
+        onTrackGoToAlbum(albumId)
+    }
+    val closeThenGoToArtist: (String) -> Unit = { artistId ->
+        onDismiss()
+        onTrackGoToArtist(artistId)
+    }
+    val closeThenBottomSheet: (TrackContextBottomSheetRequest) -> Unit = { request ->
+        onDismiss()
+        onTrackContextBottomSheet(request)
+    }
     PlayerShell(
         visible = visible,
         onDismiss = onDismiss,
@@ -165,9 +180,9 @@ internal fun PlayerShellHost(
                 onTrackPlayNext = playback.onTrackPlayNext,
                 onTrackAddToQueue = playback.onTrackAddToQueue,
                 onStartMoodRadio = playback.onStartMoodRadio,
-                onTrackGoToAlbum = onTrackGoToAlbum,
-                onTrackGoToArtist = onTrackGoToArtist,
-                onTrackContextBottomSheet = onTrackContextBottomSheet,
+                onTrackGoToAlbum = closeThenGoToAlbum,
+                onTrackGoToArtist = closeThenGoToArtist,
+                onTrackContextBottomSheet = closeThenBottomSheet,
                 outgoingArtworkPath = activeArtworkCrossfade?.fromArtworkPath,
                 incomingArtworkPath = activeArtworkCrossfade?.toArtworkPath,
                 crossfadeProgress = crossfadeProgress,
@@ -186,9 +201,9 @@ internal fun PlayerShellHost(
                     onShuffleChange = playback.onShuffleChange,
                     onRepeatModeChange = playback.onRepeatModeChange,
                     onFavoriteToggle = playback.onFavoriteToggle,
-                    onTrackGoToAlbum = onTrackGoToAlbum,
-                    onTrackGoToArtist = onTrackGoToArtist,
-                    onTrackContextBottomSheet = onTrackContextBottomSheet,
+                    onTrackGoToAlbum = closeThenGoToAlbum,
+                    onTrackGoToArtist = closeThenGoToArtist,
+                    onTrackContextBottomSheet = closeThenBottomSheet,
                     moodRadioEligibleTrackIds = playback.moodRadioEligibleTrackIds,
                     onStartMoodRadio = playback.onStartMoodRadio,
                 )
@@ -231,3 +246,4 @@ private fun PlaybackState.shellDurationMsOrZero(): Long = when (this) {
     is PlaybackState.Paused -> durationMs
     else -> 0L
 }
+

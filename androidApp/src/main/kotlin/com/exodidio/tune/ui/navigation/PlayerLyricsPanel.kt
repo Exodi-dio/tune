@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.BlurredEdgeTreatment
@@ -51,6 +53,15 @@ internal fun activeLyricIndex(lines: List<PlayerLyricLine>, positionMs: Long): I
 internal fun lyricsScrollLeadMs(gapMs: Long): Long =
     gapMs.coerceIn(LyricsScrollLeadMinMs, LyricsScrollLeadMaxMs)
 
+// Pre-merge fix (F1): toggle visibility mirroring the deleted
+// FullScreenPlayerLyricsPanel block (allowed + input-current + supported).
+// Pinned by PlayerLyricsPanelTest.
+internal fun shouldShowRomanizationToggle(
+    romanizationAllowed: Boolean,
+    current: Boolean,
+    supported: Boolean,
+): Boolean = romanizationAllowed && current && supported
+
 internal fun applyLyricsOffset(positionMs: Long, offsetMs: Int): Long =
     (positionMs - offsetMs.toLong()).coerceAtLeast(0L)
 
@@ -77,7 +88,11 @@ internal fun PlayerLyricsPanel(
     val synced = remember(parsed) { parsed.filter { it.timestampSeconds != null } }
     val primary = remember(parsed, synced) { (synced.ifEmpty { parsed }).map { it.primary } }
     LaunchedEffect(trackId, primary) { onRomanizationInput(primary, true) }
-    val secondary = if (romanizationAllowed && romanization.input == primary && romanization.enabled) romanization.secondary else emptyList()
+    // F1: mirror the deleted panel's current/toggle inputs using the threaded
+    // romanizationAllowed/onRomanizationToggle (secondary swaps only when enabled).
+    val current = romanization.input == primary && !loading
+    val secondary = if (romanizationAllowed && current && romanization.enabled) romanization.secondary else emptyList()
+    val showToggle = shouldShowRomanizationToggle(romanizationAllowed, current, romanization.supported)
     val displayed = displayedLyricsPositionMs(currentPositionMs, pendingSeekPositionMs)
     val adjusted = applyLyricsOffset(displayed, lyricsOffsetMs)
     val activeIndex = remember(synced, adjusted) { activeLyricIndex(synced, adjusted) }
@@ -100,16 +115,17 @@ internal fun PlayerLyricsPanel(
     }
     LaunchedEffect(synced, activeIndex, isBrowsing) {
         if (activeIndex < 0 || isBrowsing) return@LaunchedEffect
-        val gapMs = if (activeIndex + 1 < synced.size) {
-            ((synced[activeIndex + 1].timestampSeconds!! - synced[activeIndex].timestampSeconds!!) * 1_000).toLong()
-        } else LyricsScrollLeadMinMs
-        lyricsScrollLeadMs(gapMs)
+        // F5: pre-scroll lead helper is pure and pinned by unit tests; the
+        // follower jumps directly (no tween overload), so the discarded call
+        // is removed here with no behavior change.
         listState.animateScrollToItem((activeIndex - 1).coerceAtLeast(0))
     }
+    // F1: Box mirrors the deleted panel (content + BottomEnd toggle).
+    Box(modifier = modifier.padding(top = 8.dp)) {
     when {
-        loading -> Text(stringResource(R.string.player_lyrics), modifier = modifier.padding(top = 24.dp))
-        lyrics.isNullOrBlank() -> Text(stringResource(R.string.player_lyrics_not_available), modifier = modifier.padding(top = 24.dp))
-        synced.isNotEmpty() -> LazyColumn(state = listState, modifier = modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 72.dp)) {
+        loading -> Text(stringResource(R.string.player_lyrics), modifier = Modifier.padding(top = 24.dp))
+        lyrics.isNullOrBlank() -> Text(stringResource(R.string.player_lyrics_not_available), modifier = Modifier.padding(top = 24.dp))
+        synced.isNotEmpty() -> LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 72.dp)) {
             itemsIndexed(synced, key = { index, _ -> index }) { index, line ->
                 val distance = if (activeIndex >= 0) kotlin.math.abs(index - activeIndex) else Int.MAX_VALUE
                 val targetOpacity = if (isBrowsing) 1f else when (distance) { 0 -> 1f; 1 -> 0.25f; 2 -> 0.15f; else -> 0.10f }
@@ -160,7 +176,7 @@ internal fun PlayerLyricsPanel(
                 }
             }
         }
-        else -> LazyColumn(modifier = modifier.fillMaxSize()) {
+        else -> LazyColumn(modifier = Modifier.fillMaxSize()) {
             itemsIndexed(parsed, key = { index, _ -> index }) { index, line ->
                 Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                     Text(text = line.primary, color = LocalTuneColors.current.onPrimary, style = MaterialTheme.typography.bodyLarge)
@@ -170,6 +186,14 @@ internal fun PlayerLyricsPanel(
                 }
             }
         }
+    }
+    if (showToggle) {
+        RomanizationToggle(
+            state = romanization,
+            onClick = onRomanizationToggle,
+            modifier = Modifier.align(Alignment.BottomEnd),
+        )
+    }
     }
 }
 
@@ -241,3 +265,4 @@ private fun parsePlayerLyricText(text: String, timestampSeconds: Float?): Player
     val secondary = parts.getOrNull(1)?.trim()?.takeIf(String::isNotEmpty)
     return PlayerLyricLine(primary = parts.first().trim(), secondary = secondary, timestampSeconds = timestampSeconds)
 }
+

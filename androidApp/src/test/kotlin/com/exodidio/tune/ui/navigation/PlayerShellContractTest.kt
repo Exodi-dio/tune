@@ -27,5 +27,7 @@ class PlayerShellContractTest {
         assertTrue(PlayerShellPanel.LYRICS.toLegacy() == FullScreenPlayerPanel.Lyrics)
         assertTrue(PlayerShellPanel.QUEUE.toLegacy() == FullScreenPlayerPanel.Queue)
         assertTrue(FullScreenPlayerPanel.Lyrics.toShell() == PlayerShellPanel.LYRICS)
+        assertTrue(FullScreenPlayerPanel.Queue.toShell() == PlayerShellPanel.QUEUE)
     }
 }
+

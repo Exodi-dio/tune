@@ -84,4 +84,11 @@ class PlayerAutoplayEngineTest {
         assertFalse(picked.contains("cur"))
         assertTrue(picked.contains("a1"))
     }
+
+    // F5: pin the trigger helper (upcoming count, floor 0).
+    @Test
+    fun triggerIndexIsUpcomingCount() {
+        assertEquals(2, nextAutoplayTriggerIndex(listOf("a", "b", "c"), 0))
+    }
 }
+
