@@ -35,3 +35,7 @@ shell T1 → queue T1+T2 → queue T3+T4 → shell T2+T3 → shell T4+T5 → (qu
 - Ruling: refs like impl/v0.3-player/task-N are uncreatable (422) while impl/v0.3-player exists as a branch. All task branches use flat names impl/v0.3-player-<batch>. Cost if wrong: none.
 ## Shell Task 1 completion
 - Shell Task 1: complete (commits e44a202..5802758, review clean). Contract signatures verbatim for sibling use.
+## Queue batch 1 (T1+T2) completion
+- Ruling: T1 extra fix commit waived (forced by brief self-contradiction + no-force-push; behavior preserved per review).
+- Fix round 1/5: genreTokens guard ADDRESSED, no breakage (re-review PASS).
+- Queue batch 1: complete (commits 45114dc..c087595c via queue-1 + fix, review clean after 1 fix round).
