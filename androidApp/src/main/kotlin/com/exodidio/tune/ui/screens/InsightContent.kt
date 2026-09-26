@@ -126,7 +126,7 @@ internal fun InsightContent(
                     contentPadding = PaddingValues(horizontal = 20.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    items(state.listening.topArtists, key = { it.id }) { artist ->
+                    items(state.listening.topArtists, key = { it.id }, contentType = { "insight_artist" }) { artist ->
                         DiscCard(
                             title = artist.name,
                             subtitle = formatDuration(artist.listenedSeconds),

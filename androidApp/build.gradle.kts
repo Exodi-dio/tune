@@ -97,7 +97,7 @@ dependencies {
 
     implementation(libs.compose.material3)
     implementation(libs.compose.lucideIcons)
-    implementation(libs.compose.uiToolingPreview)
+    debugImplementation(libs.compose.uiToolingPreview)
     implementation(libs.haze.core)
     implementation(libs.haze.blur)
     implementation(libs.androidx.camera.camera2)
