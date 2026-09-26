@@ -20,6 +20,9 @@ jobs:
       - name: tmp-grep-gate task-4
         run: |
           ! grep -rn "LyricsSource\.Desktop\|lyrics_source_desktop\|desktopLyrics" androidApp/src/main/kotlin/com/exodidio/tune/MainActivity.kt androidApp/src/main/kotlin/com/exodidio/tune/ui/screens/IntegrationContent.kt androidApp/src/main/kotlin/com/exodidio/tune/lyrics/LyricsPreferences.kt androidApp/src/main/res androidApp/src/test --include="*.kt" --include="*.xml"
+      - name: tmp-grep-gate task-5
+        run: |
+          ! grep -rn "InsightSourceFilter\|hasDesktopSource\|hasOtherSources\|desktopName\|onSourceSelected\|SourceControl\|insight_desktop\|insight_other_devices\|insight_all_devices\|insight_this_phone\|MobileIdentity\|PairedDesktop" androidApp/src/main androidApp/src/test --include="*.kt" --include="*.xml"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
