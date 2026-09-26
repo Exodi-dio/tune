@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,6 +46,33 @@ internal fun shellArtworkScale(isPlaying: Boolean): Float =
 internal fun shellNowPlayingOrder(): List<String> =
     listOf("credits", "scrubber", "transport", "volume", "bottomRow")
 
+/**
+ * Shared pending-seek holder between the shell scrubber and the lyrics mount.
+ * A shell seek emits a lyrics seek request alongside [onSeek] so the lyrics
+ * line follows scrubber seeks; the holder clears once playback confirms the
+ * seek. The shell parent owns one instance and passes its
+ * [pendingPositionMs]/[requestId] into [PlayerShellLyricsMount].
+ */
+class ShellLyricsSeekHolder {
+    var pendingPositionMs: Long? by mutableStateOf(null)
+        private set
+    var requestId: Long by mutableLongStateOf(0L)
+        private set
+
+    fun requestSeek(positionMs: Long) {
+        pendingPositionMs = positionMs
+        requestId += 1
+    }
+
+    fun confirmSeek() {
+        pendingPositionMs = null
+    }
+}
+
+@Composable
+fun rememberShellLyricsSeekHolder(): ShellLyricsSeekHolder =
+    remember { ShellLyricsSeekHolder() }
+
 // Sleeve footprint: expanded now-playing cover collapsing to the compact
 // panel-open size (previously inline 288f/80f magic).
 internal const val ShellSleeveExpandedDp = 288f
@@ -53,7 +81,10 @@ internal const val ShellSleeveCollapsedDp = 80f
 /**
  * Now-playing column in reference order. Keeps every existing now-playing
  * callback (seek, volume, previous/play-pause/next, favorite, panel selection,
- * media-output); queue-section/autoplay and lyric-line logic excluded.
+ * media-output); queue-section/autoplay and lyric-line logic excluded. Scrubber
+ * seeks emit [onSeekRequested] alongside [onSeek] so the shared lyrics
+ * pending-seek holder stays in sync; [onSeekConfirmed] is parent-owned for
+ * symmetry with the fullscreen controls.
  */
 @Composable
 fun PlayerShellNowPlaying(
@@ -75,6 +106,8 @@ fun PlayerShellNowPlaying(
     animatedCollapse: Float,
     queueDragging: Boolean,
     onSeek: (Long) -> Unit,
+    onSeekRequested: (Long) -> Unit = {},
+    onSeekConfirmed: () -> Unit = {},
     onVolumeChange: (Float) -> Unit,
     onPrevious: () -> Unit,
     onPlayPause: () -> Unit,
@@ -155,7 +188,11 @@ fun PlayerShellNowPlaying(
             value = seekFraction,
             onValueChange = { pendingSeekFraction = it },
             onValueChangeFinished = {
-                pendingSeekFraction?.let { onSeek((durationMs * it.coerceIn(0f, 1f)).toLong()) }
+                pendingSeekFraction?.let {
+                    val targetMs = (durationMs * it.coerceIn(0f, 1f)).toLong()
+                    onSeekRequested(targetMs)
+                    onSeek(targetMs)
+                }
                 pendingSeekFraction = null
             },
             enabled = durationMs > 0L && !isPreparing,
