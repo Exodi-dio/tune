@@ -43,7 +43,6 @@ internal fun InsightContent(
     contentPadding: PaddingValues,
     onLibraryPeriodSelected: (InsightPeriod) -> Unit,
     onListeningPeriodSelected: (InsightPeriod) -> Unit,
-    onSourceSelected: (InsightSourceFilter) -> Unit,
     onArtistClick: (String) -> Unit,
     onTrackClick: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -96,7 +95,6 @@ internal fun InsightContent(
             Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                 SectionHeader(R.string.insight_listening_section, Modifier.weight(1f))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    SourceControl(state, onSourceSelected, Modifier.testTag("insight-source-filter"))
                     InsightPeriodSelector(state.listeningPeriod, onListeningPeriodSelected, Modifier.testTag("insight-listening-period"))
                 }
             }

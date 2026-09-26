@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7N</string>
     <string name="insight_range_30d">30N</string>
     <string name="insight_range_all">Tất cả</string>
-    <string name="insight_all_devices">Tất cả thiết bị</string>
-    <string name="insight_this_phone">Điện thoại này</string>
-    <string name="insight_desktop">Máy tính</string>
-    <string name="insight_other_devices">Thiết bị đồng bộ khác</string>
     <string name="insight_library_growth">Tăng trưởng thư viện</string>
     <string name="insight_audio_quality">Chất lượng âm thanh</string>
     <string name="insight_library_size">Dung lượng thư viện</string>

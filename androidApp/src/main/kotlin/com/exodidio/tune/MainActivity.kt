@@ -280,7 +280,6 @@ class MainActivity : ComponentActivity() {
                     state = insightUiState,
                     onLibraryPeriodSelected = insightViewModel::setLibraryPeriod,
                     onListeningPeriodSelected = insightViewModel::setListeningPeriod,
-                    onSourceSelected = insightViewModel::setSourceFilter,
                     onTrackClick = insightViewModel::playTopTrack,
                 ),
                 library = LibraryDestinationModel(

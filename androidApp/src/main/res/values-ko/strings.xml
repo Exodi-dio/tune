@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7일</string>
     <string name="insight_range_30d">30일</string>
     <string name="insight_range_all">전체</string>
-    <string name="insight_all_devices">모든 기기</string>
-    <string name="insight_this_phone">이 휴대전화</string>
-    <string name="insight_desktop">데스크톱</string>
-    <string name="insight_other_devices">동기화된 다른 기기</string>
     <string name="insight_library_growth">라이브러리 성장</string>
     <string name="insight_audio_quality">오디오 품질</string>
     <string name="insight_library_size">라이브러리 크기</string>

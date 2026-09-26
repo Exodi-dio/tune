@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7 วัน</string>
     <string name="insight_range_30d">30 วัน</string>
     <string name="insight_range_all">ทั้งหมด</string>
-    <string name="insight_all_devices">อุปกรณ์ทั้งหมด</string>
-    <string name="insight_this_phone">โทรศัพท์นี้</string>
-    <string name="insight_desktop">เดสก์ท็อป</string>
-    <string name="insight_other_devices">อุปกรณ์ที่ซิงค์อื่นๆ</string>
     <string name="insight_library_growth">การเติบโตของคลังเพลง</string>
     <string name="insight_audio_quality">คุณภาพเสียง</string>
     <string name="insight_library_size">ขนาดคลังเพลง</string>

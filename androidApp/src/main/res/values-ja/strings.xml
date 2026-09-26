@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7日間</string>
     <string name="insight_range_30d">30日間</string>
     <string name="insight_range_all">すべて</string>
-    <string name="insight_all_devices">すべてのデバイス</string>
-    <string name="insight_this_phone">この端末</string>
-    <string name="insight_desktop">デスクトップ</string>
-    <string name="insight_other_devices">その他の同期済みデバイス</string>
     <string name="insight_library_growth">ライブラリの増加</string>
     <string name="insight_audio_quality">音質</string>
     <string name="insight_library_size">ライブラリのサイズ</string>

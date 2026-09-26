@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7D</string>
     <string name="insight_range_30d">30D</string>
     <string name="insight_range_all">Tudo</string>
-    <string name="insight_all_devices">Todos os dispositivos</string>
-    <string name="insight_this_phone">Este telemóvel</string>
-    <string name="insight_desktop">Ambiente de trabalho</string>
-    <string name="insight_other_devices">Outros dispositivos sincronizados</string>
     <string name="insight_library_growth">Crescimento da biblioteca</string>
     <string name="insight_audio_quality">Qualidade do áudio</string>
     <string name="insight_library_size">Tamanho da biblioteca</string>

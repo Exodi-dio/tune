@@ -16,10 +16,6 @@
     <string name="insight_range_7d">7 дн</string>
     <string name="insight_range_30d">30 дн</string>
     <string name="insight_range_all">Все</string>
-    <string name="insight_all_devices">Все устройства</string>
-    <string name="insight_this_phone">Этот телефон</string>
-    <string name="insight_desktop">Компьютер</string>
-    <string name="insight_other_devices">Другие синхронизированные устройства</string>
     <string name="insight_library_growth">Рост медиатеки</string>
     <string name="insight_audio_quality">Качество звука</string>
     <string name="insight_library_size">Размер медиатеки</string>
