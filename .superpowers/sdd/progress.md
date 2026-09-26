@@ -64,3 +64,5 @@
 - Batch 6: complete (commits 4b84851..5f1f895, review approved). Parked minor: AboutContent unused padding import (fold into a later batch or final review).
 ## Strip batch 7 (T4+T5) completion
 - Batch 7: complete (commits a8be09e..d9f0941, review approved). Hygiene debt for batch 8: AboutContent unused padding import, InsightViewModel unused Flow imports, InsightViewModelTest stale test name.
+## Strip batch 8 (T6+hygiene+emulator file) completion
+- Batch 8: complete (commits 52b77f4..6375ed7, review approved). Emulator RUN deferred until workflow registers post-main-merge.
