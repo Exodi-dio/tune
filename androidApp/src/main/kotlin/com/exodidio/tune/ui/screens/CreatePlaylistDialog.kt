@@ -1,5 +1,6 @@
 package com.exodidio.tune.ui.screens
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -20,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +39,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
+import com.exodidio.tune.ui.components.ArtworkThumbnailCache
 import com.exodidio.tune.ui.components.rememberArtworkThumbnail
 import com.exodidio.tune.R
 import com.exodidio.tune.ui.components.TuneBottomSheet
@@ -45,6 +48,8 @@ import com.exodidio.tune.ui.components.TuneTextFieldSize
 import com.exodidio.tune.ui.components.MaterialSymbol
 import com.exodidio.tune.ui.components.MaterialSymbols
 import com.exodidio.tune.ui.theme.LocalTuneColors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 internal fun CreatePlaylistBottomSheet(onDismiss: () -> Unit, onCreate: (String, Uri?) -> Unit) {
@@ -76,6 +81,14 @@ internal fun EditPlaylistBottomSheet(
     )
 }
 
+internal fun playlistPickerSampleSize(outWidth: Int, outHeight: Int, targetPx: Int): Int {
+    var sampleSize = 1
+    while (outWidth / (sampleSize * 2) >= targetPx && outHeight / (sampleSize * 2) >= targetPx) {
+        sampleSize *= 2
+    }
+    return sampleSize
+}
+
 @Composable
 private fun PlaylistEditorBottomSheet(
     title: String,
@@ -95,8 +108,29 @@ private fun PlaylistEditorBottomSheet(
     val imageLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),
     ) { uri -> artworkUri = uri; if (uri != null) clearArtwork = false }
-    val artwork = remember(artworkUri) {
-        artworkUri?.let { uri -> context.contentResolver.openInputStream(uri)?.use(BitmapFactory::decodeStream)?.asImageBitmap() }
+    // After: sampled IO decode through the shared byte-budgeted cache.
+    var artwork by remember(artworkUri) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    LaunchedEffect(artworkUri) {
+        val uri = artworkUri
+        if (uri == null) { artwork = null; return@LaunchedEffect }
+        val key = ArtworkThumbnailCache.cacheKey(uri.toString(), 336)
+        ArtworkThumbnailCache.get(key)?.let { artwork = it; return@LaunchedEffect }
+        if (!ArtworkThumbnailCache.claimInFlight(key)) return@LaunchedEffect
+        val loaded = withContext(Dispatchers.IO) {
+            runCatching {
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+                val sample = playlistPickerSampleSize(bounds.outWidth, bounds.outHeight, 336)
+                context.contentResolver.openInputStream(uri)?.use { stream ->
+                    BitmapFactory.decodeStream(stream, null, BitmapFactory.Options().apply {
+                        inSampleSize = sample
+                        inPreferredConfig = Bitmap.Config.RGB_565
+                    })
+                }?.asImageBitmap()
+            }.getOrNull()
+        }
+        if (loaded != null) { ArtworkThumbnailCache.put(key, loaded); artwork = loaded }
+        else ArtworkThumbnailCache.releaseInFlight(key)
     }
     val existingArtwork = rememberArtworkThumbnail(artworkPath, targetPx = 336)
     val valid = !showNameInput || name.trim().isNotEmpty()
@@ -122,7 +156,8 @@ private fun PlaylistEditorBottomSheet(
                     .clickable(onClick = { imageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }),
                 contentAlignment = Alignment.Center,
             ) {
-                if (artwork != null) Image(artwork, null, Modifier.matchParentSize(), contentScale = ContentScale.Crop)
+                val pickedArtwork = artwork
+                if (pickedArtwork != null) Image(pickedArtwork, null, Modifier.matchParentSize(), contentScale = ContentScale.Crop)
                 else if (!clearArtwork && existingArtwork != null) Image(existingArtwork, null, Modifier.matchParentSize(), contentScale = ContentScale.Crop)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     CreatePlaylistSheetIconButton(
