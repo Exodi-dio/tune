@@ -676,5 +676,3 @@ internal fun App(
         }
     }
 }
-
-internal fun formatSyncStorageMegabytes(bytes: Long): String = "%,.1f MB".format(bytes / 1024.0 / 1024.0)
