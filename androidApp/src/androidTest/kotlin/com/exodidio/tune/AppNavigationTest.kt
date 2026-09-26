@@ -124,6 +124,17 @@ class AppNavigationTest {
     }
 
     @Test
+    fun settingsMusicSyncActionOpensTheMusicSyncPage() {
+        val harness = AppHarness(AppUiState(selectedDestination = AppDestination.Settings))
+        composeTestRule.setContent { harness.Render() }
+
+        composeTestRule.onNodeWithContentDescription(string(R.string.settings_music_sync)).performClick()
+
+        composeTestRule.onNodeWithContentDescription(string(R.string.library_scan_local)).assertIsDisplayed()
+        assertEquals(AppIntent.OpenPage(AppStackPage.SettingsMusicSync), harness.intents.last())
+    }
+
+    @Test
     fun librarySearchActionOpensTheSearchPage() {
         val harness = AppHarness(AppUiState(selectedDestination = AppDestination.Library))
         composeTestRule.setContent { harness.Render() }

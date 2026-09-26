@@ -228,6 +228,12 @@
     <string name="playback_normalization_target_maximum">-5 LUFS</string>
     <string name="settings_integration">Integration</string>
     <string name="integration_title">Integration</string>
+    <string name="settings_music_sync">Music sync</string>
+    <string name="music_sync_title">Music sync</string>
+    <string name="music_sync_permission_rationale">Tune needs audio access to find music on this device. Allow access, then scan again.</string>
+    <string name="music_sync_permission_denied">Audio access is off. Turn it on in system Settings to scan for music.</string>
+    <string name="music_sync_last_result">Found %1$d tracks · skipped %2$d</string>
+    <string name="music_sync_error">Scan failed: %1$s</string>
     <string name="lastfm_title">Last.fm</string>
     <string name="lastfm_description">Scrobble your plays and sync favorite tracks with Last.fm.</string>
     <string name="lastfm_connected_as">Connected as %1$s</string>

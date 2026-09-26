@@ -14,6 +14,7 @@ internal fun SettingsContent(
     onAppearanceSelected: () -> Unit,
     onPlaybackSelected: () -> Unit,
     onIntegrationSelected: () -> Unit,
+    onMusicSyncSelected: () -> Unit,
     onAboutSelected: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -34,6 +35,11 @@ internal fun SettingsContent(
                     R.string.settings_integration,
                     leadingSymbol = MaterialSymbols.Power,
                     onClick = onIntegrationSelected,
+                ),
+                ActionListItem(
+                    R.string.settings_music_sync,
+                    leadingSymbol = MaterialSymbols.Sync,
+                    onClick = onMusicSyncSelected,
                 ),
                 ActionListItem(
                     R.string.settings_about,
