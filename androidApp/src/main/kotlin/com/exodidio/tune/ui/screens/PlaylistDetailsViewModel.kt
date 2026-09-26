@@ -126,14 +126,17 @@ internal fun playlistDetailsUiStateFor(
     )
 }
 
-internal fun LibraryTrack.isFavorite(): Boolean = (metadataObject()?.get("is_favorite") as? kotlinx.serialization.json.JsonPrimitive)
-    ?.booleanOrNull == true
+// Pure helpers take an already-parsed object so composables parse once.
+internal fun isFavoriteOf(metadata: kotlinx.serialization.json.JsonObject?): Boolean =
+    (metadata?.get("is_favorite") as? kotlinx.serialization.json.JsonPrimitive)?.booleanOrNull == true
+
+internal fun durationSecondsOf(metadata: kotlinx.serialization.json.JsonObject?): Long? =
+    (metadata?.get("duration") as? kotlinx.serialization.json.JsonPrimitive)?.longOrNull?.coerceAtLeast(0L)
+
+internal fun LibraryTrack.isFavorite(): Boolean = isFavoriteOf(metadataObject())
 
 internal fun playlistTotalDurationSeconds(tracks: List<LibraryTrack>): Long = tracks.sumOf { track ->
-    (track.metadataObject()?.get("duration") as? kotlinx.serialization.json.JsonPrimitive)
-        ?.longOrNull
-        ?.coerceAtLeast(0L)
-        ?: 0L
+    durationSecondsOf(track.metadataObject()) ?: 0L
 }
 
 internal fun formatPlaylistTotalDuration(

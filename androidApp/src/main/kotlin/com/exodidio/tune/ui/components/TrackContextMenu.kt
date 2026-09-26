@@ -40,7 +40,7 @@ import com.exodidio.tune.sync.LibraryTrack
 import com.exodidio.tune.sync.LibraryPlaylist
 import com.exodidio.tune.sync.LibrarySyncProtocol
 import com.exodidio.tune.sync.metadataObject
-import com.exodidio.tune.ui.screens.isFavorite
+import com.exodidio.tune.ui.screens.isFavoriteOf
 import com.exodidio.tune.ui.theme.LocalTuneColors
 
 /** Per-host visibility policy for the reusable track overflow sheet. */
@@ -145,7 +145,8 @@ fun TrackContextMenu(
     val queueAvailability = remember(track.id, playbackQueue) {
         trackContextQueueAvailability(track.id, playbackQueue)
     }
-    val favorite = track.isFavorite()
+    val metadata = remember(track.metadataJson) { track.metadataObject() }
+    val favorite = remember(metadata) { isFavoriteOf(metadata) }
     val moodRadio = LocalMoodRadioMenuActions.current
     val showMoodRadio = actions.moodRadio || track.id in moodRadio.eligibleTrackIds
     val dismissAll = {

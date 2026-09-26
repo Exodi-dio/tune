@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.exodidio.tune.player.ArtworkCrossfadeTransition
+import com.exodidio.tune.ui.components.ArtworkThumbnailCache
 import com.exodidio.tune.ui.components.MaterialSymbol
 import com.exodidio.tune.ui.components.MaterialSymbols
 import com.exodidio.tune.ui.theme.LocalTuneColors
@@ -126,6 +128,14 @@ internal fun rememberArtworkCrossfadeProgress(crossfade: ArtworkCrossfadeTransit
 internal fun equalPowerOutgoing(progress: Float): Float = kotlin.math.cos(progress.coerceIn(0f, 1f) * Math.PI.toFloat() / 2f)
 internal fun equalPowerIncoming(progress: Float): Float = kotlin.math.sin(progress.coerceIn(0f, 1f) * Math.PI.toFloat() / 2f)
 
+internal fun fullscreenSampleSize(outWidth: Int, outHeight: Int, targetPx: Int = 1080): Int {
+    var sample = 1
+    while (outWidth / (sample * 2) >= targetPx && outHeight / (sample * 2) >= targetPx) {
+        sample *= 2
+    }
+    return sample
+}
+
 @Composable
 internal fun rememberFullscreenArtwork(artworkPath: String?, keepPrevious: Boolean = true): FullScreenArtwork? {
     val context = LocalContext.current
@@ -135,19 +145,25 @@ internal fun rememberFullscreenArtwork(artworkPath: String?, keepPrevious: Boole
             artwork = null
             return@LaunchedEffect
         }
+        val file = File(if (File(artworkPath).isAbsolute) artworkPath else File(context.filesDir, artworkPath).path)
+        if (!file.isFile) { artwork = null; return@LaunchedEffect }
+        val key = ArtworkThumbnailCache.cacheKey(file.absolutePath, 1080)
+        ArtworkThumbnailCache.get(key)?.let { cached ->
+            artwork = FullScreenArtwork(cached, withContext(Dispatchers.Default) { dominantColor(cached.asAndroidBitmap()) })
+            return@LaunchedEffect
+        }
         artwork = withContext(Dispatchers.IO) {
-            val file = File(if (File(artworkPath).isAbsolute) artworkPath else File(context.filesDir, artworkPath).path)
-            if (!file.isFile) return@withContext null
             runCatching {
                 val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                 BitmapFactory.decodeFile(file.path, bounds)
-                var sample = 1
-                while (bounds.outWidth / (sample * 2) >= 1080 && bounds.outHeight / (sample * 2) >= 1080) sample *= 2
+                val sample = fullscreenSampleSize(bounds.outWidth, bounds.outHeight, 1080)
                 val bitmap = BitmapFactory.decodeFile(file.path, BitmapFactory.Options().apply {
                     inSampleSize = sample
-                    inPreferredConfig = Bitmap.Config.ARGB_8888
+                    inPreferredConfig = Bitmap.Config.RGB_565
                 }) ?: return@runCatching null
-                FullScreenArtwork(bitmap.asImageBitmap(), dominantColor(bitmap))
+                val image = bitmap.asImageBitmap()
+                ArtworkThumbnailCache.put(key, image)
+                FullScreenArtwork(image, dominantColor(bitmap))
             }.getOrNull()
         }
     }

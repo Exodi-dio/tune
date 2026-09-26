@@ -170,7 +170,8 @@ internal fun FullScreenPlayer(
     val isArtworkCrossfading = activeArtworkCrossfade != null &&
         outgoingArtwork != null && incomingArtwork != null
     val contextTrack = queueTracks.firstOrNull { it.id == item.trackId }
-    val metadataDurationMs = (contextTrack?.metadataObject()?.get("duration") as? JsonPrimitive)
+    val contextMetadata = remember(contextTrack?.metadataJson) { contextTrack?.metadataObject() }
+    val metadataDurationMs = (contextMetadata?.get("duration") as? JsonPrimitive)
         ?.contentOrNull
         ?.toLongOrNull()
         ?.takeIf { it > 0L }
