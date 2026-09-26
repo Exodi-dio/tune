@@ -35,16 +35,16 @@ import com.exodidio.tune.ui.theme.LocalTuneColors
 const val LyricsScrollLeadMinMs: Long = 350L
 const val LyricsScrollLeadMaxMs: Long = 500L
 
-fun activeLyricIndex(lines: List<PlayerLyricLine>, positionMs: Long): Int =
+internal fun activeLyricIndex(lines: List<PlayerLyricLine>, positionMs: Long): Int =
     lines.indexOfLast { (it.timestampSeconds ?: Float.MAX_VALUE) <= positionMs / 1_000f }
 
-fun lyricsScrollLeadMs(gapMs: Long): Long =
+internal fun lyricsScrollLeadMs(gapMs: Long): Long =
     gapMs.coerceIn(LyricsScrollLeadMinMs, LyricsScrollLeadMaxMs)
 
-fun applyLyricsOffset(positionMs: Long, offsetMs: Int): Long =
+internal fun applyLyricsOffset(positionMs: Long, offsetMs: Int): Long =
     (positionMs - offsetMs.toLong()).coerceAtLeast(0L)
 
-fun lyricsSeekTargetMs(timestampSeconds: Float, offsetMs: Int): Long =
+internal fun lyricsSeekTargetMs(timestampSeconds: Float, offsetMs: Int): Long =
     (timestampSeconds * 1_000).toLong().plus(offsetMs.toLong()).coerceAtLeast(0L)
 
 @Composable
