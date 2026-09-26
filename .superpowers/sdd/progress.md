@@ -60,3 +60,5 @@
 - Ruling: spec-§7 emulator smoke test has no owning task (plan defect) — folded into strip batch 8 (with T6 androidTest fixes): create permanent workflow_dispatch emulator-smoke.yml (2GB AVD, API 34) + run it once pre-release executing the androidTest suite incl. the 3 new cases. This also satisfies the reviewer's on-device gate.
 - Noted for batch 8: MusicSyncContentTest assert(...) → Assert.assertTrue hygiene fix (drive-by, ruling: trivial, same area).
 - Settings batch: complete (commits 5b403da..93b98e2, review approved).
+## Strip batch 6 (T1-T3+T7) completion
+- Batch 6: complete (commits 4b84851..5f1f895, review approved). Parked minor: AboutContent unused padding import (fold into a later batch or final review).
