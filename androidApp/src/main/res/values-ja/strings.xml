@@ -156,7 +156,7 @@
     <string name="library_playlists">プレイリスト</string>
     <string name="library_favorites">お気に入り</string>
     <string name="playlists_empty_title">ライブラリにプレイリストがありません</string>
-    <string name="playlists_empty_description">接続中のデスクトップからプレイリストを同期するとここに表示されます。</string>
+    <string name="playlists_empty_description">プレイリストを作成するとここに表示されます。</string>
     <string name="playlist_row_open">プレイリストを開く</string>
     <string name="playlist_create">プレイリストを作成</string>
     <string name="playlist_create_title">プレイリストを作成</string>
@@ -172,7 +172,7 @@
     <string name="bottom_sheet_back">戻る</string>
     <string name="create">作成</string>
     <string name="save">保存</string>
-    <string name="playlist_sync_failed">このプレイリストをデスクトップと同期できませんでした</string>
+    <string name="playlist_sync_failed">このプレイリストを更新できませんでした</string>
     <string name="playlist_details_title">プレイリスト</string>
     <string name="playlist_details_empty_title">プレイリストを利用できません</string>
     <string name="playlist_details_empty_description">このプレイリストは同期済みライブラリ内に存在しません。</string>
@@ -185,8 +185,8 @@
         <item quantity="other">%d曲</item>
     </plurals>
     <string name="library_recently_added">最近追加された項目</string>
-    <string name="library_empty_title">同期された音楽がありません</string>
-    <string name="library_empty_description">接続中のデスクトップで同期を開始してライブラリを取り込んでください。</string>
+    <string name="library_empty_title">音楽がまだありません</string>
+    <string name="library_empty_description">設定 → 音楽の同期からデバイス内の音楽をスキャンしてください。</string>
     <string name="cancel">キャンセル</string>
     <string name="settings_playback">再生</string>
     <string name="playback_settings_title">再生</string>

@@ -156,7 +156,7 @@
     <string name="library_playlists">재생 목록</string>
     <string name="library_favorites">즐겨찾기</string>
     <string name="playlists_empty_title">라이브러리에 재생 목록이 없습니다</string>
-    <string name="playlists_empty_description">연결된 데스크톱에서 재생 목록을 동기화하여 확인하세요.</string>
+    <string name="playlists_empty_description">재생 목록을 만들면 여기에 표시됩니다.</string>
     <string name="playlist_row_open">재생 목록 열기</string>
     <string name="playlist_create">재생 목록 생성</string>
     <string name="playlist_create_title">재생 목록 생성</string>
@@ -172,7 +172,7 @@
     <string name="bottom_sheet_back">뒤로</string>
     <string name="create">생성</string>
     <string name="save">저장</string>
-    <string name="playlist_sync_failed">이 재생 목록을 데스크톱과 동기화할 수 없습니다</string>
+    <string name="playlist_sync_failed">이 재생 목록을 업데이트할 수 없습니다</string>
     <string name="playlist_details_title">재생 목록</string>
     <string name="playlist_details_empty_title">재생 목록을 사용할 수 없음</string>
     <string name="playlist_details_empty_description">이 재생 목록은 더 이상 동기화된 라이브러리에 없습니다.</string>
@@ -185,8 +185,8 @@
         <item quantity="other">트랙 %d개</item>
     </plurals>
     <string name="library_recently_added">최근 추가된 항목</string>
-    <string name="library_empty_title">동기화된 음악이 없습니다</string>
-    <string name="library_empty_description">연결된 데스크톱에서 동기화를 시작하여 라이브러리를 가져오세요.</string>
+    <string name="library_empty_title">아직 음악이 없습니다</string>
+    <string name="library_empty_description">설정 → 음악 동기화에서 이 기기의 음악을 스캔하세요.</string>
     <string name="cancel">취소</string>
     <string name="settings_playback">재생</string>
     <string name="playback_settings_title">재생</string>

@@ -156,7 +156,7 @@
     <string name="library_playlists">Playlists</string>
     <string name="library_favorites">Favoritos</string>
     <string name="playlists_empty_title">Sem playlists na biblioteca</string>
-    <string name="playlists_empty_description">Sincronize playlists a partir do seu computador para as ver aqui.</string>
+    <string name="playlists_empty_description">Crie uma playlist para a ver aqui.</string>
     <string name="playlist_row_open">Abrir playlist</string>
     <string name="playlist_create">Criar playlist</string>
     <string name="playlist_create_title">Criar playlist</string>
@@ -172,7 +172,7 @@
     <string name="bottom_sheet_back">Voltar</string>
     <string name="create">Criar</string>
     <string name="save">Guardar</string>
-    <string name="playlist_sync_failed">Não foi possível sincronizar esta playlist com o computador</string>
+    <string name="playlist_sync_failed">Não foi possível atualizar esta playlist</string>
     <string name="playlist_details_title">Playlist</string>
     <string name="playlist_details_empty_title">Playlist indisponível</string>
     <string name="playlist_details_empty_description">Esta playlist já não existe na biblioteca sincronizada.</string>
@@ -186,8 +186,8 @@
         <item quantity="other">%d faixas</item>
     </plurals>
     <string name="library_recently_added">Adicionados Recentemente</string>
-    <string name="library_empty_title">Ainda sem música sincronizada</string>
-    <string name="library_empty_description">Inicie a sincronização no seu computador para transferir a biblioteca.</string>
+    <string name="library_empty_title">Ainda sem música</string>
+    <string name="library_empty_description">Analise a música neste dispositivo em Definições → Sincronização de música.</string>
     <string name="cancel">Cancelar</string>
     <string name="settings_playback">Reprodução</string>
     <string name="playback_settings_title">Reprodução</string>

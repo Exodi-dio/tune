@@ -156,7 +156,7 @@
     <string name="library_playlists">เพลย์ลิสต์</string>
     <string name="library_favorites">รายการโปรด</string>
     <string name="playlists_empty_title">ไม่มีเพลย์ลิสต์ในคลังเพลง</string>
-    <string name="playlists_empty_description">ซิงค์เพลย์ลิสต์จากเดสก์ท็อปที่เชื่อมต่อเพื่อดูที่นี่</string>
+    <string name="playlists_empty_description">สร้างเพลย์ลิสต์เพื่อดูที่นี่</string>
     <string name="playlist_row_open">เปิดเพลย์ลิสต์</string>
     <string name="playlist_create">สร้างเพลย์ลิสต์</string>
     <string name="playlist_create_title">สร้างเพลย์ลิสต์</string>
@@ -172,7 +172,7 @@
     <string name="bottom_sheet_back">กลับ</string>
     <string name="create">สร้าง</string>
     <string name="save">บันทึก</string>
-    <string name="playlist_sync_failed">ไม่สามารถซิงค์เพลย์ลิสต์นี้กับเดสก์ท็อปได้</string>
+    <string name="playlist_sync_failed">ไม่สามารถอัปเดตเพลย์ลิสต์นี้ได้</string>
     <string name="playlist_details_title">เพลย์ลิสต์</string>
     <string name="playlist_details_empty_title">เพลย์ลิสต์ไม่พร้อมใช้งาน</string>
     <string name="playlist_details_empty_description">เพลย์ลิสต์นี้ไม่ได้อยู่ในคลังเพลงที่ซิงค์แล้ว</string>
@@ -185,8 +185,8 @@
         <item quantity="other">%d เพลง</item>
     </plurals>
     <string name="library_recently_added">เพิ่มล่าสุด</string>
-    <string name="library_empty_title">ยังไม่มีเพลงที่ซิงค์</string>
-    <string name="library_empty_description">เริ่มการซิงค์บนเดสก์ท็อปที่เชื่อมต่อเพื่อนำคลังเพลงของคุณมาที่นี่</string>
+    <string name="library_empty_title">ยังไม่มีเพลง</string>
+    <string name="library_empty_description">สแกนเพลงในอุปกรณ์นี้จาก การตั้งค่า → ซิงก์เพลง</string>
     <string name="cancel">ยกเลิก</string>
     <string name="settings_playback">การเล่น</string>
     <string name="playback_settings_title">การเล่น</string>

@@ -156,7 +156,7 @@
     <string name="library_playlists">Playlists</string>
     <string name="library_favorites">Favoris</string>
     <string name="playlists_empty_title">Aucune playlist dans la bibliothèque</string>
-    <string name="playlists_empty_description">Synchronisez les playlists depuis votre ordinateur pour les voir ici.</string>
+    <string name="playlists_empty_description">Créez une playlist pour la voir ici.</string>
     <string name="playlist_row_open">Ouvrir la playlist</string>
     <string name="playlist_create">Créer une playlist</string>
     <string name="playlist_create_title">Créer une playlist</string>
@@ -172,7 +172,7 @@
     <string name="bottom_sheet_back">Retour</string>
     <string name="create">Créer</string>
     <string name="save">Enregistrer</string>
-    <string name="playlist_sync_failed">Impossible de synchroniser cette playlist avec l\'ordinateur</string>
+    <string name="playlist_sync_failed">Impossible de mettre à jour cette playlist</string>
     <string name="playlist_details_title">Playlist</string>
     <string name="playlist_details_empty_title">Playlist indisponible</string>
     <string name="playlist_details_empty_description">Cette playlist n\'est plus dans la bibliothèque synchronisée.</string>
@@ -186,8 +186,8 @@
         <item quantity="other">%d morceaux</item>
     </plurals>
     <string name="library_recently_added">Ajoutés récemment</string>
-    <string name="library_empty_title">Aucune musique synchronisée</string>
-    <string name="library_empty_description">Lancez la synchronisation sur votre ordinateur pour importer votre bibliothèque.</string>
+    <string name="library_empty_title">Aucune musique pour l\'instant</string>
+    <string name="library_empty_description">Analysez la musique de cet appareil dans Réglages → Synchro musique.</string>
     <string name="cancel">Annuler</string>
     <string name="settings_playback">Lecture</string>
     <string name="playback_settings_title">Lecture</string>

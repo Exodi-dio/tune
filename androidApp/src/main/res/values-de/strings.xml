@@ -156,7 +156,7 @@
     <string name="library_playlists">Playlists</string>
     <string name="library_favorites">Favoriten</string>
     <string name="playlists_empty_title">Keine Playlists in der Mediathek</string>
-    <string name="playlists_empty_description">Synchronisieren Sie Playlists von Ihrem verbundenen Desktop, um sie hier zu sehen.</string>
+    <string name="playlists_empty_description">Erstelle eine Playlist, um sie hier zu sehen.</string>
     <string name="playlist_row_open">Playlist öffnen</string>
     <string name="playlist_create">Playlist erstellen</string>
     <string name="playlist_create_title">Playlist erstellen</string>
@@ -172,7 +172,7 @@
     <string name="bottom_sheet_back">Zurück</string>
     <string name="create">Erstellen</string>
     <string name="save">Speichern</string>
-    <string name="playlist_sync_failed">Diese Playlist konnte nicht mit dem Desktop synchronisiert werden</string>
+    <string name="playlist_sync_failed">Diese Playlist konnte nicht aktualisiert werden</string>
     <string name="playlist_details_title">Playlist</string>
     <string name="playlist_details_empty_title">Playlist nicht verfügbar</string>
     <string name="playlist_details_empty_description">Diese Playlist befindet sich nicht mehr in der synchronisierten Mediathek.</string>
@@ -186,8 +186,8 @@
         <item quantity="other">%d Titel</item>
     </plurals>
     <string name="library_recently_added">Zuletzt hinzugefügt</string>
-    <string name="library_empty_title">Noch keine synchronisierte Musik</string>
-    <string name="library_empty_description">Starten Sie die Synchronisierung auf Ihrem verbundenen Desktop, um Ihre Mediathek hierher zu übertragen.</string>
+    <string name="library_empty_title">Noch keine Musik</string>
+    <string name="library_empty_description">Scanne die Musik auf diesem Gerät unter Einstellungen → Musiksync.</string>
     <string name="cancel">Abbrechen</string>
     <string name="settings_playback">Wiedergabe</string>
     <string name="playback_settings_title">Wiedergabe</string>

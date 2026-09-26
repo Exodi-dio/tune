@@ -156,7 +156,7 @@
     <string name="library_playlists">Playlist</string>
     <string name="library_favorites">Preferiti</string>
     <string name="playlists_empty_title">Nessuna playlist nella libreria</string>
-    <string name="playlists_empty_description">Sincronizza le playlist dal tuo desktop connesso per vederle qui.</string>
+    <string name="playlists_empty_description">Crea una playlist per vederla qui.</string>
     <string name="playlist_row_open">Apri playlist</string>
     <string name="playlist_create">Crea playlist</string>
     <string name="playlist_create_title">Crea playlist</string>
@@ -172,7 +172,7 @@
     <string name="bottom_sheet_back">Indietro</string>
     <string name="create">Crea</string>
     <string name="save">Salva</string>
-    <string name="playlist_sync_failed">Impossibile sincronizzare questa playlist con il desktop</string>
+    <string name="playlist_sync_failed">Impossibile aggiornare questa playlist</string>
     <string name="playlist_details_title">Playlist</string>
     <string name="playlist_details_empty_title">Playlist non disponibile</string>
     <string name="playlist_details_empty_description">Questa playlist non è più presente nella libreria sincronizzata.</string>
@@ -186,8 +186,8 @@
         <item quantity="other">%d brani</item>
     </plurals>
     <string name="library_recently_added">Aggiunti di recente</string>
-    <string name="library_empty_title">Nessuna musica sincronizzata</string>
-    <string name="library_empty_description">Avvia la sincronizzazione sul desktop connesso per trasferire qui la libreria.</string>
+    <string name="library_empty_title">Ancora nessuna musica</string>
+    <string name="library_empty_description">Scansiona la musica su questo dispositivo in Impostazioni → Sincronizzazione musica.</string>
     <string name="cancel">Annulla</string>
     <string name="settings_playback">Riproduzione</string>
     <string name="playback_settings_title">Riproduzione</string>
