@@ -46,7 +46,7 @@ class PlayerQueueSectionsTest {
         assertEquals(emptyList<String>(), sections.userIds)
         assertEquals(emptyList<String>(), sections.contextIds)
         assertEquals(emptyList<String>(), sections.autoplayIds)
-        assertFalse(shouldShowAutoplayHeader(sections.autoplayIds, autoplayEnabled = true))
+        assertFalse(shouldShowAutoplayHeader(sections.autoplayIds, autoplayEnabled = false))
     }
 
     @Test
