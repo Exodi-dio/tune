@@ -43,3 +43,21 @@ internal fun shellCollapseProgress(
 
 internal fun shouldCarryQueueOpen(slide: Float, velocityPxPerSec: Float): Boolean =
     slide >= ShellQueueCarryFraction || abs(velocityPxPerSec) >= ShellQueueFlickVelocityPxPerSec
+
+/** Relocated from the deleted FullScreenPlayerGestures.kt: requires a deliberate,
+ * predominantly horizontal gesture before changing tracks. Uses abs() where the
+ * original used absoluteValue (identical semantics). */
+internal fun shouldDispatchFullScreenSwipe(
+    horizontalDistancePx: Float,
+    verticalDistancePx: Float,
+    thresholdPx: Float,
+    velocityPxPerMs: Float,
+    velocityThresholdPxPerMs: Float,
+    velocityMinimumPx: Float,
+): Boolean {
+    val horizontal = abs(horizontalDistancePx)
+    val vertical = abs(verticalDistancePx)
+    if (horizontal < vertical * 1.25f) return false
+    return horizontal >= thresholdPx ||
+        (horizontal >= velocityMinimumPx && abs(velocityPxPerMs) >= velocityThresholdPxPerMs)
+}

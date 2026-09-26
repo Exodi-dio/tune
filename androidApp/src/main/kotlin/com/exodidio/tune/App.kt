@@ -23,7 +23,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -55,7 +54,7 @@ import com.exodidio.tune.ui.navigation.ContentScrollDirection
 import com.exodidio.tune.ui.navigation.FloatingNavigationBottomMargin
 import com.exodidio.tune.ui.navigation.FloatingNavigationContentGap
 import com.exodidio.tune.ui.navigation.FloatingNavigationHeight
-import com.exodidio.tune.ui.navigation.FullScreenPlayer
+import com.exodidio.tune.ui.navigation.PlayerShellHost
 import com.exodidio.tune.ui.navigation.MiniPlayerHeight
 import com.exodidio.tune.ui.navigation.MiniPlayerNavigationGap
 import com.exodidio.tune.ui.navigation.NavigationChrome
@@ -203,10 +202,6 @@ internal fun App(
         val isForwardHeaderTransition = currentStackPage.index >= previousStackPage.index
         val showsMiniPlayer = playbackState.showsMiniPlayer()
         var isFullScreenPlayerVisible by rememberSaveable { mutableStateOf(false) }
-        var isFullScreenPlayerOpeningFromSwipe by remember { mutableStateOf(false) }
-        var fullScreenPlayerDragProgress by remember { mutableFloatStateOf(0f) }
-        var isFullScreenPlayerDragging by remember { mutableStateOf(false) }
-        var pendingFullScreenPlayerAction by remember { mutableStateOf<(() -> Unit)?>(null) }
         var trackContextSheet by remember { mutableStateOf<TrackContextBottomSheetRequest?>(null) }
         var equalizerProfileSheet by remember { mutableStateOf<EqualizerProfileSheet?>(null) }
         var isNavigationCompact by remember { mutableStateOf(false) }
@@ -221,17 +216,6 @@ internal fun App(
             // stale until an unrelated playback-state recomposition occurs.
             onFullScreenPlayerVisibilityChanged(visible)
         }
-        fun closeFullScreenPlayerThen(action: () -> Unit) {
-            if (!isFullScreenPlayerVisible) {
-                action()
-                return
-            }
-            pendingFullScreenPlayerAction = action
-            setFullScreenPlayerVisible(false)
-            isFullScreenPlayerOpeningFromSwipe = false
-            isFullScreenPlayerDragging = false
-            fullScreenPlayerDragProgress = 0f
-        }
         LaunchedEffect(showsMiniPlayer) {
             if (!showsMiniPlayer) {
                 // Keep the chrome geometry while destinations and pages change.
@@ -240,9 +224,6 @@ internal fun App(
                 isNavigationCompact = false
                 navigationScrollAccumulator.reset()
                 setFullScreenPlayerVisible(false)
-                isFullScreenPlayerOpeningFromSwipe = false
-                isFullScreenPlayerDragging = false
-                fullScreenPlayerDragProgress = 0f
             }
         }
         val navigationChromeHeight = when {
@@ -562,20 +543,13 @@ internal fun App(
                     playback.onMiniPlayerDismiss()
                 },
                 onOpenFullScreenPlayer = {
-                    isFullScreenPlayerOpeningFromSwipe = false
                     setFullScreenPlayerVisible(true)
                 },
-                onFullScreenPlayerDrag = { progress ->
-                    isFullScreenPlayerDragging = true
-                    fullScreenPlayerDragProgress = progress
-                },
+                // Fix wave (C8): the MiniPlayer drag callbacks are write-only
+                // against the shell (it owns no drag gesture), so only the
+                // release decision reaches the overlay; drag progress uses the
+                // NavigationChrome default (no-op).
                 onFullScreenPlayerDragEnd = { shouldOpen ->
-                    isFullScreenPlayerDragging = false
-                    // A partial pull must not remain as the overlay's source of truth
-                    // once the pointer is released. The overlay then animates to either
-                    // its closed or fully-open resting state.
-                    fullScreenPlayerDragProgress = 0f
-                    isFullScreenPlayerOpeningFromSwipe = shouldOpen
                     setFullScreenPlayerVisible(shouldOpen)
                 },
                 modifier = Modifier
@@ -596,57 +570,19 @@ internal fun App(
                 currentPlayingTrack?.metadataObject()
             }
             val isCurrentFavorite = remember(currentPlayingMetadata) { isFavoriteOf(currentPlayingMetadata) }
-            FullScreenPlayer(
+            PlayerShellHost(
                 visible = isFullScreenPlayerVisible,
-                dragProgress = fullScreenPlayerDragProgress,
-                isDragging = isFullScreenPlayerDragging,
-                openingFromMiniPlayerSwipe = isFullScreenPlayerOpeningFromSwipe,
-                playbackState = playbackState,
-                queue = playbackQueue,
-                queueTracks = playback.queueTracks,
-                lyrics = playback.lyrics,
-                lyricsLoading = playback.lyricsLoading,
-                romanization = playback.romanization,
-                romanizationAllowed = playback.romanizationAllowed,
-                onRomanizationInput = playback.onRomanizationInput,
-                onRomanizationToggle = playback.onRomanizationToggle,
-                artworkCrossfade = playback.artworkCrossfade,
-                blendArtworkDuringCrossfade = playback.blendArtworkDuringCrossfade,
-                showQualityBadge = playback.showFullscreenQualityBadge,
-                volume = playback.systemVolume,
-                onSeek = playback.onSeek,
-                onVolumeChange = playback.onSystemVolumeChange,
-                onPrevious = playback.onPrevious,
-                onPlayPause = playback.onPlayPause,
-                onNext = playback.onNext,
-                onQueueTrackSelected = playback.onQueueTrackSelected,
-                onQueueReordered = playback.onQueueReordered,
-                onQueueTrackRemoved = playback.onQueueTrackRemoved,
-                onShuffleChange = playback.onShuffleChange,
-                onRepeatModeChange = playback.onRepeatModeChange,
-                moodRadioEligibleTrackIds = playback.moodRadioEligibleTrackIds,
-                onStartMoodRadio = playback.onStartMoodRadio,
-                moodRadioActive = playback.moodRadioActive,
+                playback = playback,
                 isFavorite = isCurrentFavorite,
-                onFavoriteToggle = playback.onFavoriteToggle,
-                onTrackPlayNext = playback.onTrackPlayNext,
-                onTrackAddToQueue = playback.onTrackAddToQueue,
+                onDismiss = {
+                    setFullScreenPlayerVisible(false)
+                },
+                hazeState = hazeState,
+                // Fix wave (C3): re-thread the navigation entry points dropped
+                // with the old player (go-to-album/artist + bottom-sheet).
                 onTrackGoToAlbum = { albumId -> onIntent(AppIntent.OpenAlbumDetails(albumId)) },
                 onTrackGoToArtist = { artistId -> onIntent(AppIntent.OpenArtistDetails(artistId)) },
                 onTrackContextBottomSheet = { request -> trackContextSheet = request },
-                onCloseFullscreenThen = ::closeFullScreenPlayerThen,
-                onOpenMediaOutputSwitcher = playback.onOpenMediaOutputSwitcher,
-                onDismiss = {
-                    setFullScreenPlayerVisible(false)
-                    isFullScreenPlayerOpeningFromSwipe = false
-                },
-                onDismissAnimationFinished = {
-                    pendingFullScreenPlayerAction?.let { action ->
-                        pendingFullScreenPlayerAction = null
-                        action()
-                    }
-                },
-                hazeState = hazeState,
             )
             trackContextSheet?.let { request ->
                 TrackContextBottomSheet(
@@ -668,10 +604,6 @@ internal fun App(
                 )
             }
             }
-        }
-        BackHandler(enabled = isFullScreenPlayerVisible) {
-            setFullScreenPlayerVisible(false)
-            isFullScreenPlayerOpeningFromSwipe = false
         }
         }
     }

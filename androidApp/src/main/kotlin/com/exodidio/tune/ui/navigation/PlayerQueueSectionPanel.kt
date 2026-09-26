@@ -1,15 +1,25 @@
 package com.exodidio.tune.ui.navigation
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,13 +30,42 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.unit.dp
 import com.exodidio.tune.R
 import com.exodidio.tune.player.PlaybackQueueSnapshot
+import com.exodidio.tune.player.RepeatMode
 import com.exodidio.tune.sync.LibraryTrack
+import com.exodidio.tune.ui.components.MaterialSymbol
+import com.exodidio.tune.ui.components.MaterialSymbols
+import com.exodidio.tune.ui.components.TrackContextArtist
+import com.exodidio.tune.ui.components.TrackContextBottomSheetRequest
+import com.exodidio.tune.ui.components.TrackContextMenu
+import com.exodidio.tune.ui.components.TrackContextMenuActions
+import com.exodidio.tune.ui.components.TunePlayingIndicator
+import com.exodidio.tune.ui.components.sliderFilledTrackColor
 import com.exodidio.tune.ui.theme.LocalTuneColors
 import kotlin.math.abs
+
+internal const val PlayerShellQueueHeaderTestTag = "player_shell_queue_header"
+
+// Fix wave (C1): pure repeat-cycle for the queue header toggle, relocated from
+// the deleted FullScreenPlayerQueuePanel.kt (was private RepeatMode.next()).
+// Off -> All -> One -> Off; pinned by PlayerShellQueueTogglesTest.
+internal fun nextRepeatMode(mode: RepeatMode): RepeatMode = when (mode) {
+    RepeatMode.Off -> RepeatMode.All
+    RepeatMode.All -> RepeatMode.One
+    RepeatMode.One -> RepeatMode.Off
+}
+
+// Fix wave (C1): pure shuffle-toggle mapping used by the queue header button.
+internal fun toggledShuffle(shuffle: Boolean): Boolean = !shuffle
 
 fun reorderWithinSection(
     fullOrder: List<String>,
@@ -83,10 +122,20 @@ internal fun PlayerQueueSectionPanel(
     tracks: List<LibraryTrack>,
     autoplayEnabled: Boolean,
     currentTrackId: String = queue.currentTrackId ?: "",
+    isPlaying: Boolean = false,
     onTrackSelected: (String) -> Unit = {},
     onTrackRemoved: (String) -> Unit = {},
+    onTrackPlayNext: (String) -> Unit = {},
     onReorder: (List<String>) -> Unit = {},
     onClearNext: (List<String>) -> Unit = {},
+    onShuffleChange: (Boolean) -> Unit = {},
+    onRepeatModeChange: (RepeatMode) -> Unit = {},
+    onFavoriteToggle: (String, Boolean) -> Unit = { _, _ -> },
+    onTrackGoToAlbum: (String) -> Unit = {},
+    onTrackGoToArtist: (String) -> Unit = {},
+    onTrackContextBottomSheet: (TrackContextBottomSheetRequest) -> Unit = {},
+    moodRadioEligibleTrackIds: Set<String> = emptySet(),
+    onStartMoodRadio: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val colors = LocalTuneColors.current
@@ -108,12 +157,45 @@ internal fun PlayerQueueSectionPanel(
         previousTrackId = currentTrackId
     }
     Column(modifier = modifier) {
-        Text(
-            text = stringResource(R.string.player_queue),
-            color = colors.onPrimary,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = 20.dp)
-        )
+        // Fix wave (C1): working shuffle + repeat toggles in the queue header
+        // (old FullScreenQueuePanel location), calling the live mount
+        // callbacks. The queue-toggle status badge in now-playing stays
+        // display-only.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .semantics { testTag = PlayerShellQueueHeaderTestTag },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.player_queue),
+                color = colors.onPrimary,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Spacer(Modifier.weight(1f))
+            PlayerShellModeButton(
+                MaterialSymbols.Shuffle,
+                stringResource(if (queue.shuffle) R.string.player_shuffle_on else R.string.player_shuffle),
+                queue.shuffle,
+            ) {
+                onShuffleChange(toggledShuffle(queue.shuffle))
+            }
+            Spacer(Modifier.width(8.dp))
+            PlayerShellModeButton(
+                if (queue.repeatMode == RepeatMode.One) MaterialSymbols.RepeatOne else MaterialSymbols.Repeat,
+                stringResource(
+                    when (queue.repeatMode) {
+                        RepeatMode.Off -> R.string.player_repeat_off
+                        RepeatMode.All -> R.string.player_repeat_all
+                        RepeatMode.One -> R.string.player_repeat_one
+                    },
+                ),
+                queue.repeatMode != RepeatMode.Off,
+            ) {
+                onRepeatModeChange(nextRepeatMode(queue.repeatMode))
+            }
+        }
         Spacer(Modifier.height(8.dp))
         LazyColumn(state = listState, modifier = Modifier.fillMaxWidth()) {
             sections.nowPlayingId?.let { nowId ->
@@ -125,6 +207,18 @@ internal fun PlayerQueueSectionPanel(
                         trackId = nowId,
                         title = tracksById[nowId]?.title ?: "Unavailable track",
                         artist = tracksById[nowId]?.artists ?: "",
+                        track = tracksById[nowId],
+                        isCurrent = true,
+                        isPlaying = isPlaying,
+                        queue = queue,
+                        onTrackPlayNext = onTrackPlayNext,
+                        onTrackRemoved = onTrackRemoved,
+                        onFavoriteToggle = onFavoriteToggle,
+                        onTrackGoToAlbum = onTrackGoToAlbum,
+                        onTrackGoToArtist = onTrackGoToArtist,
+                        onTrackContextBottomSheet = onTrackContextBottomSheet,
+                        moodRadioEligibleTrackIds = moodRadioEligibleTrackIds,
+                        onStartMoodRadio = onStartMoodRadio,
                         onClick = { onTrackSelected(nowId) },
                         onRemove = null
                     )
@@ -159,6 +253,18 @@ internal fun PlayerQueueSectionPanel(
                         trackId = id,
                         title = tracksById[id]?.title ?: "Unavailable track",
                         artist = tracksById[id]?.artists ?: "",
+                        track = tracksById[id],
+                        isCurrent = id == currentTrackId,
+                        isPlaying = isPlaying,
+                        queue = queue,
+                        onTrackPlayNext = onTrackPlayNext,
+                        onTrackRemoved = onTrackRemoved,
+                        onFavoriteToggle = onFavoriteToggle,
+                        onTrackGoToAlbum = onTrackGoToAlbum,
+                        onTrackGoToArtist = onTrackGoToArtist,
+                        onTrackContextBottomSheet = onTrackContextBottomSheet,
+                        moodRadioEligibleTrackIds = moodRadioEligibleTrackIds,
+                        onStartMoodRadio = onStartMoodRadio,
                         onClick = { onTrackSelected(id) },
                         onRemove = { onTrackRemoved(id) }
                     )
@@ -173,6 +279,18 @@ internal fun PlayerQueueSectionPanel(
                         trackId = id,
                         title = tracksById[id]?.title ?: "Unavailable track",
                         artist = tracksById[id]?.artists ?: "",
+                        track = tracksById[id],
+                        isCurrent = id == currentTrackId,
+                        isPlaying = isPlaying,
+                        queue = queue,
+                        onTrackPlayNext = onTrackPlayNext,
+                        onTrackRemoved = onTrackRemoved,
+                        onFavoriteToggle = onFavoriteToggle,
+                        onTrackGoToAlbum = onTrackGoToAlbum,
+                        onTrackGoToArtist = onTrackGoToArtist,
+                        onTrackContextBottomSheet = onTrackContextBottomSheet,
+                        moodRadioEligibleTrackIds = moodRadioEligibleTrackIds,
+                        onStartMoodRadio = onStartMoodRadio,
                         onClick = { onTrackSelected(id) },
                         onRemove = { onTrackRemoved(id) }
                     )
@@ -203,11 +321,28 @@ private fun QueueSectionRow(
     trackId: String,
     title: String,
     artist: String,
+    track: LibraryTrack? = null,
+    isCurrent: Boolean = false,
+    isPlaying: Boolean = false,
+    queue: PlaybackQueueSnapshot = PlaybackQueueSnapshot(),
+    onTrackPlayNext: (String) -> Unit = {},
+    onTrackRemoved: (String) -> Unit = {},
+    onFavoriteToggle: (String, Boolean) -> Unit = { _, _ -> },
+    onTrackGoToAlbum: (String) -> Unit = {},
+    onTrackGoToArtist: (String) -> Unit = {},
+    onTrackContextBottomSheet: (TrackContextBottomSheetRequest) -> Unit = {},
+    moodRadioEligibleTrackIds: Set<String> = emptySet(),
+    onStartMoodRadio: (String) -> Unit = {},
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     onRemove: (() -> Unit)? = null
 ) {
     val colors = LocalTuneColors.current
+    val moreLabel = stringResource(R.string.player_more)
+    // Fix wave (C3): per-row track menu restoring the old queue long-press
+    // entry points (play-next/favorite/go-to-album/go-to-artist/track-info)
+    // as a more-button; remove stays a direct affordance as before.
+    var menuExpanded by remember(trackId) { mutableStateOf(false) }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -220,6 +355,12 @@ private fun QueueSectionRow(
             Text(text = title, color = colors.onPrimary, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
             Text(text = artist, color = colors.foregroundSubtle, style = MaterialTheme.typography.bodySmall, maxLines = 1)
         }
+        if (isCurrent) {
+            TunePlayingIndicator(
+                isPlaying = isPlaying,
+                modifier = Modifier.padding(end = 8.dp),
+            )
+        }
         if (onRemove != null) {
             Text(
                 text = stringResource(R.string.track_context_remove_from_queue),
@@ -231,5 +372,119 @@ private fun QueueSectionRow(
                     .clickable(onClick = onRemove)
             )
         }
+        if (track != null) {
+            TrackContextMenu(
+                track = track,
+                expanded = menuExpanded,
+                onDismiss = { menuExpanded = false },
+                actions = queueTrackContextMenuActions(isCurrent).copy(
+                    moodRadio = track.id in moodRadioEligibleTrackIds,
+                ),
+                playbackQueue = queue,
+                onRemoveFromQueue = { onTrackRemoved(it.id) },
+                onPlayNext = { onTrackPlayNext(it.id) },
+                onStartMoodRadio = { onStartMoodRadio(it.id) },
+                onFavoriteChange = { contextTrack, favorite -> onFavoriteToggle(contextTrack.id, favorite) },
+                onGoToAlbum = { onTrackGoToAlbum(it.albumId) },
+                onGoToArtist = { artist: TrackContextArtist -> onTrackGoToArtist(artist.id) },
+                onBottomSheetRequested = { onTrackContextBottomSheet(it) },
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .semantics { contentDescription = moreLabel }
+                        .clickable(
+                            onClick = { menuExpanded = true },
+                            role = Role.Button,
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    MaterialSymbol(
+                        MaterialSymbols.MoreVert,
+                        contentDescription = null,
+                        tint = colors.foregroundSubtle,
+                        size = 20.dp,
+                    )
+                }
+            }
+        }
     }
 }
+
+// Fix wave (C1): shuffle/repeat toggle buttons, relocated from the deleted
+// FullScreenPlayerQueuePanel.kt (was PlayerModeButton) with identical visuals.
+@Composable
+internal fun PlayerShellModeButton(symbol: String, label: String, active: Boolean, onClick: () -> Unit) {
+    val colors = LocalTuneColors.current
+    val backgroundColor by animateColorAsState(
+        targetValue = if (active) {
+            sliderFilledTrackColor(colors, isInteracting = false)
+        } else {
+            fullScreenSecondaryControlBackground(colors)
+        },
+        animationSpec = tween(220, easing = FastOutSlowInEasing),
+        label = "queue-mode-background",
+    )
+    val iconColor by animateColorAsState(
+        if (active) colors.playerBackdrop.copy(alpha = 0.72f) else colors.onPrimary,
+        tween(220, easing = FastOutSlowInEasing),
+        label = "queue-mode-icon"
+    )
+    Box(
+        Modifier
+            .width(72.dp)
+            .height(48.dp)
+            .semantics { contentDescription = label; selected = active }
+            .clickable(
+                onClick = onClick,
+                role = Role.Button,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ), contentAlignment = Alignment.Center
+    ) {
+        Box(
+            Modifier
+                .width(72.dp)
+                .height(36.dp)
+                .clip(CircleShape)
+                .background(backgroundColor)
+                .border(1.dp, colors.borderGlass, CircleShape), contentAlignment = Alignment.Center
+        ) {
+            MaterialSymbol(
+                symbol = symbol,
+                contentDescription = null,
+                tint = iconColor,
+                size = 22.dp
+            )
+        }
+    }
+}
+
+// Relocated from the deleted FullScreenPlayerQueuePanel.kt: section drags
+// commit through the existing moveQueueTrack path, and the context-menu
+// policy helpers stay pinned by FullScreenQueuePanelDragTest.
+internal fun moveQueueTrack(trackIds: List<String>, fromIndex: Int, toIndex: Int): List<String> =
+    trackIds.toMutableList().apply {
+        if (fromIndex in indices && toIndex in indices && fromIndex != toIndex) {
+            add(toIndex, removeAt(fromIndex))
+        }
+    }
+
+/** Commits the latest Compose-backed local order when a reorder drag ends. */
+internal fun commitQueueReorder(
+    latestOrderedIds: androidx.compose.runtime.State<List<String>>,
+    latestOnReorder: androidx.compose.runtime.State<(List<String>) -> Unit>,
+) = latestOnReorder.value(latestOrderedIds.value)
+
+internal fun queueTrackContextMenuActions(isCurrent: Boolean) = TrackContextMenuActions(
+    removeFromQueue = !isCurrent,
+    addToQueue = false,
+)
+
+internal fun shouldOpenQueueTrackContextMenu(
+    longPressX: Float,
+    rowWidthPx: Int,
+    dragHandleWidthPx: Float,
+): Boolean = longPressX < rowWidthPx - dragHandleWidthPx
