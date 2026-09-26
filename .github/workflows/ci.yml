@@ -17,6 +17,9 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - name: tmp-grep-gate task-1 dead deps
+        run: |
+          ! grep -rn "androidx.camera\|camera-mlkit\|mlkit\|hivemq\|net.i2p.crypto:eddsa\|libs.eddsa\|libs.mlkit\|libs.hivemq\|libs.androidx.camera" androidApp sharedLogic gradle --include="*.kts" --include="*.toml" --include="*.kt" --include="*.pro"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
