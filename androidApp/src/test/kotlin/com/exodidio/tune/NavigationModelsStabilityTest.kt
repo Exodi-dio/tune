@@ -9,17 +9,17 @@ class NavigationModelsStabilityTest {
     @Test
     fun aggregatesAreImmutable() {
         val immutables = listOf(
-            HomeDestinationModel::class,
-            LibraryTracksModel::class,
-            LibraryAlbumsModel::class,
-            LibraryDestinationModel::class,
-            AppDestinationModels::class,
-            PlaybackModel::class,
+            HomeDestinationModel::class.java,
+            LibraryTracksModel::class.java,
+            LibraryAlbumsModel::class.java,
+            LibraryDestinationModel::class.java,
+            AppDestinationModels::class.java,
+            PlaybackModel::class.java,
         )
-        immutables.forEach { k ->
+        immutables.forEach { c ->
             assertTrue(
-                "${k.simpleName} must carry @Immutable or @Stable",
-                k.annotations.any { it is Immutable || it is Stable },
+                "${c.simpleName} must carry @Immutable or @Stable",
+                c.isAnnotationPresent(Immutable::class.java) || c.isAnnotationPresent(Stable::class.java),
             )
         }
     }
