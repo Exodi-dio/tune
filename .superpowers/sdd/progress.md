@@ -62,3 +62,5 @@
 - Settings batch: complete (commits 5b403da..93b98e2, review approved).
 ## Strip batch 6 (T1-T3+T7) completion
 - Batch 6: complete (commits 4b84851..5f1f895, review approved). Parked minor: AboutContent unused padding import (fold into a later batch or final review).
+## Strip batch 7 (T4+T5) completion
+- Batch 7: complete (commits a8be09e..d9f0941, review approved). Hygiene debt for batch 8: AboutContent unused padding import, InsightViewModel unused Flow imports, InsightViewModelTest stale test name.
