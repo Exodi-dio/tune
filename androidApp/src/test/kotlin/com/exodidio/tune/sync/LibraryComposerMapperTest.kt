@@ -57,6 +57,18 @@ class LibraryComposerMapperTest {
         assertEquals(listOf("c1"), composers.map { it.id })
     }
 
+    @Test
+    fun resolvesPrefixedArtworkKeysForComposers() {
+        val composers = libraryComposersFrom(
+            tracks = listOf(
+                row("""{"composers":[{"id":"c1","name":"Beethoven","artwork_key":"artwork:track-9"}]}"""),
+            ),
+            artworkPaths = mapOf("track-9" to "artwork/track-9.jpg"),
+        )
+
+        assertEquals("artwork/track-9.jpg", composers.single().artworkPath)
+    }
+
     private fun row(rawJson: String) = LibraryTrackRow(
         id = "track",
         title = "Track",

@@ -1182,7 +1182,7 @@ internal fun libraryArtistsFrom(
                 name = name,
                 sortName = artist.string("sort_name").orEmpty(),
                 createdAt = artist.string("created_at").orEmpty(),
-                artworkPath = artworkKey?.let(artworkPaths::get),
+                artworkPath = artworkKey?.removePrefix("artwork:")?.let(artworkPaths::get),
             )
             artists[id] = artists[id]?.let { existing ->
                 existing.copy(
@@ -1203,12 +1203,14 @@ internal fun libraryAlbumsFrom(
     artworkPaths: Map<String, String>,
 ): List<LibraryAlbum> {
     val albums = linkedMapOf<String, LibraryAlbum>()
+    val trackArtworkByAlbum = linkedMapOf<String, String>()
     tracks.forEach { track ->
         val root = runCatching { LibrarySyncProtocol.json.parseToJsonElement(track.rawJson) as? JsonObject }.getOrNull()
             ?: return@forEach
         val album = root["album"] as? JsonObject ?: return@forEach
         val id = album.string("id")?.takeIf(String::isNotBlank) ?: return@forEach
         val title = album.string("title")?.trim().orEmpty().takeIf(String::isNotEmpty) ?: return@forEach
+        track.artworkPath?.takeIf(String::isNotBlank)?.let { path -> trackArtworkByAlbum.putIfAbsent(id, path) }
         val candidate = LibraryAlbum(
             id = id,
             title = title,
@@ -1217,7 +1219,8 @@ internal fun libraryAlbumsFrom(
             copyright = album.string("copyright").orEmpty(),
             sortArtist = root.arraySortNames("album_artists").ifBlank { root.arraySortNames("artists") },
             createdAt = album.string("created_at").orEmpty().ifBlank { track.createdAt },
-            artworkPath = album.string("artwork_key")?.takeIf(String::isNotBlank)?.let(artworkPaths::get),
+            artworkPath = album.string("artwork_key")?.takeIf(String::isNotBlank)?.removePrefix("artwork:")?.let(artworkPaths::get)
+                ?: trackArtworkByAlbum[id],
             year = album.int("year"),
         )
         albums[id] = albums[id]?.let { existing ->
@@ -1300,7 +1303,7 @@ internal fun libraryComposersFrom(
                 name = name,
                 sortName = sortName,
                 createdAt = createdAt,
-                artworkPath = artworkKey?.let(artworkPaths::get),
+                artworkPath = artworkKey?.removePrefix("artwork:")?.let(artworkPaths::get),
             )
             val existing = when {
                 previousId == id -> composers[id]

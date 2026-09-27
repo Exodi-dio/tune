@@ -80,6 +80,80 @@ class LibraryArtistMapperTest {
         assertEquals("Artist A", albums.single().artist)
     }
 
+    @Test
+    fun resolvesPrefixedArtworkKeysForArtists() {
+        val artists = libraryArtistsFrom(
+            tracks = listOf(
+                row("""{"artists":[{"id":"a","name":"Artist A","artwork_key":"artwork:track-1"}]}"""),
+            ),
+            artworkPaths = mapOf("track-1" to "artwork/track-1.jpg"),
+        )
+
+        assertEquals("artwork/track-1.jpg", artists.single().artworkPath)
+    }
+
+    @Test
+    fun resolvesPrefixedArtworkKeysForAlbums() {
+        val albums = libraryAlbumsFrom(
+            tracks = listOf(
+                row("""{"album":{"id":"album-a","title":"Album A","artwork_key":"artwork:track-1"}}"""),
+            ),
+            artworkPaths = mapOf("track-1" to "artwork/track-1.jpg"),
+        )
+
+        assertEquals("artwork/track-1.jpg", albums.single().artworkPath)
+    }
+
+    @Test
+    fun resolvesPrefixFreeStagedArtworkKeysForAlbums() {
+        val albums = libraryAlbumsFrom(
+            tracks = listOf(
+                row("""{"album":{"id":"album-a","title":"Album A","artwork_key":"9f2c4a"}}"""),
+            ),
+            artworkPaths = mapOf("9f2c4a" to "staged/9f2c4a.jpg"),
+        )
+
+        assertEquals("staged/9f2c4a.jpg", albums.single().artworkPath)
+    }
+
+    @Test
+    fun fallsBackToFirstTrackArtworkWhenAlbumHasNoKey() {
+        val albums = libraryAlbumsFrom(
+            tracks = listOf(
+                trackRow(id = "t1", art = "artwork/t1.jpg", json = """{"album":{"id":"album-a","title":"Album A"}}"""),
+                trackRow(id = "t2", art = null, json = """{"album":{"id":"album-a","title":"Album A"}}"""),
+            ),
+            artworkPaths = emptyMap(),
+        )
+
+        assertEquals("artwork/t1.jpg", albums.single().artworkPath)
+    }
+
+    @Test
+    fun albumWithoutAnyArtworkStaysNull() {
+        val albums = libraryAlbumsFrom(
+            tracks = listOf(
+                row("""{"album":{"id":"album-a","title":"Album A"}}"""),
+            ),
+            artworkPaths = emptyMap(),
+        )
+
+        assertNull(albums.single().artworkPath)
+    }
+
+    private fun trackRow(id: String, art: String?, json: String) = LibraryTrackRow(
+        id = id,
+        title = "Track",
+        artists = "",
+        album = "",
+        artworkKey = null,
+        playCount = 0,
+        createdAt = "",
+        artworkPath = art,
+        audioPath = null,
+        rawJson = json,
+    )
+
     private fun row(rawJson: String) = LibraryTrackRow(
         id = "track",
         title = "Track",
