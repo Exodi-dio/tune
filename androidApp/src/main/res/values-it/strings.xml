@@ -193,6 +193,13 @@
     <string name="about_title">Informazioni</string>
     <string name="about_description">Un moderno lettore musicale locale</string>
     <string name="about_version">Versione</string>
+    <string name="about_update">Aggiornamenti</string>
+    <string name="about_update_check">Controlla aggiornamenti</string>
+    <string name="about_update_checking">Controllo…</string>
+    <string name="about_update_up_to_date">Aggiornato</string>
+    <string name="about_update_available">Aggiornamento disponibile</string>
+    <string name="about_update_error">Controllo non riuscito</string>
+    <string name="about_update_download_install">Scarica e installa</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">Licenza</string>
     <string name="theme_system">Sistema</string>

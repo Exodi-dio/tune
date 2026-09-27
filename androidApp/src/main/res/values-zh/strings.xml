@@ -192,6 +192,13 @@
     <string name="about_title">关于</string>
     <string name="about_description">优雅现代的本地音乐播放器</string>
     <string name="about_version">版本</string>
+    <string name="about_update">更新</string>
+    <string name="about_update_check">检查更新</string>
+    <string name="about_update_checking">正在检查…</string>
+    <string name="about_update_up_to_date">已是最新</string>
+    <string name="about_update_available">有可用更新</string>
+    <string name="about_update_error">检查失败</string>
+    <string name="about_update_download_install">下载并安装</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">开源许可</string>
     <string name="theme_system">系统</string>

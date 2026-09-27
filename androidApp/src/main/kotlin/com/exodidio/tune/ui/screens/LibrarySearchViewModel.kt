@@ -56,9 +56,14 @@ internal class LibrarySearchViewModel(syncStore: AndroidLibrarySyncStore) : View
             syncStore.searchCandidates(text).map { candidates -> SearchCandidates(text, candidates.groupBy { it.entityType }.mapValues { (_, values) -> values.mapTo(mutableSetOf(), LibrarySearchCandidate::entityId) }) }
         },
         syncStore.tracks, syncStore.albums, syncStore.artists, syncStore.playlists, syncStore.composers,
+        syncStore.artistArtworkKeys, syncStore.artworkPaths,
     ) { values ->
         val search = values[0] as SearchCandidates
         val text = search.query
+        @Suppress("UNCHECKED_CAST")
+        val artworkKeys = values[6] as Map<String, String>
+        @Suppress("UNCHECKED_CAST")
+        val artworkPaths = values[7] as Map<String, String>
         @Suppress("UNCHECKED_CAST")
         LibrarySearchUiState(
             isLoaded = true,
@@ -66,7 +71,11 @@ internal class LibrarySearchViewModel(syncStore: AndroidLibrarySyncStore) : View
             tracks = searchTracks(values[1] as List<LibraryTrack>, text, search.ids("track")),
             allTracks = values[1] as List<LibraryTrack>,
             albums = searchLibrary(values[2] as List<LibraryAlbum>, text, { listOf(it.title, it.artist) }, { it.sortTitle }, { it.id }, search.ids("album")),
-            artists = searchLibrary(values[3] as List<LibraryArtist>, text, { listOf(it.name) }, { it.sortName }, { it.id }, search.ids("artist")),
+            artists = overlaySearchArtistArtwork(
+                searchLibrary(values[3] as List<LibraryArtist>, text, { listOf(it.name) }, { it.sortName }, { it.id }, search.ids("artist")),
+                artworkKeys,
+                artworkPaths,
+            ),
             playlists = searchLibrary(values[4] as List<LibraryPlaylist>, text, { listOf(it.name, playlistDescription(it)) }, { it.name }, { it.id }, search.ids("playlist")),
             composers = searchLibrary(values[5] as List<LibraryComposer>, text, { listOf(it.name) }, { it.sortName }, { it.id }, search.ids("composer")),
         )
@@ -85,6 +94,18 @@ internal class LibrarySearchViewModel(syncStore: AndroidLibrarySyncStore) : View
 
 private data class SearchCandidates(val query: String, val idsByType: Map<String, Set<String>>) {
     fun ids(type: String): Set<String>? = idsByType[type]
+}
+
+/**
+ * Overlays custom artist artwork onto search results (custom-wins),
+ * mirroring the list/hero overlay in [artistDisplayArtworkPath].
+ */
+internal fun overlaySearchArtistArtwork(
+    artists: List<LibraryArtist>,
+    artistArtworkKeys: Map<String, String>,
+    artworkPaths: Map<String, String>,
+): List<LibraryArtist> = artists.map { artist ->
+    artist.copy(artworkPath = artistDisplayArtworkPath(artist, artistArtworkKeys, artworkPaths))
 }
 
 internal const val LibrarySearchDebounceMs = 200L

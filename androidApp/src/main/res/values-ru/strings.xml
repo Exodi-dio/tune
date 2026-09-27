@@ -195,6 +195,13 @@
     <string name="about_title">О программе</string>
     <string name="about_description">Современный локальный аудиоплеер</string>
     <string name="about_version">Версия</string>
+    <string name="about_update">Обновления</string>
+    <string name="about_update_check">Проверить обновления</string>
+    <string name="about_update_checking">Проверка…</string>
+    <string name="about_update_up_to_date">Актуальная версия</string>
+    <string name="about_update_available">Доступно обновление</string>
+    <string name="about_update_error">Не удалось проверить</string>
+    <string name="about_update_download_install">Скачать и установить</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">Лицензия</string>
     <string name="theme_system">Системная</string>

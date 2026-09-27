@@ -192,6 +192,13 @@
     <string name="about_title">Giới thiệu</string>
     <string name="about_description">Trình phát nhạc cục bộ hiện đại</string>
     <string name="about_version">Phiên bản</string>
+    <string name="about_update">Cập nhật</string>
+    <string name="about_update_check">Kiểm tra cập nhật</string>
+    <string name="about_update_checking">Đang kiểm tra…</string>
+    <string name="about_update_up_to_date">Đã mới nhất</string>
+    <string name="about_update_available">Có bản cập nhật</string>
+    <string name="about_update_error">Kiểm tra thất bại</string>
+    <string name="about_update_download_install">Tải và cài đặt</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">Giấy phép</string>
     <string name="theme_system">Hệ thống</string>

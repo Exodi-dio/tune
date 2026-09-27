@@ -192,6 +192,13 @@
     <string name="about_title">정보</string>
     <string name="about_description">현대적인 로컬 음악 플레이어</string>
     <string name="about_version">버전</string>
+    <string name="about_update">업데이트</string>
+    <string name="about_update_check">업데이트 확인</string>
+    <string name="about_update_checking">확인 중…</string>
+    <string name="about_update_up_to_date">최신 상태</string>
+    <string name="about_update_available">업데이트 가능</string>
+    <string name="about_update_error">확인 실패</string>
+    <string name="about_update_download_install">다운로드 및 설치</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">라이선스</string>
     <string name="theme_system">시스템</string>

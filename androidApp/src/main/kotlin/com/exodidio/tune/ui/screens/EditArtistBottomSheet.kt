@@ -86,7 +86,13 @@ internal fun EditArtistBottomSheet(
                     }?.asImageBitmap()
                 }.getOrNull()
             }
-            if (loaded != null) { ArtworkThumbnailCache.put(key, loaded); artwork = loaded }
+            if (loaded != null) {
+                ArtworkThumbnailCache.put(key, loaded)
+                artwork = loaded
+                // Idempotent: put() already clears the claim; release again for symmetry
+                // with the failure path and the playlist editor pattern.
+                ArtworkThumbnailCache.releaseInFlight(key)
+            }
         } finally {
             if (loaded == null) ArtworkThumbnailCache.releaseInFlight(key)
         }

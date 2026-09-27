@@ -193,6 +193,13 @@
     <string name="about_title">Über</string>
     <string name="about_description">Ein moderner lokaler Musikplayer</string>
     <string name="about_version">Version</string>
+    <string name="about_update">App-Updates</string>
+    <string name="about_update_check">Nach Updates suchen</string>
+    <string name="about_update_checking">Wird geprüft…</string>
+    <string name="about_update_up_to_date">Aktuell</string>
+    <string name="about_update_available">Update verfügbar</string>
+    <string name="about_update_error">Prüfung fehlgeschlagen</string>
+    <string name="about_update_download_install">Herunterladen &amp; installieren</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">Lizenz</string>
     <string name="theme_system">System</string>

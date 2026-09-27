@@ -192,6 +192,13 @@
     <string name="about_title">情報</string>
     <string name="about_description">モダンなローカル音楽プレーヤー</string>
     <string name="about_version">バージョン</string>
+    <string name="about_update">アップデート</string>
+    <string name="about_update_check">アップデートを確認</string>
+    <string name="about_update_checking">確認中…</string>
+    <string name="about_update_up_to_date">最新です</string>
+    <string name="about_update_available">アップデートあり</string>
+    <string name="about_update_error">確認に失敗</string>
+    <string name="about_update_download_install">ダウンロードしてインストール</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">ライセンス</string>
     <string name="theme_system">システム</string>

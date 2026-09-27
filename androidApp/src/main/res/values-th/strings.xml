@@ -192,6 +192,13 @@
     <string name="about_title">เกี่ยวกับ</string>
     <string name="about_description">เครื่องเล่นเพลงในเครื่องที่ทันสมัย</string>
     <string name="about_version">เวอร์ชัน</string>
+    <string name="about_update">การอัปเดต</string>
+    <string name="about_update_check">ตรวจหาอัปเดต</string>
+    <string name="about_update_checking">กำลังตรวจสอบ…</string>
+    <string name="about_update_up_to_date">เป็นเวอร์ชันล่าสุด</string>
+    <string name="about_update_available">มีอัปเดต</string>
+    <string name="about_update_error">ตรวจสอบล้มเหลว</string>
+    <string name="about_update_download_install">ดาวน์โหลดและติดตั้ง</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">สัญญาอนุญาต</string>
     <string name="theme_system">ระบบ</string>
