@@ -7,7 +7,10 @@
 # Source is downloaded to a temporary cache exactly like the upstream script;
 # no FFmpeg source or generated library is committed to this repository.
 #
-# Usage: bash scripts/build-ffmpeg-android.sh [arm64-v8a]
+# Usage: bash scripts/build-ffmpeg-android.sh [arm64-v8a|armeabi-v7a|x86_64|all]
+#   "all" builds all three ABIs sequentially (arm64-v8a, armeabi-v7a, x86_64).
+#   NOTE: INCLUDE_OUT is shared across ABIs (last-wins); headers are
+#   equivalent across ABIs so the last build wins by design. Do NOT parallelize.
 set -euo pipefail
 
 FFMPEG_VERSION="8.1.2"
@@ -64,9 +67,11 @@ download_source() {
 }
 
 build_arch() {
-    local ABI="$1" ARCH TRIPLE
+    local ABI="$1" ARCH TRIPLE EXTRA_ABI_CFLAGS=""
     case "${ABI}" in
         arm64-v8a) ARCH="aarch64"; TRIPLE="aarch64-linux-android" ;;
+        armeabi-v7a) ARCH="arm"; TRIPLE="armv7a-linux-androideabi"; EXTRA_ABI_CFLAGS=" -march=armv7-a -mfloat-abi=softfp -mfpu=neon" ;;
+        x86_64) ARCH="x86_64"; TRIPLE="x86_64-linux-android" ;;
         *) echo "Unsupported ABI: ${ABI}" >&2; exit 1 ;;
     esac
     local SRC="${BUILD_DIR}/src-${ABI}" INSTALL="${BUILD_DIR}/install-${ABI}"
@@ -75,6 +80,9 @@ build_arch() {
     tar -xzf "${BUILD_DIR}/ffmpeg.tar.gz" -C "${SRC}" --strip-components=1
     echo "==> Building FFmpeg ${FFMPEG_VERSION} for ${ABI}..."
     pushd "${SRC}" >/dev/null
+    # --disable-x86asm: x86_64 assembly needs nasm, which stock GitHub runners
+    # lack; x86_64 output is emulator-only so generic C code is fine.
+    # No-op for ARM ABIs (their asm comes from the NDK toolchain, not nasm).
     ./configure \
         --prefix="${INSTALL}" \
         --target-os=android --arch="${ARCH}" --enable-cross-compile \
@@ -86,7 +94,8 @@ build_arch() {
         --enable-avutil --enable-avcodec --enable-avformat --enable-swresample \
         --enable-protocol=file --enable-decoders --enable-demuxers --enable-parsers \
         --disable-avdevice --disable-avfilter --disable-swscale \
-        --extra-cflags="-Oz -ffunction-sections -fdata-sections" \
+        --disable-x86asm \
+        --extra-cflags="-Oz -ffunction-sections -fdata-sections${EXTRA_ABI_CFLAGS}" \
         --extra-ldflags="-Wl,--gc-sections -Wl,-z,max-page-size=16384"
     make -j"${NPROC}"
     make install
@@ -103,6 +112,9 @@ build_arch() {
 download_source
 case "${1:-arm64-v8a}" in
     arm64-v8a) build_arch arm64-v8a ;;
-    *) echo "Usage: $0 [arm64-v8a]" >&2; exit 1 ;;
+    armeabi-v7a) build_arch armeabi-v7a ;;
+    x86_64) build_arch x86_64 ;;
+    all) build_arch arm64-v8a; build_arch armeabi-v7a; build_arch x86_64 ;;
+    *) echo "Usage: $0 [arm64-v8a|armeabi-v7a|x86_64|all]" >&2; exit 1 ;;
 esac
 echo "==> Done. Generated FFmpeg libraries are in ${JNI_OUT}."

@@ -127,7 +127,7 @@ android {
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 4
+        versionCode = 5
         versionName = "1.0.0"
 
         val lastFmApiKey = localProperties.getProperty("LASTFM_API_KEY")
@@ -147,7 +147,7 @@ android {
             }
         }
         ndk {
-            abiFilters += setOf("arm64-v8a")
+            abiFilters += setOf("arm64-v8a", "armeabi-v7a", "x86_64")
         }
     }
     flavorDimensions += "environment"
@@ -159,6 +159,16 @@ android {
         create("prod") {
             dimension = "environment"
             applicationId = "com.exodidio.tune"
+        }
+    }
+    splits {
+        abi {
+            // ABI splits only for release builds: keep debug as a single fast APK.
+            val buildingRelease = gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
+            isEnable = buildingRelease
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64")
+            isUniversalApk = true
         }
     }
     packaging {
@@ -205,5 +215,30 @@ android {
     }
     testOptions {
         unitTests.isReturnDefaultValues = true
+    }
+}
+
+// Per-ABI versionCode + APK naming for ABI splits (AGP 9 androidComponents API).
+// Scheme: base versionCode (5) x 1000 + offset — universal +0 (=5000),
+// armeabi-v7a +1 (=5001), x86_64 +2 (=5002), arm64-v8a +3 (=5003, highest).
+// arm64-v8a gets the highest code so capable devices prefer it.
+// Keep the literals 5 / "1.0.0" below in sync with defaultConfig versionCode/versionName.
+// Uses the current AGP VariantOutput Property API via set(...) calls, plus
+// output.filters with FilterType.ABI to detect the per-split ABI.
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        variant.outputs.forEach { output ->
+            val abi = output.filters.find { it.filterType == com.android.build.api.variant.FilterConfiguration.FilterType.ABI }?.identifier
+            val offset = when (abi) {
+                null -> 0
+                "armeabi-v7a" -> 1
+                "x86_64" -> 2
+                "arm64-v8a" -> 3
+                else -> 0
+            }
+            output.versionCode.set(5 * 1000 + offset)
+            val suffix = if (abi != null) "_$abi" else ""
+            output.outputFileName.set("Tune-v1.0.0$suffix.apk")
+        }
     }
 }
