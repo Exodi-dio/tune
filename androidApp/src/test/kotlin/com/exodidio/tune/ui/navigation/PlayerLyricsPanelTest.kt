@@ -38,6 +38,25 @@ class PlayerLyricsPanelTest {
         assertEquals(72_000L, displayedLyricsPositionMs(playbackPositionMs = 12_000L, pendingSeekPositionMs = 72_000L))
     }
 
+    // F4 (v0.3 UI fixes): only the active line (distance == 0) takes emphasis;
+    // browsing keeps distance dim instead of flat full opacity.
+    @Test
+    fun onlyActiveLyricLineTakesEmphasis() {
+        assertEquals(true, lyricEmphasis(distance = 0, browsing = false).isActive)
+        assertEquals(false, lyricEmphasis(distance = 1, browsing = false).isActive)
+        assertEquals(false, lyricEmphasis(distance = 2, browsing = true).isActive)
+    }
+
+    @Test
+    fun browsingKeepsDistanceDimInsteadOfFlatFullOpacity() {
+        assertEquals(1f, lyricEmphasis(distance = 0, browsing = true).opacity, 0.0001f)
+        assertEquals(0.6f, lyricEmphasis(distance = 1, browsing = true).opacity, 0.0001f)
+        assertEquals(0.45f, lyricEmphasis(distance = 2, browsing = true).opacity, 0.0001f)
+        assertEquals(0.3f, lyricEmphasis(distance = 9, browsing = true).opacity, 0.0001f)
+        assertEquals(0.25f, lyricEmphasis(distance = 1, browsing = false).opacity, 0.0001f)
+        assertEquals(0.10f, lyricEmphasis(distance = 9, browsing = false).opacity, 0.0001f)
+    }
+
     // F1: toggle presence mirrors the deleted panel (allowed + current + supported).
     @Test
     fun romanizationToggleShowsOnlyWhenAllowedCurrentAndSupported() {

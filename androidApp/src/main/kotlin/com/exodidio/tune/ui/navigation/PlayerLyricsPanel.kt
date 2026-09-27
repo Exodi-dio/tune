@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.exodidio.tune.R
 import com.exodidio.tune.lyrics.RomanizationUiState
 import com.exodidio.tune.ui.theme.LocalTuneColors
+import kotlinx.coroutines.delay
 
 const val LyricsScrollLeadMinMs: Long = 350L
 const val LyricsScrollLeadMaxMs: Long = 500L
@@ -52,6 +53,24 @@ internal fun activeLyricIndex(lines: List<PlayerLyricLine>, positionMs: Long): I
 
 internal fun lyricsScrollLeadMs(gapMs: Long): Long =
     gapMs.coerceIn(LyricsScrollLeadMinMs, LyricsScrollLeadMaxMs)
+
+// F4 (v0.3 UI fixes): emphasis selection + browse auto-reset. ONLY the active
+// line (distance == 0) renders headline/bold; inactive lines stay bodyLarge
+// muted with distance dim — including while browsing (no flat 1f). Browsing
+// auto-resets via timeout (see LaunchedEffect below).
+internal const val LyricsBrowseAutoResetMs = 5_000L
+
+internal data class LyricEmphasis(val isActive: Boolean, val opacity: Float)
+
+internal fun lyricEmphasis(distance: Int, browsing: Boolean): LyricEmphasis {
+    val opacity = when (distance) {
+        0 -> 1f
+        1 -> if (browsing) 0.6f else 0.25f
+        2 -> if (browsing) 0.45f else 0.15f
+        else -> if (browsing) 0.3f else 0.10f
+    }
+    return LyricEmphasis(isActive = distance == 0, opacity = opacity)
+}
 
 // Pre-merge fix (F1): toggle visibility mirroring the deleted
 // FullScreenPlayerLyricsPanel block (allowed + input-current + supported).
@@ -113,6 +132,16 @@ internal fun PlayerLyricsPanel(
     LaunchedEffect(isUserDragging) {
         if (shouldEnterLyricsBrowseMode(isUserDragging, false)) isBrowsing = true
     }
+    // F4: a single drag latched isBrowsing=true forever (flat 1f + follower
+    // halt). Timeout reset (disclosed choice): browsing clears 5s after entry
+    // unless a new drag/seek/track event re-arms it; programmatic
+    // seek/track/foreground resets below stay as-is.
+    LaunchedEffect(isBrowsing, trackId) {
+        if (isBrowsing) {
+            delay(LyricsBrowseAutoResetMs)
+            isBrowsing = false
+        }
+    }
     LaunchedEffect(synced, activeIndex, isBrowsing) {
         if (activeIndex < 0 || isBrowsing) return@LaunchedEffect
         // F5: pre-scroll lead helper is pure and pinned by unit tests; the
@@ -128,7 +157,8 @@ internal fun PlayerLyricsPanel(
         synced.isNotEmpty() -> LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 72.dp)) {
             itemsIndexed(synced, key = { index, _ -> index }) { index, line ->
                 val distance = if (activeIndex >= 0) kotlin.math.abs(index - activeIndex) else Int.MAX_VALUE
-                val targetOpacity = if (isBrowsing) 1f else when (distance) { 0 -> 1f; 1 -> 0.25f; 2 -> 0.15f; else -> 0.10f }
+                val emphasis = remember(distance, isBrowsing) { lyricEmphasis(distance, isBrowsing) }
+                val targetOpacity = emphasis.opacity
                 val opacity by animateFloatAsState(targetOpacity, tween(300, easing = FastOutSlowInEasing), label = "lyric-opacity")
                 val targetBlur = if (isBrowsing) 0.dp else syncedLyricBlurRadius(distance)
                 val blur by animateDpAsState(targetBlur, tween(300, easing = FastOutSlowInEasing), label = "lyric-blur")
@@ -166,9 +196,9 @@ internal fun PlayerLyricsPanel(
                 ) {
                     Text(
                         text = line.primary,
-                        color = LocalTuneColors.current.onPrimary.copy(alpha = opacity),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
+                        color = (if (emphasis.isActive) LocalTuneColors.current.onPrimary else LocalTuneColors.current.foregroundSubtle).copy(alpha = opacity),
+                        style = if (emphasis.isActive) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.bodyLarge,
+                        fontWeight = if (emphasis.isActive) FontWeight.Bold else FontWeight.Normal
                     )
                     (secondary.getOrNull(index) ?: line.secondary)?.let {
                         Text(text = it, color = LocalTuneColors.current.foregroundSubtle.copy(alpha = opacity), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 4.dp))

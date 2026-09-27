@@ -390,15 +390,30 @@ private fun QueueSectionRow(
             )
         }
         if (onRemove != null) {
-            Text(
-                text = stringResource(R.string.track_context_remove_from_queue),
-                color = colors.foregroundSubtle,
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 1,
+            // F3 (v0.3 UI fixes): icon-only remove affordance (was inline row
+            // text squeezed between the title column and the overflow icon).
+            // The text entry stays in the overflow menu (TrackContextMenu
+            // removeFromQueue) — this button is the direct affordance.
+            val removeLabel = stringResource(R.string.track_context_remove_from_queue)
+            Box(
                 modifier = Modifier
-                    .padding(start = 12.dp)
-                    .clickable(onClick = onRemove)
-            )
+                    .size(36.dp)
+                    .semantics { contentDescription = removeLabel }
+                    .clickable(
+                        onClick = onRemove,
+                        role = Role.Button,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                MaterialSymbol(
+                    MaterialSymbols.RemoveFromQueue,
+                    contentDescription = null,
+                    tint = colors.foregroundSubtle,
+                    size = 20.dp,
+                )
+            }
         }
         if (track != null) {
             TrackContextMenu(

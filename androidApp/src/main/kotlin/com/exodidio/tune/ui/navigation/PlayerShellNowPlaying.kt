@@ -10,6 +10,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,6 +36,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -227,6 +229,22 @@ fun rememberShellLyricsSeekHolder(): ShellLyricsSeekHolder =
 internal const val ShellSleeveExpandedDp = 288f
 internal const val ShellSleeveCollapsedDp = 80f
 
+// F1 (v0.3 UI fixes): height-aware sleeve sizing mirroring the deleted
+// FullScreenPlayer (was FullScreenPlayerArtworkVerticalReserve = 448.dp with
+// minOf(maxWidth - 40.dp, maxHeight - reserve)). The 40dp inset restores the
+// 20dp-per-side sheet gutter; the reserve keeps credits + scrubber +
+// transport + volume + bottom-row + queue affordances on ~800dp screens so the
+// sleeve never pushes under the status bar. Pure in Float dp for JVM tests.
+internal const val ShellSleeveHorizontalInsetDp = 40f
+internal const val ShellSleeveVerticalReserveDp = 448f
+
+internal fun sleeveExpandedSizeDp(maxWidthDp: Float, maxHeightDp: Float): Float =
+    minOf(
+        maxWidthDp - ShellSleeveHorizontalInsetDp,
+        maxHeightDp - ShellSleeveVerticalReserveDp,
+        ShellSleeveExpandedDp,
+    ).coerceAtLeast(ShellSleeveCollapsedDp)
+
 /**
  * Now-playing column in reference order. Keeps every existing now-playing
  * callback (seek, volume, previous/play-pause/next, favorite, panel selection,
@@ -300,7 +318,6 @@ internal fun PlayerShellNowPlaying(
     val artwork = rememberFullscreenArtwork(artworkPath)
     val outgoingArtwork = rememberFullscreenArtwork(outgoingArtworkPath, keepPrevious = false)
     val incomingArtwork = rememberFullscreenArtwork(incomingArtworkPath, keepPrevious = false)
-    val artworkSize = (ShellSleeveExpandedDp * (1f - collapse) + ShellSleeveCollapsedDp * collapse).dp
     val seekLabel = stringResource(R.string.player_seek)
     val volumeLabel = stringResource(R.string.player_volume)
     var pendingSeekFraction by remember(trackId) { mutableStateOf<Float?>(null) }
@@ -322,8 +339,17 @@ internal fun PlayerShellNowPlaying(
     val seekFraction = pendingSeekFraction
         ?: if (durationMs > 0L) (currentPositionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 0f
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+    // F1/F2 (v0.3 UI fixes): 20dp side inset so the unbounded marquee
+    // (wrapContentWidth unbounded + clipToBounds) no longer originates at x=0.
+    Column(modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
+        // F1: height-aware sleeve — BoxWithConstraints sizing mirrors the
+        // deleted player (minOf(maxWidth - 40.dp, maxHeight - reserve)); the
+        // screen-height fallback covers unbounded parents on short screens.
+        BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            val screenHeightDp = LocalConfiguration.current.screenHeightDp.toFloat()
+            val availHeightDp = if (maxHeight.value.isFinite()) maxHeight.value else screenHeightDp
+            val expandedSleeveDp = sleeveExpandedSizeDp(maxWidth.value, availHeightDp)
+            val artworkSize = (expandedSleeveDp * (1f - collapse) + ShellSleeveCollapsedDp * collapse).dp
             FullScreenPlayerArtwork(
                 artwork = artwork,
                 outgoingArtwork = outgoingArtwork,
@@ -339,6 +365,7 @@ internal fun PlayerShellNowPlaying(
             )
         }
         Spacer(Modifier.height(16.dp))
+        // F2: credits inherit the 20dp column inset above (marquee origin off the edge).
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 TuneMarqueeText(

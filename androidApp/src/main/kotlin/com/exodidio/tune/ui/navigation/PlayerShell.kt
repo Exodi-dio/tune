@@ -222,7 +222,12 @@ fun PlayerShell(
             ) {
                 PlayerShellDragHandle()
             }
-            content()
+            // F1 (v0.3 UI fixes): let the panel content shrink instead of
+            // forcing the sheet taller and defeating statusBarsPadding on
+            // short screens (sleeve itself is height-aware in NowPlaying).
+            Column(Modifier.weight(1f, fill = false)) {
+                content()
+            }
         }
     }
 }
