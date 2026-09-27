@@ -51,6 +51,7 @@ private sealed interface AboutUpdateState {
     data object Checking : AboutUpdateState
     data class UpToDate(val latestVersion: String) : AboutUpdateState
     data class Available(val release: AppRelease) : AboutUpdateState
+    data class NotesOnly(val release: AppRelease) : AboutUpdateState
     data object Error : AboutUpdateState
 }
 
@@ -72,8 +73,10 @@ internal fun AboutContent(
             updateState = try {
                 val release = fetchLatestRelease()
                 val current = BuildConfig.VERSION_NAME
-                if (release.apkUrl.isNullOrBlank() || !isUpdateAvailable(current, release.tag)) {
+                if (!isUpdateAvailable(current, release.tag)) {
                     AboutUpdateState.UpToDate(release.version)
+                } else if (release.apkUrl.isNullOrBlank()) {
+                    AboutUpdateState.NotesOnly(release)
                 } else {
                     AboutUpdateState.Available(release)
                 }
@@ -97,7 +100,11 @@ internal fun AboutContent(
                     awaitDownloadSuccess(context.applicationContext, downloadId)
                 }
                 if (installed) {
-                    installUpdateApk(context.applicationContext, apkFile)
+                    try {
+                        installUpdateApk(context.applicationContext, apkFile)
+                    } catch (_: Exception) {
+                        updateState = AboutUpdateState.Error
+                    }
                 } else {
                     updateState = AboutUpdateState.Error
                 }
@@ -155,6 +162,11 @@ internal fun AboutContent(
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = colors.textMuted,
                             )
+                            is AboutUpdateState.NotesOnly -> Text(
+                                text = stringResource(R.string.about_update_available),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = colors.textMuted,
+                            )
                             AboutUpdateState.Error -> Text(
                                 text = stringResource(R.string.about_update_error),
                                 style = MaterialTheme.typography.bodyLarge,
@@ -201,12 +213,28 @@ internal fun AboutContent(
                 )
                 if (downloading) {
                     Text(
-                        text = stringResource(R.string.about_update_checking),
+                        text = stringResource(R.string.about_update_downloading),
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.textMuted,
                         modifier = Modifier.padding(top = 8.dp),
                     )
                 }
+            }
+            is AboutUpdateState.NotesOnly -> Card(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp),
+            ) {
+                Text(
+                    text = state.release.version,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.textMain,
+                )
+                Text(
+                    text = updateNotesExcerpt(state.release.notes),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.textMuted,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
             }
             AboutUpdateState.Checking -> Card(
                 modifier = Modifier.fillMaxWidth(),

@@ -208,6 +208,7 @@
     <string name="about_update_available">Update available</string>
     <string name="about_update_error">Check failed</string>
     <string name="about_update_download_install">Download &amp; install</string>
+    <string name="about_update_downloading">Downloading…</string>
     <string name="about_github">GitHub</string>
     <string name="about_license">License</string>
     <string name="theme_system">System</string>
