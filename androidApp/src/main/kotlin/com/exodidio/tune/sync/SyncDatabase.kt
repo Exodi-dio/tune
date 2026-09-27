@@ -31,6 +31,8 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -138,6 +140,19 @@ internal data class LocalPlaylistEntity(
 
 @Entity(tableName = "playlist_artwork_staging", primaryKeys = ["sha256"])
 internal data class PlaylistArtworkStagingEntity(val sha256: String, val mime: String, val size: Long, val relativePath: String)
+
+@Entity(tableName = "artist_artwork_staging", primaryKeys = ["sha256"])
+internal data class ArtistArtworkStagingEntity(val sha256: String, val mime: String, val size: Long, val relativePath: String)
+
+@Entity(tableName = "artist_mutations", primaryKeys = ["mutationId"])
+internal data class ArtistMutationEntity(
+    val mutationId: String,
+    val artistId: String,
+    val operation: String,
+    val updatedAt: Long,
+    val payloadJson: String,
+    val state: String = "pending",
+)
 
 @Entity(tableName = "sync_documents", primaryKeys = ["planId", "kind", "documentKey"])
 internal data class SyncDocumentEntity(
@@ -325,6 +340,13 @@ internal interface SyncDao {
     @Query("SELECT * FROM playlist_artwork_staging WHERE sha256 = :sha256 LIMIT 1") suspend fun playlistArtwork(sha256: String): PlaylistArtworkStagingEntity?
     @Query("SELECT * FROM playlist_artwork_staging") fun observePlaylistArtwork(): Flow<List<PlaylistArtworkStagingEntity>>
     @Query("DELETE FROM playlist_artwork_staging WHERE sha256 IN (:hashes)") suspend fun deletePlaylistArtwork(hashes: List<String>)
+    @Insert(onConflict = OnConflictStrategy.IGNORE) suspend fun insertArtistMutation(value: ArtistMutationEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insertArtistArtwork(value: ArtistArtworkStagingEntity)
+    @Query("SELECT * FROM artist_mutations WHERE state = 'pending' ORDER BY updatedAt, mutationId") suspend fun pendingArtistMutations(): List<ArtistMutationEntity>
+    @Query("SELECT * FROM artist_mutations WHERE state IN ('pending', 'awaiting_sync') ORDER BY updatedAt, mutationId") fun observeProjectedArtistMutations(): Flow<List<ArtistMutationEntity>>
+    @Query("SELECT * FROM artist_artwork_staging WHERE sha256 = :sha256 LIMIT 1") suspend fun artistArtwork(sha256: String): ArtistArtworkStagingEntity?
+    @Query("SELECT * FROM artist_artwork_staging") fun observeArtistArtwork(): Flow<List<ArtistArtworkStagingEntity>>
+    @Query("DELETE FROM artist_artwork_staging WHERE sha256 IN (:hashes)") suspend fun deleteArtistArtwork(hashes: List<String>)
     @Query("""
         SELECT t.trackId AS id,
                t.title AS title,
@@ -386,8 +408,8 @@ internal interface SyncDao {
 }
 
 @Database(
-    entities = [SyncPlanEntity::class, SyncAssetEntity::class, SyncTrackEntity::class, SyncPlaylistEntity::class, LibrarySearchDocumentEntity::class, PlaylistMutationEntity::class, LocalPlaylistEntity::class, PlaylistArtworkStagingEntity::class, SyncDocumentEntity::class, ProviderLyricEntity::class, ListeningSessionEntity::class, PlaybackAttemptEntity::class, DailyTrackListeningStatEntity::class, DailyPlaybackAttemptStatEntity::class],
-    version = 12,
+    entities = [SyncPlanEntity::class, SyncAssetEntity::class, SyncTrackEntity::class, SyncPlaylistEntity::class, LibrarySearchDocumentEntity::class, PlaylistMutationEntity::class, LocalPlaylistEntity::class, PlaylistArtworkStagingEntity::class, ArtistArtworkStagingEntity::class, ArtistMutationEntity::class, SyncDocumentEntity::class, ProviderLyricEntity::class, ListeningSessionEntity::class, PlaybackAttemptEntity::class, DailyTrackListeningStatEntity::class, DailyPlaybackAttemptStatEntity::class],
+    version = 13,
     exportSchema = false,
 )
 internal abstract class SyncDatabase : RoomDatabase() {
@@ -395,7 +417,7 @@ internal abstract class SyncDatabase : RoomDatabase() {
 
     companion object {
         fun create(context: Context): SyncDatabase = Room.databaseBuilder(context, SyncDatabase::class.java, "library-sync.db")
-            .addMigrations(Migration2To3, Migration3To4, Migration4To5, Migration5To6, Migration6To7, Migration7To8, Migration8To9, Migration9To10, Migration10To11, Migration11To12)
+            .addMigrations(Migration2To3, Migration3To4, Migration4To5, Migration5To6, Migration6To7, Migration7To8, Migration8To9, Migration9To10, Migration10To11, Migration11To12, Migration12To13)
             .fallbackToDestructiveMigration()
             .build()
 
@@ -450,6 +472,12 @@ internal abstract class SyncDatabase : RoomDatabase() {
         }
         private val Migration11To12 = object : Migration(11, 12) {
             override fun migrate(database: SupportSQLiteDatabase) { database.execSQL("CREATE TABLE IF NOT EXISTS provider_lyrics (trackId TEXT NOT NULL PRIMARY KEY, content TEXT NOT NULL, source TEXT NOT NULL)") }
+        }
+        private val Migration12To13 = object : Migration(12, 13) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS artist_artwork_staging (sha256 TEXT NOT NULL, mime TEXT NOT NULL, size INTEGER NOT NULL, relativePath TEXT NOT NULL, PRIMARY KEY(sha256))")
+                database.execSQL("CREATE TABLE IF NOT EXISTS artist_mutations (mutationId TEXT NOT NULL, artistId TEXT NOT NULL, operation TEXT NOT NULL, updatedAt INTEGER NOT NULL, payloadJson TEXT NOT NULL, state TEXT NOT NULL, PRIMARY KEY(mutationId))")
+            }
         }
     }
 }
@@ -522,6 +550,34 @@ data class LibraryComposer(
     val sortName: String = "",
 )
 
+/** A durable, idempotent custom-cover edit made for a sync-derived artist (local-first, no sync). */
+@Serializable
+data class ArtistArtworkPayload(
+    @SerialName("artwork_sha256") val artworkSha256: String? = null,
+)
+
+enum class ArtistArtworkOperation {
+    SET_ARTWORK, REMOVE_ARTWORK,
+}
+
+data class ArtistMutation(
+    val mutationId: String,
+    val artistId: String,
+    val operation: ArtistArtworkOperation,
+    val updatedAt: Long,
+    val payload: ArtistArtworkPayload = ArtistArtworkPayload(),
+)
+
+fun ArtistMutation.validationError(): String? = when {
+    mutationId.isBlank() || artistId.isBlank() || updatedAt <= 0L -> "Missing mutation identity"
+    operation == ArtistArtworkOperation.SET_ARTWORK && !ArtistArtworkSha256.matches(payload.artworkSha256.orEmpty()) -> "Invalid artwork hash"
+    else -> null
+}
+
+private val ArtistArtworkSha256 = Regex("^[0-9a-f]{64}$")
+
+data class StagedArtistArtwork(val sha256: String, val mime: String, val size: Long, val relativePath: String)
+
 data class LibraryAnalysisProgress(val analyzedTracks: Int = 0, val totalTracks: Int = 0)
 
 internal class AndroidLibrarySyncStore(
@@ -535,6 +591,8 @@ internal class AndroidLibrarySyncStore(
     private val activeTrackRows = dao.observeTracks()
         .shareIn(snapshotScope, SharingStarted.WhileSubscribed(5_000), replay = 1)
     private val projectedPlaylistMutations = dao.observeProjectedPlaylistMutations()
+        .shareIn(snapshotScope, SharingStarted.WhileSubscribed(5_000), replay = 1)
+    private val projectedArtistMutations = dao.observeProjectedArtistMutations()
         .shareIn(snapshotScope, SharingStarted.WhileSubscribed(5_000), replay = 1)
     private val artworkAssets = dao.observeArtworkAssets()
         .shareIn(snapshotScope, SharingStarted.WhileSubscribed(5_000), replay = 1)
@@ -664,9 +722,14 @@ internal class AndroidLibrarySyncStore(
         applyPendingPlaylistMutations(projected, pending.mapNotNull(PlaylistMutationEntity::toPlaylistMutation))
             .sortedBy { it.name.lowercase() }
     }.shareIn(snapshotScope, SharingStarted.WhileSubscribed(5_000), replay = 1)
-    val artworkPaths: Flow<Map<String, String>> = combine(artworkAssets, dao.observePlaylistArtwork()) { assets, staged ->
-        (assets.map { asset -> asset.assetId.removePrefix("artwork:") to asset.relativePath } + staged.map { artwork -> artwork.sha256 to artwork.relativePath }).toMap()
+    val artworkPaths: Flow<Map<String, String>> = combine(artworkAssets, dao.observePlaylistArtwork(), dao.observeArtistArtwork()) { assets, staged, artistStaged ->
+        (assets.map { asset -> asset.assetId.removePrefix("artwork:") to asset.relativePath } + staged.map { artwork -> artwork.sha256 to artwork.relativePath } + artistStaged.map { artwork -> artwork.sha256 to artwork.relativePath }).toMap()
     }.shareIn(snapshotScope, SharingStarted.WhileSubscribed(5_000), replay = 1)
+
+    /** Custom artist covers keyed by artist ID; staged hashes resolve through [artworkPaths]. */
+    val artistArtworkKeys: Flow<Map<String, String>> = projectedArtistMutations.map { rows ->
+        applyPendingArtistArtworkMutations(emptyMap(), rows.mapNotNull(ArtistMutationEntity::toArtistMutation))
+    }.distinctUntilChanged().shareIn(snapshotScope, SharingStarted.WhileSubscribed(5_000), replay = 1)
 
     fun searchCandidates(query: String): Flow<List<LibrarySearchCandidate>> = searchFtsMatch(query)
         ?.let(dao::observeSearchCandidates)
@@ -774,6 +837,29 @@ internal class AndroidLibrarySyncStore(
     }
 
     override suspend fun stagedPlaylistArtwork(sha256: String): StagedPlaylistArtwork? = dao.playlistArtwork(sha256)?.let { StagedPlaylistArtwork(it.sha256, it.mime, it.size, it.relativePath) }
+
+    suspend fun stageArtistArtwork(value: StagedArtistArtwork) {
+        require(value.sha256.matches(Regex("^[0-9a-f]{64}$")) && value.mime in setOf("image/jpeg", "image/png", "image/webp"))
+        require(!value.relativePath.startsWith('/') && ".." !in value.relativePath.split('/'))
+        dao.insertArtistArtwork(ArtistArtworkStagingEntity(value.sha256, value.mime, value.size, value.relativePath))
+    }
+
+    /** Durable boundary for artist artwork edits; artist browsing otherwise stays read-only. */
+    suspend fun queueArtistArtworkMutation(mutation: ArtistMutation) {
+        require(mutation.validationError() == null) { mutation.validationError() ?: "Invalid artist mutation" }
+        dao.insertArtistMutation(
+            ArtistMutationEntity(
+                mutation.mutationId,
+                mutation.artistId,
+                mutation.operation.name,
+                mutation.updatedAt,
+                LibrarySyncProtocol.json.encodeToString(ArtistArtworkPayload.serializer(), mutation.payload),
+            ),
+        )
+        cleanupStaleArtistArtwork()
+    }
+
+    suspend fun pendingArtistMutations(): List<ArtistMutation> = dao.pendingArtistMutations().mapNotNull(ArtistMutationEntity::toArtistMutation)
 
     override suspend fun pendingPlaylistMutations(): List<PlaylistMutation> = dao.pendingPlaylistMutations().mapNotNull(PlaylistMutationEntity::toPlaylistMutation)
 
@@ -970,6 +1056,18 @@ internal class AndroidLibrarySyncStore(
         assets.forEach { it.relativePath?.let { path -> File(filesDir, path).delete() } }
     }
 
+    private suspend fun cleanupStaleArtistArtwork() {
+        val staged = dao.observeArtistArtwork().first()
+        val unused = unusedArtistArtworkHashes(
+            staged.map(ArtistArtworkStagingEntity::sha256),
+            pendingArtistMutations(),
+        )
+        if (unused.isEmpty()) return
+        val paths = staged.filter { it.sha256 in unused }.map(ArtistArtworkStagingEntity::relativePath)
+        dao.deleteArtistArtwork(unused)
+        paths.forEach { File(filesDir, it).delete() }
+    }
+
     private suspend fun cleanupAcknowledgedPlaylistArtwork() {
         val staged = dao.observePlaylistArtwork().first()
         val unused = unusedPlaylistArtworkHashes(
@@ -1139,6 +1237,38 @@ internal fun PlaylistMutationStatus.awaitingReplacementSnapshot() = this in setO
     PlaylistMutationStatus.APPLIED,
     PlaylistMutationStatus.DUPLICATE,
 )
+
+private fun ArtistMutationEntity.toArtistMutation(): ArtistMutation? = runCatching {
+    ArtistMutation(
+        mutationId,
+        artistId,
+        ArtistArtworkOperation.valueOf(operation),
+        updatedAt,
+        LibrarySyncProtocol.json.decodeFromString(ArtistArtworkPayload.serializer(), payloadJson),
+    )
+}.getOrNull()
+
+/** Reflects pending artist artwork deltas locally; a custom cover wins until it is removed. */
+internal fun applyPendingArtistArtworkMutations(
+    base: Map<String, String>,
+    pending: List<ArtistMutation>,
+): Map<String, String> {
+    val projected = base.toMutableMap()
+    pending.forEach { mutation ->
+        when (mutation.operation) {
+            ArtistArtworkOperation.SET_ARTWORK -> mutation.payload.artworkSha256?.let { key ->
+                projected[mutation.artistId] = key
+            }
+            ArtistArtworkOperation.REMOVE_ARTWORK -> projected.remove(mutation.artistId)
+        }
+    }
+    return projected
+}
+
+internal fun unusedArtistArtworkHashes(staged: List<String>, pending: List<ArtistMutation>): List<String> {
+    val referenced = pending.mapNotNull { it.payload.artworkSha256 }.toSet()
+    return staged.filter { it !in referenced }
+}
 
 internal fun unusedPlaylistArtworkHashes(staged: List<String>, pending: List<PlaylistMutation>, localArtwork: List<String>): List<String> {
     val referenced = pending.mapNotNull { it.payload.artworkSha256 }.toSet() + localArtwork

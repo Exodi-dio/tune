@@ -24,6 +24,8 @@ data class ArtistDetailsUiState(
     val tracks: List<LibraryTrack> = emptyList(),
     internal val allArtists: List<LibraryArtist> = emptyList(),
     internal val allAlbums: List<LibraryAlbum> = emptyList(),
+    internal val artistArtworkKeys: Map<String, String> = emptyMap(),
+    internal val artworkPathByKey: Map<String, String> = emptyMap(),
 )
 
 internal class ArtistDetailsViewModel(
@@ -43,11 +45,15 @@ internal class ArtistDetailsViewModel(
         syncStore.artists,
         syncStore.albums,
         syncStore.tracks,
-    ) { artists, albums, tracks ->
+        syncStore.artistArtworkKeys,
+        syncStore.artworkPaths,
+    ) { artists, albums, tracks, artworkKeys, artworkPaths ->
         ArtistDetailsUiState(
             tracks = tracks,
             allArtists = artists,
             allAlbums = albums,
+            artistArtworkKeys = artworkKeys,
+            artworkPathByKey = artworkPaths,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ArtistDetailsUiState())
 
@@ -80,7 +86,14 @@ internal fun artistDetailsUiStateFor(
     val tracks = albums.flatMap { album ->
         tracksByAlbumId[album.id].orEmpty().sortedWith(albumTrackComparator)
     }
-    return ArtistDetailsUiState(artist = artist, albums = albums, tracks = tracks)
+    val resolvedArtist = artist?.copy(artworkPath = artistDisplayArtworkPath(artist, state.artistArtworkKeys, state.artworkPathByKey))
+    return ArtistDetailsUiState(
+        artist = resolvedArtist,
+        albums = albums,
+        tracks = tracks,
+        artistArtworkKeys = state.artistArtworkKeys,
+        artworkPathByKey = state.artworkPathByKey,
+    )
 }
 
 private val albumTrackComparator = compareBy<LibraryTrack> {

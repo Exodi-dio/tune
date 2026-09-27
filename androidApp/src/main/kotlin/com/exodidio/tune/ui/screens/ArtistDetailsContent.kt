@@ -47,6 +47,7 @@ internal fun ArtistDetailsContent(
     onShuffle: () -> Unit = {},
     onPlayNext: (List<String>) -> Unit = {},
     onAddToQueue: (List<String>) -> Unit = {},
+    onArtistUpdate: (String, android.net.Uri?, Boolean) -> Unit = { _, _, _ -> },
     onTrackContextBottomSheet: (TrackContextBottomSheetRequest) -> Unit = {},
     onAlbumClick: (LibraryAlbum) -> Unit = {},
     playbackQueue: PlaybackQueueSnapshot = PlaybackQueueSnapshot(),
@@ -62,6 +63,7 @@ internal fun ArtistDetailsContent(
         return
     }
     var menuExpanded by remember(artist.id) { mutableStateOf(false) }
+    var showArtistEditor by remember(artist.id) { mutableStateOf(false) }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         state = listState,
@@ -75,6 +77,7 @@ internal fun ArtistDetailsContent(
                     onDismiss = { menuExpanded = false },
                     onPlayNext = onPlayNext,
                     onAddToQueue = onAddToQueue,
+                    onEdit = { showArtistEditor = true },
                     onBottomSheetRequested = onTrackContextBottomSheet,
                     addToPlaylistOnly = true,
                     hazeState = hazeState,
@@ -119,6 +122,13 @@ internal fun ArtistDetailsContent(
             )
             InsetListDivider(Modifier.testTag(ArtistAlbumDividerTag))
         }
+    }
+    if (showArtistEditor) {
+        EditArtistBottomSheet(
+            artworkPath = artistManualArtworkPath(artist.id, uiState.artistArtworkKeys, uiState.artworkPathByKey),
+            onDismiss = { showArtistEditor = false },
+            onSave = { artwork, clearArtwork -> onArtistUpdate(artist.id, artwork, clearArtwork); showArtistEditor = false },
+        )
     }
 }
 

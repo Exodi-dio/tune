@@ -36,11 +36,13 @@ internal fun LibraryArtistsContent(
     orderedTrackIdsForArtist: (String) -> List<String> = { emptyList() },
     onArtistPlayNext: (List<String>) -> Unit = {},
     onArtistAddToQueue: (List<String>) -> Unit = {},
+    onArtistUpdate: (String, android.net.Uri?, Boolean) -> Unit = { _, _, _ -> },
     onTrackContextBottomSheet: (TrackContextBottomSheetRequest) -> Unit = {},
     hazeState: HazeState? = null,
     playbackQueue: PlaybackQueueSnapshot = PlaybackQueueSnapshot(),
 ) {
     var contextArtistId by remember { mutableStateOf<String?>(null) }
+    var editingArtist by remember { mutableStateOf<com.exodidio.tune.sync.LibraryArtist?>(null) }
     val listPadding = remember(contentPadding) {
         PaddingValues(
             top = contentPadding.calculateTopPadding(),
@@ -97,6 +99,7 @@ internal fun LibraryArtistsContent(
             onDismiss = { if (contextArtistId == artist.id) contextArtistId = null },
             onPlayNext = onArtistPlayNext,
             onAddToQueue = onArtistAddToQueue,
+            onEdit = { editingArtist = artist },
             onBottomSheetRequested = onTrackContextBottomSheet,
             addToPlaylistOnly = true,
             hazeState = hazeState,
@@ -109,5 +112,12 @@ internal fun LibraryArtistsContent(
                 onLongClick = { contextArtistId = artist.id },
             )
         }
+    }
+    editingArtist?.let { artist ->
+        EditArtistBottomSheet(
+            artworkPath = artistManualArtworkPath(artist.id, uiState.artistArtworkKeys, uiState.artworkPathByKey),
+            onDismiss = { editingArtist = null },
+            onSave = { artwork, clearArtwork -> onArtistUpdate(artist.id, artwork, clearArtwork); editingArtist = null },
+        )
     }
 }

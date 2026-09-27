@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity() {
         )
     }
     private val artistsViewModel: LibraryArtistsViewModel by viewModels {
-        LibraryArtistsViewModel.Factory(AndroidSyncRuntime.syncStore())
+        LibraryArtistsViewModel.Factory(applicationContext, AndroidSyncRuntime.syncStore())
     }
     private val albumsViewModel: LibraryAlbumsViewModel by viewModels {
         LibraryAlbumsViewModel.Factory(
@@ -314,6 +314,7 @@ class MainActivity : ComponentActivity() {
                         onPlayNext = playbackController::playNext,
                         onAddToQueue = playbackController::append,
                         orderedTrackIds = artistDetailsViewModel::orderedTrackIds,
+                        onArtistUpdate = artistsViewModel::updateArtistArtwork,
                     ),
                     albums = LibraryAlbumsModel(
                         state = albumsUiState,

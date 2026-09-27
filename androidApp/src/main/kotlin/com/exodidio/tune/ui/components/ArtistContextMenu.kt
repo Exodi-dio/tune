@@ -18,6 +18,7 @@ internal fun ArtistContextMenu(
     onDismiss: () -> Unit,
     onPlayNext: (List<String>) -> Unit = {},
     onAddToQueue: (List<String>) -> Unit = {},
+    onEdit: () -> Unit = {},
     onBottomSheetRequested: (TrackContextBottomSheetRequest) -> Unit = {},
     addToPlaylistOnly: Boolean = false,
     modifier: Modifier = Modifier,
@@ -51,6 +52,11 @@ internal fun ArtistContextMenu(
                 ContextActionMenuEntry.Action(stringResource(R.string.track_context_add_to_playlist), MaterialSymbols.PlaylistAdd) {
                     dismissAll()
                     onBottomSheetRequested(TrackContextBottomSheetRequest.Playlist(orderedTrackIds, addOnly = addToPlaylistOnly))
+                },
+            )
+            add(
+                ContextActionMenuEntry.Action(stringResource(R.string.artist_edit), MaterialSymbols.Edit) {
+                    closeAfter(onEdit)
                 },
             )
         })

@@ -3,8 +3,11 @@ package com.exodidio.tune
 import com.exodidio.tune.sync.LibraryArtist
 import com.exodidio.tune.ui.screens.ArtistSortOption
 import com.exodidio.tune.ui.screens.SortOrder
+import com.exodidio.tune.ui.screens.artistDisplayArtworkPath
+import com.exodidio.tune.ui.screens.artistManualArtworkPath
 import com.exodidio.tune.ui.screens.sortArtists
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class LibraryArtistsViewModelTest {
@@ -42,5 +45,31 @@ class LibraryArtistsViewModelTest {
         )
 
         assertEquals(listOf("Zulu", "Alpha"), sortArtists(artists, ArtistSortOption.Name, SortOrder.Ascending).map { it.name })
+    }
+
+    @Test
+    fun usesCustomArtworkBeforeSyncDerived() {
+        val artist = LibraryArtist(id = "a", name = "Artist A", artworkPath = "sync/a.jpg")
+
+        assertEquals(
+            "custom/a.jpg",
+            artistDisplayArtworkPath(artist, mapOf("a" to "custom-key"), mapOf("custom-key" to "custom/a.jpg")),
+        )
+    }
+
+    @Test
+    fun fallsBackToSyncDerivedWhenNoCustomArtwork() {
+        val artist = LibraryArtist(id = "a", name = "Artist A", artworkPath = "sync/a.jpg")
+
+        assertEquals("sync/a.jpg", artistDisplayArtworkPath(artist, emptyMap(), emptyMap()))
+    }
+
+    @Test
+    fun editorArtworkUsesOnlyTheManualCover() {
+        assertNull(artistManualArtworkPath("a", emptyMap(), emptyMap()))
+        assertEquals(
+            "custom/a.jpg",
+            artistManualArtworkPath("a", mapOf("a" to "custom-key"), mapOf("custom-key" to "custom/a.jpg")),
+        )
     }
 }

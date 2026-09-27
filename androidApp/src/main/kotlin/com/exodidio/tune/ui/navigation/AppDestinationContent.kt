@@ -218,6 +218,7 @@ internal fun AppDestinationContent(
     val onArtistAddToQueue = library.artists.onAddToQueue
     val orderedTrackIdsForArtist = library.artists.orderedTrackIds
     val onArtistsFilterQueryChange = library.artists.onFilterQueryChange
+    val onArtistUpdate = library.artists.onArtistUpdate
     val onGenrePlay = library.genres.onPlay
     val onGenrePlayNext = library.genres.onPlayNext
     val onGenreAddToQueue = library.genres.onAddToQueue
@@ -497,6 +498,7 @@ internal fun AppDestinationContent(
                                 orderedTrackIdsForArtist = orderedTrackIdsForArtist,
                                 onArtistPlayNext = onArtistPlayNext,
                                 onArtistAddToQueue = onArtistAddToQueue,
+                                onArtistUpdate = onArtistUpdate,
                                 onTrackContextBottomSheet = onArtistTrackContextBottomSheet,
                                 hazeState = hazeState,
                                 playbackQueue = playbackQueue,
@@ -513,6 +515,7 @@ internal fun AppDestinationContent(
                                 onShuffle = { selectedArtistId?.let { onArtistPlay(it, true) } },
                                 onPlayNext = onArtistPlayNext,
                                 onAddToQueue = onArtistAddToQueue,
+                                onArtistUpdate = onArtistUpdate,
                                 onTrackContextBottomSheet = onArtistTrackContextBottomSheet,
                                 onAlbumClick = { album -> onIntent(AppIntent.OpenAlbumDetails(album.id)) },
                                 playbackQueue = playbackQueue,

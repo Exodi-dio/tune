@@ -72,6 +72,7 @@ import com.exodidio.tune.ui.screens.TrackSortOption
     val onPlayNext: (List<String>) -> Unit = {},
     val onAddToQueue: (List<String>) -> Unit = {},
     val orderedTrackIds: (String) -> List<String> = { emptyList() },
+    val onArtistUpdate: (String, Uri?, Boolean) -> Unit = { _, _, _ -> },
 )
 
 @Immutable internal data class LibraryAlbumsModel(
