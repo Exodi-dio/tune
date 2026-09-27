@@ -120,27 +120,60 @@ fun isAllowedApkUrl(rawUrl: String): Boolean {
 
 private val ReleaseJson = Json { ignoreUnknownKeys = true }
 
-/** Parses `GET .../releases/latest` into an [AppRelease]; first allowlisted `.apk` asset wins. */
-fun parseLatestReleaseJson(json: String): AppRelease? = runCatching {
+/**
+ * Pure ABI asset selector (JVM-testable, no Android dependencies).
+ *
+ * Prefers `*_<abi>.apk` matching [supportedAbis] in OS-reported order
+ * (first entry = most preferred, e.g. Build.SUPPORTED_ABIS), falls back
+ * to the universal asset (an `.apk` whose stem contains no `_` suffix),
+ * else null. Allowlisting is enforced by the caller on the final pick.
+ */
+fun selectAbiAsset(assetNames: List<String>, supportedAbis: List<String>): String? {
+    for (abi in supportedAbis) {
+        val suffix = "_${abi.lowercase()}.apk"
+        for (name in assetNames) {
+            if (name.lowercase().endsWith(suffix)) return name
+        }
+    }
+    for (name in assetNames) {
+        val lower = name.lowercase()
+        if (!lower.endsWith(".apk")) continue
+        if (!lower.removeSuffix(".apk").contains('_')) return name
+    }
+    return null
+}
+
+/** Device ABIs as reported by the OS (empty when unavailable, e.g. JVM unit tests). */
+fun deviceSupportedAbis(): List<String> =
+    runCatching { Build.SUPPORTED_ABIS?.toList().orEmpty() }.getOrDefault(emptyList())
+
+/** Parses `GET .../releases/latest` into an [AppRelease]; ABI-aware pick among allowlisted `.apk` assets. */
+fun parseLatestReleaseJson(json: String, supportedAbis: List<String>): AppRelease? = runCatching {
     val root = ReleaseJson.parseToJsonElement(json).jsonObject
     val tag = root["tag_name"]?.jsonPrimitive?.contentOrNull?.takeIf(String::isNotBlank) ?: return null
     val notes = root["body"]?.jsonPrimitive?.contentOrNull.orEmpty()
     val assets = root["assets"]?.jsonArray.orEmpty()
-    var apkUrl: String? = null
+    val candidates = mutableListOf<Pair<String, String>>()
     for (asset in assets) {
         val obj = runCatching { asset.jsonObject }.getOrNull() ?: continue
         val url = obj["browser_download_url"]?.jsonPrimitive?.contentOrNull.orEmpty()
         if (url.isBlank()) continue
         val name = obj["name"]?.jsonPrimitive?.contentOrNull.orEmpty()
+        val effectiveName = name.takeIf { it.isNotBlank() } ?: url.substringBefore('?').substringAfterLast('/')
         val urlPath = url.substringBefore('?').lowercase()
         if (name.lowercase().endsWith(".apk") || urlPath.endsWith(".apk")) {
             if (!isAllowedApkUrl(url)) continue
-            apkUrl = url
-            break
+            candidates += effectiveName to url
         }
     }
+    val pickedName = selectAbiAsset(candidates.map { it.first }, supportedAbis)
+    val apkUrl = pickedName?.let { picked -> candidates.firstOrNull { it.first == picked }?.second }
     AppRelease(tag = tag, version = normalizeVersionTag(tag), notes = notes, apkUrl = apkUrl)
 }.getOrNull()
+
+/** Device-aware overload: queries `Build.SUPPORTED_ABIS`, falls back to universal when unavailable. */
+fun parseLatestReleaseJson(json: String): AppRelease? =
+    parseLatestReleaseJson(json, deviceSupportedAbis())
 
 /**
  * Bounded read of the API response body (cap [maxBytes], default 256KB). Throws when the

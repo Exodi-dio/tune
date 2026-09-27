@@ -234,7 +234,7 @@ androidComponents {
                 "armeabi-v7a" -> 1
                 "x86_64" -> 2
                 "arm64-v8a" -> 3
-                else -> 0
+                else -> error("unknown ABI \"$abi\"")
             }
             output.versionCode.set(5 * 1000 + offset)
             val suffix = if (abi != null) "_$abi" else ""
