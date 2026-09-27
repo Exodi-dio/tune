@@ -15,7 +15,6 @@
 <a href="#download">Download</a> ·
 <a href="#features">Features</a> ·
 <a href="#screenshots">Screenshots</a> ·
-<a href="#building">Building</a> ·
 <a href="#license">License</a>
 </p>
 
@@ -82,12 +81,6 @@ Grab the APK for your device from the
 `Tune-v1.0.0.apk` works everywhere, or pick your architecture build.
 Sideloading asks you to allow installs once; afterwards the app updates
 itself from Settings → About. Requires Android 12 or newer.
-
-## Building
-
-All builds, tests, and verification run in GitHub Actions — nothing in
-this project is built on a developer machine. See
-[.github/workflows](.github/workflows) and [AGENTS.md](AGENTS.md).
 
 ## Acknowledgments
 
