@@ -100,6 +100,7 @@ internal class LocalLibraryScanner(
             MediaStore.Audio.Media.DURATION,
             MediaStore.Audio.Media.SIZE,
             MediaStore.Audio.Media.DATE_ADDED,
+            MediaStore.Audio.Media.COMPOSER,
             MediaStore.Audio.Media.MIME_TYPE,
         )
         val rows = mutableListOf<MediaRow>()
@@ -128,7 +129,7 @@ internal class LocalLibraryScanner(
                         album = str(MediaStore.Audio.Media.ALBUM)?.takeUnless { it == "<unknown>" },
                         albumArtist = null,
                         genre = null,
-                        composer = null,
+                        composer = str(MediaStore.Audio.Media.COMPOSER)?.takeUnless { it == "<unknown>" },
                         year = int(MediaStore.Audio.Media.YEAR)?.takeIf { it > 0 },
                         trackNo = (if (rawTrack > 1000) rawTrack % 1000 else rawTrack).takeIf { it > 0 },
                         discNo = int(MediaStore.Audio.Media.DISC_NUMBER)?.takeIf { it > 0 }
@@ -161,6 +162,7 @@ internal class LocalLibraryScanner(
                 album = s(MediaMetadataRetriever.METADATA_KEY_ALBUM),
                 albumArtist = s(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST),
                 genre = s(MediaMetadataRetriever.METADATA_KEY_GENRE),
+                composer = s(MediaMetadataRetriever.METADATA_KEY_COMPOSER),
                 year = year,
                 trackNo = null,
                 discNo = null,

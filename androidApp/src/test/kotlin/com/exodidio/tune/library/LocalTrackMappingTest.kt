@@ -85,7 +85,7 @@ class LocalTrackMappingTest {
 
     @Test fun applyTagsOverridesWithNonBlankValues() {
         val updated = row(title = null, artist = null).toLocalTrack()!!.applyTags(
-            RawTags(title = "Real Title", artist = "Real Artist", album = null, albumArtist = null, genre = null, year = null, trackNo = null, discNo = null, durationMs = null, bitrate = null, sampleRateHz = null, bitDepth = null, hasEmbeddedArt = false),
+            RawTags(title = "Real Title", artist = "Real Artist", album = null, albumArtist = null, genre = null, composer = null, year = null, trackNo = null, discNo = null, durationMs = null, bitrate = null, sampleRateHz = null, bitDepth = null, hasEmbeddedArt = false),
         )
         assertEquals("Real Title", updated.title)
         assertEquals("Real Artist", updated.artist)
@@ -93,7 +93,7 @@ class LocalTrackMappingTest {
 
     @Test fun applyTagsIgnoresBlankTagValues() {
         val updated = row(title = "Kept").toLocalTrack()!!.applyTags(
-            RawTags(title = "  ", artist = "", album = null, albumArtist = null, genre = null, year = null, trackNo = null, discNo = null, durationMs = null, bitrate = null, sampleRateHz = null, bitDepth = null, hasEmbeddedArt = false),
+            RawTags(title = "  ", artist = "", album = null, albumArtist = null, genre = null, composer = null, year = null, trackNo = null, discNo = null, durationMs = null, bitrate = null, sampleRateHz = null, bitDepth = null, hasEmbeddedArt = false),
         )
         assertEquals("Kept", updated.title)
     }

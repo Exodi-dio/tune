@@ -33,7 +33,7 @@ class LocalImportTest {
         label = null,
         copyright = null,
     ).applyTags(
-        RawTags(title = null, artist = null, album = null, albumArtist = null, genre = null, year = null, trackNo = null, discNo = null, durationMs = null, bitrate = null, sampleRateHz = 96_000, bitDepth = 24, hasEmbeddedArt = false),
+        RawTags(title = null, artist = null, album = null, albumArtist = null, genre = null, composer = null, year = null, trackNo = null, discNo = null, durationMs = null, bitrate = null, sampleRateHz = 96_000, bitDepth = 24, hasEmbeddedArt = false),
     )
 
     @Test fun buildRowsUsesLocalPlan() {

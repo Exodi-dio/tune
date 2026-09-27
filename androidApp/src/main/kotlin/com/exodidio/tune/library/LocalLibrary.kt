@@ -98,6 +98,7 @@ internal data class RawTags(
     val album: String?,
     val albumArtist: String?,
     val genre: String?,
+    val composer: String?,
     val year: Int?,
     val trackNo: Int?,
     val discNo: Int?,
@@ -117,6 +118,7 @@ internal fun LocalTrack.applyTags(tags: RawTags?): LocalTrack {
         album = pick(album, tags.album),
         albumArtist = tags.albumArtist ?: albumArtist,
         genre = tags.genre ?: genre,
+        composer = tags.composer?.ifBlank { null } ?: composer,
         year = tags.year ?: year,
         trackNo = tags.trackNo ?: trackNo,
         discNo = tags.discNo ?: discNo,
@@ -155,6 +157,10 @@ internal fun stableId(prefix: String, name: String): String {
 internal fun artistIdFor(name: String): String = stableId("local-artist-", name)
 
 internal fun albumIdFor(name: String): String = stableId("local-album-", name)
+
+internal fun composerIdFor(name: String): String = stableId("local-composer-", name)
+
+internal fun genreIdFor(name: String): String = stableId("local-genre-", name)
 
 internal fun formatFor(mimeType: String?): Pair<String, String> {
     return when (mimeType?.substringAfter('/')?.lowercase().orEmpty()) {
@@ -199,6 +205,7 @@ internal fun metadataJsonFor(
     bitDepth: Int?,
     artistArtworkKey: String?,
     albumArtworkKey: String?,
+    composerArtworkKey: String? = null,
 ): String {
     val (format, codec) = formatFor(track.mimeType)
     val artistPart = if (track.artist.isBlank()) {
@@ -212,12 +219,25 @@ internal fun metadataJsonFor(
     val albumYear = track.year?.let { "," + jstr("year") + ":" + it.toString() }.orEmpty()
     val albumCopyright = if (track.copyright == null) "" else "," + jstr("copyright") + ":" + jstr(track.copyright)
     val albumPart = "{" + jstr("id") + ":" + jstr(albumId) + "," + jstr("title") + ":" + jstr(track.album) + albumYear + albumCopyright + albumKey + "}"
+    val genrePart = if (track.genre.isNullOrBlank()) {
+        "[]"
+    } else {
+        "[" + "{" + jstr("id") + ":" + jstr(genreIdFor(track.genre)) + "," + jstr("name") + ":" + jstr(track.genre) + "}" + "]"
+    }
+    val composerPart = if (track.composer.isNullOrBlank()) {
+        "[]"
+    } else {
+        val key = if (composerArtworkKey == null) "" else "," + jstr("artwork_key") + ":" + jstr(composerArtworkKey)
+        "[" + "{" + jstr("id") + ":" + jstr(composerIdFor(track.composer)) + "," + jstr("name") + ":" + jstr(track.composer) + key + "}" + "]"
+    }
     fun optLong(name: String, value: Long?): String = if (value == null) "" else "," + jstr(name) + ":" + value.toString()
     fun optInt(name: String, value: Int?): String = if (value == null) "" else "," + jstr(name) + ":" + value.toString()
     fun optStr(name: String, value: String?): String = if (value == null) "" else "," + jstr(name) + ":" + jstr(value)
     return "{" + jstr("title") + ":" + jstr(track.title) +
         "," + jstr("artists") + ":" + artistPart +
         "," + jstr("album") + ":" + albumPart +
+        "," + jstr("genres") + ":" + genrePart +
+        "," + jstr("composers") + ":" + composerPart +
         "," + jstr("format") + ":" + jstr(format) +
         "," + jstr("codec") + ":" + jstr(codec) +
         "," + jstr("bit_depth") + ":" + (bitDepth ?: 0).toString() +
@@ -247,11 +267,13 @@ internal fun buildLocalImport(
     val valid = tracks.filter { it.uri.isNotBlank() && it.mediaId > 0L }
     val artistArt = linkedMapOf<String, String>()
     val albumArt = linkedMapOf<String, String>()
+    val composerArt = linkedMapOf<String, String>()
     valid.forEach { track ->
         val assetId = "artwork:" + trackIdFor(track.mediaId)
         if (artwork.containsKey(trackIdFor(track.mediaId))) {
             if (track.artist.isNotBlank()) artistArt.putIfAbsent(artistIdFor(track.artist), assetId)
             if (track.album.isNotBlank()) albumArt.putIfAbsent(albumIdFor(track.album), assetId)
+            if (!track.composer.isNullOrBlank()) composerArt.putIfAbsent(composerIdFor(track.composer), assetId)
         }
     }
     val entities = valid.mapIndexed { index, track ->
@@ -276,6 +298,7 @@ internal fun buildLocalImport(
                 track.bitDepth,
                 artistArt[artistIdFor(track.artist)].takeIf { track.artist.isNotBlank() },
                 albumArt[albumIdFor(track.album)].takeIf { track.album.isNotBlank() },
+                track.composer?.takeIf { it.isNotBlank() }?.let { composerArt[composerIdFor(it)] },
             ),
         )
     }
