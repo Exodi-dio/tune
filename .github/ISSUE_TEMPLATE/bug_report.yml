@@ -1,0 +1,35 @@
+name: Bug report
+description: Something in Tune isn't working right
+labels: [bug]
+body:
+  - type: input
+    attributes:
+      label: Tune version
+      description: Find it in Settings, About (e.g. 1.0.0)
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Device + Android version
+      description: e.g. Redmi 12C, Android 13
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Which build
+      description: e.g. universal, arm64-v8a
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you saw instead
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Screenshots
+      description: A screenshot usually halves the fix time
+    validations:
+      required: false
+

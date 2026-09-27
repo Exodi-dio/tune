@@ -1,0 +1,17 @@
+name: Feature request
+description: Tell us what Tune should do next
+labels: [enhancement]
+body:
+  - type: textarea
+    attributes:
+      label: What should Tune do?
+      description: One idea per issue, concretely
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Why does it matter to you?
+      description: The situation where you'd use it
+    validations:
+      required: false
+
