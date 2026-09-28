@@ -11,6 +11,8 @@
 <img src="https://img.shields.io/badge/platform-Android%2012%2B-3DDC84?logo=android&logoColor=white" alt="Android 12 and newer" />
 </p>
 
+<p align="center"><i>If Tune earns a place on your phone, a ⭐ keeps it alive.</i></p>
+
 <p align="center">
 <a href="#download">Download</a> ·
 <a href="#features">Features</a> ·
