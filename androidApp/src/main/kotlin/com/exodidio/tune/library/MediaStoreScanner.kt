@@ -27,10 +27,10 @@ internal class LocalLibraryScanner(
         state.value = reduceScanPermission(state.value, granted, showRationale)
     }
 
-    suspend fun scan(): LocalImportSummary = withContext(Dispatchers.IO) {
+    suspend fun scan(whitelist: Set<String> = emptySet()): LocalImportSummary = withContext(Dispatchers.IO) {
         state.value = state.value.copy(scanning = true, error = null)
         try {
-            val rows = queryMediaStore()
+            val rows = filterAllowedMediaRows(queryMediaStore(), whitelist)
             val tracks = mutableListOf<LocalTrack>()
             var skipped = 0
             val artwork = mutableMapOf<String, LocalArtwork>()
@@ -102,6 +102,7 @@ internal class LocalLibraryScanner(
             MediaStore.Audio.Media.DATE_ADDED,
             MediaStore.Audio.Media.COMPOSER,
             MediaStore.Audio.Media.MIME_TYPE,
+            MediaStore.Audio.Media.DATA,
         )
         val rows = mutableListOf<MediaRow>()
         context.contentResolver.query(
@@ -143,6 +144,7 @@ internal class LocalLibraryScanner(
                         mimeType = str(MediaStore.Audio.Media.MIME_TYPE),
                         label = null,
                         copyright = null,
+                        dataPath = str(MediaStore.Audio.Media.DATA)?.takeIf { it.isNotBlank() },
                     ),
                 )
             }

@@ -1,7 +1,11 @@
 package com.exodidio.tune.lyrics
 
+import android.content.ContentUris
+import android.content.Context
+import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
+import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
@@ -48,14 +52,22 @@ internal class AndroidLyricsService(
         LrclibLyricsProvider(),
         KugouLyricsProvider()
     ),
+    private val appContext: Context? = null,
+    private val localFileReader: ((String) -> String?)? = null,
+    private val localPathOverride: ((LyricsTrack) -> String?)? = null,
 ) {
     suspend fun fetch(trackId: String, settings: LyricsSettings) {
-        val active = providers.filter { it.enabled(settings) }
-        if (active.isEmpty()) return
         val track = library.lyricsTrack(trackId) ?: run {
             Log.w("TuneLyrics", "Cannot fetch lyrics: track $trackId is unavailable")
             return
         }
+        readLocalLrc(trackId, track)?.let { local ->
+            library.saveProviderLyrics(trackId, local, "local-lrc")
+            Log.d("TuneLyrics", "Using local .lrc lyrics for ${track.title}")
+            return
+        }
+        val active = providers.filter { it.enabled(settings) }
+        if (active.isEmpty()) return
         Log.d("TuneLyrics", "Fetching lyrics for ${track.title} from ${active.size} provider(s)")
         val lyric = coroutineScope {
             val results = Channel<Result<FetchedLyric?>>(active.size)
@@ -75,6 +87,35 @@ internal class AndroidLyricsService(
             library.saveProviderLyrics(trackId, it.content, it.source)
             Log.d("TuneLyrics", "Fetched lyrics from ${it.source}")
         } ?: Log.d("TuneLyrics", "No lyrics found for ${track.title}")
+    }
+
+    private fun readLocalLrc(trackId: String, track: LyricsTrack): String? {
+        val reader: (String) -> String? = localFileReader ?: { path ->
+            try {
+                File(path).takeIf { it.isFile }?.readText()
+            } catch (_: Exception) {
+                null
+            }
+        }
+        val audioPath = localPathOverride?.invoke(track) ?: resolveTrackFilePath(trackId, track)
+        return resolveLocalLrcContent(audioPath, track.artist, track.title, reader)
+    }
+
+    private fun resolveTrackFilePath(trackId: String, track: LyricsTrack): String? {
+        track.audioPath?.trim()?.takeIf { it.isNotBlank() }?.let { raw ->
+            if (!raw.startsWith("content://", ignoreCase = true)) return raw
+        }
+        val mediaId = mediaIdForLocalTrackId(trackId) ?: return null
+        val context = appContext ?: return null
+        return try {
+            val uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mediaId)
+            context.contentResolver.query(uri, arrayOf(MediaStore.Audio.Media.DATA), null, null, null)?.use { cursor ->
+                val idx = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
+                if (idx >= 0 && cursor.moveToFirst()) cursor.getString(idx)?.takeIf { it.isNotBlank() } else null
+            }
+        } catch (_: Exception) {
+            null
+        }
     }
 
     suspend fun search(trackId: String, title: String, artist: String, settings: LyricsSettings): List<LyricsSearchResult> {
@@ -301,7 +342,8 @@ internal data class LyricsTrack(
     val title: String,
     val artist: String,
     val album: String,
-    val duration: Int
+    val duration: Int,
+    val audioPath: String? = null,
 )
 
 @Serializable

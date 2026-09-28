@@ -887,7 +887,7 @@ internal class AndroidLibrarySyncStore(
     suspend fun lyricsTrack(trackId: String): LyricsTrack? = tracks.first().firstOrNull { it.id == trackId }?.let { track ->
         val metadata = track.metadataObject()
         val artist = ((metadata?.get("artists") as? JsonArray)?.firstOrNull() as? JsonObject)?.string("name").orEmpty().ifBlank { track.artists.substringBefore(',').trim() }
-        LyricsTrack(track.title, artist, track.album, metadata?.get("duration")?.jsonPrimitive?.contentOrNull?.toIntOrNull() ?: 0)
+        LyricsTrack(track.title, artist, track.album, metadata?.get("duration")?.jsonPrimitive?.contentOrNull?.toIntOrNull() ?: 0, track.audioPath)
     }
 
     override suspend fun prepare(request: LibrarySyncRequest, manifest: LibrarySyncManifest) {
