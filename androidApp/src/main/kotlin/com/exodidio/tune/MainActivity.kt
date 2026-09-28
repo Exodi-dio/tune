@@ -555,6 +555,7 @@ class MainActivity : ComponentActivity() {
         }
         ThemeMode.Light -> false
         ThemeMode.Dark -> true
+        ThemeMode.Amoled -> true
     }
 }
 
