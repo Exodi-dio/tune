@@ -100,6 +100,7 @@ object MaterialSymbols {
     const val Image = "image"
     const val FavoriteBorder = "favorite"
     const val Favorite = "favorite"
+    const val Star = "star"
     const val HeartPlus = "heart_plus"
     const val HeartMinus = "heart_minus"
     const val FilterList = "filter_list"

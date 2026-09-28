@@ -29,6 +29,7 @@ import com.exodidio.tune.ui.components.ActionListContainerStyle
 import com.exodidio.tune.ui.components.ActionListDividerStyle
 import com.exodidio.tune.ui.components.ActionListItem
 import com.exodidio.tune.ui.components.Card
+import com.exodidio.tune.ui.components.MaterialSymbols
 import com.exodidio.tune.ui.components.HeroCard
 import com.exodidio.tune.ui.components.TunePillButton
 import com.exodidio.tune.ui.components.TunePillButtonVariant
@@ -178,6 +179,11 @@ internal fun AboutContent(
                 ),
                 ActionListItem(
                     labelRes = R.string.about_github,
+                    onClick = { onOpenExternalUrl(TuneGithubUrl) },
+                ),
+                ActionListItem(
+                    labelRes = R.string.about_star,
+                    leadingSymbol = MaterialSymbols.Star,
                     onClick = { onOpenExternalUrl(TuneGithubUrl) },
                 ),
                 ActionListItem(

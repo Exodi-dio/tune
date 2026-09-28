@@ -218,6 +218,7 @@
     <string name="about_update_download_install">Download &amp; install</string>
     <string name="about_update_downloading">Downloading…</string>
     <string name="about_github">GitHub</string>
+    <string name="about_star">Star Tune on GitHub</string>
     <string name="about_license">License</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
