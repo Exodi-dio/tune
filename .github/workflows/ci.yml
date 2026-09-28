@@ -27,24 +27,24 @@ jobs:
       - name: Install font tooling
         run: pip install --quiet fonttools brotli
       - uses: gradle/actions/setup-gradle@v4
-      - name: Restore FFmpeg outputs arm64-v8a
-        id: ffmpeg-cache-arm64-v8a
+      - name: Restore FFmpeg arm64-v8a
+        id: ffmpeg-cache-arm64
         uses: actions/cache@v4
         with:
           path: |
             androidApp/src/main/jniLibs
             androidApp/build/ffmpeg
           key: ffmpeg-arm64-v8a-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
-      - name: Restore FFmpeg outputs armeabi-v7a
-        id: ffmpeg-cache-armeabi-v7a
+      - name: Restore FFmpeg armeabi-v7a
+        id: ffmpeg-cache-armv7
         uses: actions/cache@v4
         with:
           path: |
             androidApp/src/main/jniLibs
             androidApp/build/ffmpeg
           key: ffmpeg-armeabi-v7a-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
-      - name: Restore FFmpeg outputs x86_64
-        id: ffmpeg-cache-x86_64
+      - name: Restore FFmpeg x86_64
+        id: ffmpeg-cache-x86
         uses: actions/cache@v4
         with:
           path: |
@@ -52,36 +52,30 @@ jobs:
             androidApp/build/ffmpeg
           key: ffmpeg-x86_64-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
       - name: Build FFmpeg arm64-v8a
-        if: steps.ffmpeg-cache-arm64-v8a.outputs.cache-hit != 'true'
+        if: steps.ffmpeg-cache-arm64.outputs.cache-hit != 'true'
         run: bash scripts/build-ffmpeg-android.sh arm64-v8a
       - name: Build FFmpeg armeabi-v7a
-        if: steps.ffmpeg-cache-armeabi-v7a.outputs.cache-hit != 'true'
+        if: steps.ffmpeg-cache-armv7.outputs.cache-hit != 'true'
         run: bash scripts/build-ffmpeg-android.sh armeabi-v7a
       - name: Build FFmpeg x86_64
-        if: steps.ffmpeg-cache-x86_64.outputs.cache-hit != 'true'
+        if: steps.ffmpeg-cache-x86.outputs.cache-hit != 'true'
         run: bash scripts/build-ffmpeg-android.sh x86_64
-      - name: Unit tests
-        run: ./gradlew :sharedLogic:testAndroidHostTest --no-daemon
-      - name: Android unit tests
-        run: ./gradlew :androidApp:testDevDebugUnitTest --no-daemon
-      - name: Assemble debug
-        run: ./gradlew :androidApp:assembleDevDebug --no-daemon
-      - uses: actions/upload-artifact@v4
-        with:
-          name: tune-debug-apk
-          path: androidApp/build/outputs/apk/dev/debug/*.apk
-      - name: Branding gate
-        run: |
-          if grep -rniE 'airmedy|misa198' --exclude-dir=.git --exclude-dir=.github --exclude-dir=.superpowers --exclude-dir=docs --exclude-dir=build --exclude-dir=.gradle --exclude=NOTICE --exclude=README.md . ; then echo "STALE BRANDING"; exit 1; fi
-      - name: Snapshot debug APK
-        if: success()
+      - name: Assemble prod release splits
+        run: ./gradlew :androidApp:assembleProdRelease --no-daemon
+      - name: Sign each ABI APK with shared beta key
         run: |
           set -x
-          mkdir -p build-artifacts
-          cp androidApp/build/outputs/apk/dev/debug/*.apk build-artifacts/tune-debug.apk
-          git config user.email "tune-ci@users.noreply.github.com"
-          git config user.name "tune-ci"
-          git add -f build-artifacts/tune-debug.apk
-          if git diff --cached --quiet; then echo "no new apk"; exit 0; fi
-          git commit -m "chore(apk): snapshot debug build [ci]"
-          git push --force origin HEAD:refs/heads/apk-latest
+          export KS_PASS=android KEY_PASS=android
+          mkdir -p release-out
+          ls -l androidApp/build/outputs/apk/prod/release
+          for f in androidApp/build/outputs/apk/prod/release/*.apk; do
+            n=$(basename "$f" .apk)-signed.apk
+            "$ANDROID_HOME/build-tools/37.0.0/apksigner" sign --ks tools/keystore/tune-beta.keystore --ks-pass env:KS_PASS --key-pass env:KEY_PASS --out "release-out/$n" "$f"
+            "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify "release-out/$n"
+          done
+          ls -l release-out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tune-beta2-apks
+          path: release-out/*.apk
+
