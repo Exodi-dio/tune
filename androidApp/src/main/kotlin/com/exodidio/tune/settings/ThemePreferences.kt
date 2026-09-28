@@ -17,6 +17,7 @@ enum class ThemeMode(val storageValue: String, val labelRes: Int) {
     System("system", com.exodidio.tune.R.string.theme_system),
     Light("light", com.exodidio.tune.R.string.theme_light),
     Dark("dark", com.exodidio.tune.R.string.theme_dark),
+    Amoled("amoled", com.exodidio.tune.R.string.theme_amoled),
     ;
 
     companion object {

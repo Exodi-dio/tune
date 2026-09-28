@@ -38,6 +38,8 @@ import com.exodidio.tune.player.normalizeEqGain
 internal fun PlaybackSettingsContent(
     showFullscreenQualityBadge: Boolean,
     onShowFullscreenQualityBadgeChanged: (Boolean) -> Unit,
+    hideShortAudio: Boolean = false,
+    onHideShortAudioChanged: (Boolean) -> Unit = {},
     onSongTransitionSelected: () -> Unit,
     onVolumeNormalizationSelected: () -> Unit,
     onEqualizerSelected: () -> Unit,
@@ -67,6 +69,16 @@ internal fun PlaybackSettingsContent(
                         )
                     },
                     onClick = { onShowFullscreenQualityBadgeChanged(!showFullscreenQualityBadge) },
+                ),
+                ActionListItem(
+                    labelRes = R.string.hide_short_audio,
+                    trailingContent = {
+                        Switch(
+                            checked = hideShortAudio,
+                            onCheckedChange = onHideShortAudioChanged,
+                        )
+                    },
+                    onClick = { onHideShortAudioChanged(!hideShortAudio) },
                 ),
             ),
             containerStyle = ActionListContainerStyle.Card,

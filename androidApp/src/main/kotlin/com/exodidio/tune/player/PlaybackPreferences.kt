@@ -13,6 +13,7 @@ private val CrossfadeSecondsKey = intPreferencesKey("crossfade_seconds")
 private val LastEnabledCrossfadeSecondsKey = intPreferencesKey("last_enabled_crossfade_seconds")
 private val BlendArtworkDuringCrossfadeKey = booleanPreferencesKey("blend_artwork_during_crossfade")
 private val ShowFullscreenQualityBadgeKey = booleanPreferencesKey("show_fullscreen_quality_badge")
+private val HideShortAudioKey = booleanPreferencesKey("hide_short_audio")
 
 internal data class CrossfadeSettings(
     val seconds: Int,
@@ -38,6 +39,10 @@ internal class PlaybackPreferences(private val context: Context) {
         it[ShowFullscreenQualityBadgeKey] ?: true
     }
 
+    val hideShortAudio: Flow<Boolean> = context.playbackPreferencesDataStore.data.map {
+        it[HideShortAudioKey] ?: false
+    }
+
     suspend fun setCrossfadeSeconds(seconds: Int) {
         context.playbackPreferencesDataStore.edit { preferences ->
             val clamped = clampCrossfadeSeconds(seconds)
@@ -56,6 +61,10 @@ internal class PlaybackPreferences(private val context: Context) {
 
     suspend fun setShowFullscreenQualityBadge(enabled: Boolean) {
         context.playbackPreferencesDataStore.edit { it[ShowFullscreenQualityBadgeKey] = enabled }
+    }
+
+    suspend fun setHideShortAudio(enabled: Boolean) {
+        context.playbackPreferencesDataStore.edit { it[HideShortAudioKey] = enabled }
     }
 }
 

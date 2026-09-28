@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -43,10 +44,16 @@ data class LibrarySearchUiState(
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class LibrarySearchViewModel(syncStore: AndroidLibrarySyncStore) : ViewModel() {
-    class Factory(private val syncStore: AndroidLibrarySyncStore) : androidx.lifecycle.ViewModelProvider.Factory {
+internal class LibrarySearchViewModel(
+    syncStore: AndroidLibrarySyncStore,
+    private val hideShortAudio: Flow<Boolean> = flowOf(false),
+) : ViewModel() {
+    class Factory(
+        private val syncStore: AndroidLibrarySyncStore,
+        private val hideShortAudio: Flow<Boolean> = flowOf(false),
+    ) : androidx.lifecycle.ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST") override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            LibrarySearchViewModel(syncStore) as T
+            LibrarySearchViewModel(syncStore, hideShortAudio) as T
     }
 
     private val query = MutableStateFlow("")
@@ -80,8 +87,12 @@ internal class LibrarySearchViewModel(syncStore: AndroidLibrarySyncStore) : View
             composers = searchLibrary(values[5] as List<LibraryComposer>, text, { listOf(it.name) }, { it.sortName }, { it.id }, search.ids("composer")),
         )
     }.flowOn(Dispatchers.Default)
-    val uiState: StateFlow<LibrarySearchUiState> = combine(query, searchResults) { query, results ->
-        results.copy(query = query)
+    val uiState: StateFlow<LibrarySearchUiState> = combine(query, searchResults, hideShortAudio) { query, results, hideShort ->
+        results.copy(
+            query = query,
+            tracks = filterShortAudioTracks(results.tracks, hideShort),
+            allTracks = filterShortAudioTracks(results.allTracks, hideShort),
+        )
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),

@@ -82,6 +82,29 @@ private val DarkColors = TuneColors(
     qualityDsdSurface = Color(0xFFD946EF),
 )
 
+private val AmoledColors = TuneColors(
+    background = Color(0xFF000000),
+    playerBackdrop = Color(0xFF000000),
+    card = Color(0xFF000000),
+    glass = Color(0xFF000000).copy(alpha = 0.4f),
+    glassOpaque = Color(0xFF000000),
+    glassElevated = Color(0xFF000000).copy(alpha = 0.40f),
+    sliderInactive = Color.White.copy(alpha = 0.10f),
+    buttonSecondary = Color(0xFF52525B),
+    textFieldClear = Color(0xFF3F3F46),
+    borderGlass = Color.White.copy(alpha = 0.10f),
+    textMain = Color.White,
+    textMuted = Color(0xFFA1A1AA),
+    primary = Color(0xFFE11D48),
+    onPrimary = Color.White,
+    foregroundSubtle = Color.White.copy(alpha = 0.46f),
+    success = Color(0xFF4ADE80),
+    navigationActive = Color.Black.copy(alpha = 0.40f),
+    qualityHiRes = Color(0xFFF59E0B),
+    qualityDsd = Color(0xFFE879F9),
+    qualityDsdSurface = Color(0xFFD946EF),
+)
+
 val LocalTuneColors = staticCompositionLocalOf { LightColors }
 
 @Composable
@@ -93,8 +116,12 @@ fun TuneTheme(
         ThemeMode.System -> isSystemInDarkTheme()
         ThemeMode.Light -> false
         ThemeMode.Dark -> true
+        ThemeMode.Amoled -> true
     }
-    val colors = if (darkTheme) DarkColors else LightColors
+    val colors = when (themeMode) {
+        ThemeMode.Amoled -> AmoledColors
+        else -> if (darkTheme) DarkColors else LightColors
+    }
     val colorScheme = if (darkTheme) {
         darkColorScheme(
             primary = colors.primary,

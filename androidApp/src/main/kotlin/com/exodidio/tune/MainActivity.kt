@@ -80,7 +80,11 @@ class MainActivity : ComponentActivity() {
         MainViewModel.Factory(ThemePreferences(applicationContext))
     }
     private val tracksViewModel: LibraryTracksViewModel by viewModels {
-        LibraryTracksViewModel.Factory(AndroidSyncRuntime.syncStore(), AndroidPlaybackRuntime.controller())
+        LibraryTracksViewModel.Factory(
+            AndroidSyncRuntime.syncStore(),
+            AndroidPlaybackRuntime.controller(),
+            com.exodidio.tune.player.PlaybackPreferences(applicationContext).hideShortAudio,
+        )
     }
     private val insightViewModel: InsightViewModel by viewModels {
         InsightViewModel.Factory(
@@ -108,7 +112,10 @@ class MainActivity : ComponentActivity() {
         LibraryPlaylistsViewModel.Factory(applicationContext, AndroidSyncRuntime.syncStore())
     }
     private val searchViewModel: LibrarySearchViewModel by viewModels {
-        LibrarySearchViewModel.Factory(AndroidSyncRuntime.syncStore())
+        LibrarySearchViewModel.Factory(
+            AndroidSyncRuntime.syncStore(),
+            com.exodidio.tune.player.PlaybackPreferences(applicationContext).hideShortAudio,
+        )
     }
     private val albumDetailsViewModel: AlbumDetailsViewModel by viewModels {
         AlbumDetailsViewModel.Factory(AndroidSyncRuntime.syncStore(), AndroidPlaybackRuntime.controller())
@@ -188,6 +195,7 @@ class MainActivity : ComponentActivity() {
                 initialValue = com.exodidio.tune.player.CrossfadeSettings(0, 4, true),
             )
             val showFullscreenQualityBadge by playbackPreferences.showFullscreenQualityBadge.collectAsStateWithLifecycle(initialValue = true)
+            val hideShortAudio by playbackPreferences.hideShortAudio.collectAsStateWithLifecycle(initialValue = false)
             val normalizationSettings by normalizationPreferences.settings.collectAsStateWithLifecycle(
                 initialValue = com.exodidio.tune.player.NormalizationSettings(),
             )
@@ -388,6 +396,8 @@ class MainActivity : ComponentActivity() {
                     onBlendArtworkDuringCrossfadeChanged = playbackController::setBlendArtworkDuringCrossfade,
                     showFullscreenQualityBadge = showFullscreenQualityBadge,
                     onShowFullscreenQualityBadgeChanged = { enabled -> preferenceScope.launch { playbackPreferences.setShowFullscreenQualityBadge(enabled) } },
+                    hideShortAudio = hideShortAudio,
+                    onHideShortAudioChanged = { enabled -> preferenceScope.launch { playbackPreferences.setHideShortAudio(enabled) } },
                     normalizationAvailable = normalizationAvailable,
                     normalization = normalizationSettings,
                     onNormalizationChanged = { settings -> preferenceScope.launch { normalizationPreferences.update { settings } } },
