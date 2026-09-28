@@ -8,3 +8,6 @@
 - Setup: workspace /tmp/opencode/sdd-v08; impl/v1.1.0-round2 created at 269bd4e.
 ## Round2 batch 1 completion
 - Approved. Parked minors: private-val consistency, negative-duration keep, Amoled scrim check on device.
+## Round2 batch 2 completion
+- Fix round: all 6 ADDRESSED, re-review PASS.
+- Batch 2: complete.
