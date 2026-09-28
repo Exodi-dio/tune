@@ -189,7 +189,7 @@ class MainActivity : ComponentActivity() {
             val normalizationPreferences = remember { com.exodidio.tune.player.NormalizationPreferences(applicationContext) }
             val equalizerPreferences = remember { com.exodidio.tune.player.EqualizerPreferences(applicationContext) }
             val lyricsPreferences = remember { LyricsPreferences(applicationContext) }
-            val lyricsService = remember { AndroidLyricsService(AndroidSyncRuntime.syncStore()) }
+            val lyricsService = remember(applicationContext) { AndroidLyricsService(AndroidSyncRuntime.syncStore(), appContext = applicationContext) }
             val preferenceScope = rememberCoroutineScope()
             val crossfadeSettings by playbackPreferences.settings.collectAsStateWithLifecycle(
                 initialValue = com.exodidio.tune.player.CrossfadeSettings(0, 4, true),
