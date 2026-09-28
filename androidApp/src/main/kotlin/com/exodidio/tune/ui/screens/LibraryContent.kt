@@ -52,6 +52,7 @@ internal fun LibraryContent(
     onGenresSelected: (() -> Unit)? = null,
     onComposersSelected: (() -> Unit)? = null,
     onPlaylistsSelected: (() -> Unit)? = null,
+    onDuplicatesSelected: (() -> Unit)? = null,
     onTrackContextBottomSheet: (TrackContextBottomSheetRequest) -> Unit = {},
 ) {
     val colors = LocalTuneColors.current
@@ -105,6 +106,12 @@ internal fun LibraryContent(
                         leadingSymbol = MaterialSymbols.QueueMusic,
                         leadingIconTint = colors.primary,
                         onClick = onPlaylistsSelected,
+                    ),
+                    ActionListItem(
+                        labelRes = R.string.library_duplicates,
+                        leadingSymbol = MaterialSymbols.Duplicates,
+                        leadingIconTint = colors.primary,
+                        onClick = onDuplicatesSelected,
                     ),
                 ),
                 containerStyle = ActionListContainerStyle.Plain,

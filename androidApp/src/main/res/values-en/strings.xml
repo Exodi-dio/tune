@@ -366,5 +366,12 @@
     <string name="player_romanization_error">Romanization failed. Toggle off and on to retry.</string>
     <string name="player_romanization_hint">Offline romanization: Chinese and Korean.</string>
     <string name="player_romanization_mandarin">Han-only lyrics default to Mandarin. Names may have different readings.</string>
+    <string name="library_duplicates">Duplicates</string>
+    <string name="duplicates_empty_title">No duplicates found</string>
+    <string name="duplicates_empty_description">Tracks with the same title, artist, and duration will appear here.</string>
+    <string name="duplicates_keep_best">Keep best</string>
+    <string name="duplicates_dismiss">Dismiss</string>
+    <string name="duplicates_kept_badge">Kept</string>
+    <string name="track_context_delete_from_device">Delete files from device</string>
 </resources>
 

@@ -109,6 +109,8 @@ object MaterialSymbols {
     const val StylusFountainPen = "stylus_fountain_pen"
     const val Edit = "edit"
     const val Delete = "delete"
+    /** Duplicate copies entry. Aliases the proven "group" glyph (new ligatures risk tofu). */
+    const val Duplicates = "group"
 }
 
 @Composable

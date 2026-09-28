@@ -79,6 +79,7 @@ import com.exodidio.tune.ui.screens.LibraryGenresContent
 import com.exodidio.tune.ui.screens.LibraryGenresUiState
 import com.exodidio.tune.ui.screens.LibraryComposersContent
 import com.exodidio.tune.ui.screens.LibraryComposersUiState
+import com.exodidio.tune.ui.screens.LibraryDuplicatesContent
 import com.exodidio.tune.ui.screens.LibraryPlaylistsContent
 import com.exodidio.tune.ui.screens.LibraryPlaylistsUiState
 import com.exodidio.tune.ui.screens.PlaylistDetailsContent
@@ -138,6 +139,7 @@ internal fun AppDestinationContent(
     genresListState: LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
     composersListState: LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
     playlistsListState: LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
+    duplicatesListState: LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
     selectedAlbumId: String? = null,
     selectedPlaylistId: String? = null,
     selectedArtistId: String? = null,
@@ -612,6 +614,20 @@ internal fun AppDestinationContent(
                                 hazeState = hazeState,
                                 playbackQueue = playbackQueue,
                             )
+                            AppStackPage.LibraryDuplicates -> LibraryDuplicatesContent(
+                                tracks = tracksUiState.tracks,
+                                listState = duplicatesListState,
+                                contentPadding = contentPadding,
+                                modifier = Modifier.fillMaxSize(),
+                                playbackQueue = playbackQueue,
+                                onTrackClick = { track -> onTrackClick(track.id) },
+                                onTrackPlayNext = { track -> onTrackPlayNext(track.id) },
+                                onTrackAddToQueue = { track -> onTrackAddToQueue(track.id) },
+                                onTrackFavoriteToggle = { track, favorite -> onTrackFavoriteToggle(track.id, favorite) },
+                                onTrackAlbumClick = { track -> onIntent(AppIntent.OpenAlbumDetails(track.albumId)) },
+                                onTrackArtistClick = { artist -> onIntent(AppIntent.OpenArtistDetails(artist.id)) },
+                                onTrackContextBottomSheet = onTrackContextBottomSheet,
+                            )
                             AppStackPage.LibraryPlaylists -> LibraryPlaylistsContent(
                                 uiState = playlistsUiState,
                                 listState = playlistsListState,
@@ -701,6 +717,9 @@ internal fun AppDestinationContent(
                                 },
                                 onPlaylistsSelected = {
                                     onIntent(AppIntent.OpenPage(AppStackPage.LibraryPlaylists))
+                                },
+                                onDuplicatesSelected = {
+                                    onIntent(AppIntent.OpenPage(AppStackPage.LibraryDuplicates))
                                 },
                             )
                             }

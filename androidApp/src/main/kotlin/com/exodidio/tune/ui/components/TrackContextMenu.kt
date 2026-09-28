@@ -130,6 +130,7 @@ fun TrackContextMenu(
     onGoToAlbum: (LibraryTrack) -> Unit = {},
     onGoToArtist: (TrackContextArtist) -> Unit = {},
     onBottomSheetRequested: ((TrackContextBottomSheetRequest) -> Unit)? = null,
+    onDeleteFromDevice: ((LibraryTrack) -> Unit)? = null,
     onCloseFullscreenThen: ((() -> Unit) -> Unit) = { action -> action() },
     playlists: List<LibraryPlaylist> = emptyList(),
     onPlaylistMembershipChange: (playlistId: String, trackIds: List<String>, add: Boolean) -> Unit = { _, _, _ -> },
@@ -204,6 +205,10 @@ fun TrackContextMenu(
             if (actions.removeFromPlaylist) {
                 if (hasNavigationActions) add(ContextActionMenuEntry.Divider)
                 add(ContextActionMenuEntry.Action(stringResource(R.string.track_context_remove_from_playlist), MaterialSymbols.PlaylistRemove, destructive = true) { closeAfter { onRemoveFromPlaylist(track) } })
+            }
+            if (onDeleteFromDevice != null) {
+                add(ContextActionMenuEntry.Divider)
+                add(ContextActionMenuEntry.Action(stringResource(R.string.track_context_delete_from_device), MaterialSymbols.Delete, destructive = true) { closeAfter { onDeleteFromDevice(track) } })
             }
         }
         ContextActionMenu(entries)

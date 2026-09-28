@@ -5,6 +5,7 @@ import com.exodidio.tune.sync.metadataObject
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.math.roundToInt
 
 /**
  * Duplicates grouping engine.
@@ -31,9 +32,14 @@ data class DuplicateGroup(
 
 internal fun normalizeDuplicateText(value: String): String = value.trim().lowercase()
 
-/** Duration in whole seconds from metadata `duration`, or null when absent/unparseable. */
+/**
+ * Duration in whole seconds from metadata `duration`, or null when
+ * absent/unparseable. Accepts float strings (e.g. "200.5", rounded to the
+ * nearest second) because scanners may emit fractional durations.
+ */
 fun duplicateDurationSec(track: LibraryTrack): Int? =
-    track.metadataObject()?.get("duration")?.jsonPrimitive?.contentOrNull?.toIntOrNull()
+    track.metadataObject()?.get("duration")?.jsonPrimitive?.contentOrNull
+        ?.trim()?.toDoubleOrNull()?.roundToInt()
 
 private fun metadataInt(track: LibraryTrack, vararg keys: String): Int? {
     val metadata = track.metadataObject() ?: return null
@@ -144,3 +150,14 @@ fun chooseKeepBest(group: DuplicateGroup, tracksById: Map<String, LibraryTrack>)
                 .thenBy { it.first },
         )
         .firstOrNull()?.first
+
+/**
+ * Ids to remove from the LIBRARY ONLY when keeping the best copy of [group]:
+ * every grouped id except the [chooseKeepBest] winner. Pure computation over
+ * ids — it never touches files, the store, or its inputs. Unknown groups yield
+ * an empty list (nothing to remove).
+ */
+fun keepBestRemovalIds(group: DuplicateGroup, tracksById: Map<String, LibraryTrack>): List<String> {
+    val keep = chooseKeepBest(group, tracksById) ?: return emptyList()
+    return group.trackIds.filter { it != keep }
+}

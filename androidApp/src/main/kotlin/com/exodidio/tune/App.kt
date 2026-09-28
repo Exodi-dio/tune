@@ -180,6 +180,7 @@ internal fun App(
             LazyListState()
         }
         val playlistsListState = remember(uiState.pageStateGenerationFor(AppDestination.Library, AppStackPage.LibraryPlaylists)) { LazyListState() }
+        val duplicatesListState = remember(uiState.pageStateGenerationFor(AppDestination.Library, AppStackPage.LibraryDuplicates)) { LazyListState() }
         homeListState.resetAfterPagePop(uiState.pageStateGenerationFor(AppDestination.Home, AppStackPage.Root))
         insightListState.resetAfterPagePop(uiState.pageStateGenerationFor(AppDestination.Insight, AppStackPage.Root))
         libraryListState.resetAfterPagePop(uiState.pageStateGenerationFor(AppDestination.Library, AppStackPage.Root))
@@ -192,6 +193,7 @@ internal fun App(
         genresListState.resetAfterPagePop(uiState.pageStateGenerationFor(AppDestination.Library, AppStackPage.LibraryGenres))
         composersListState.resetAfterPagePop(uiState.pageStateGenerationFor(AppDestination.Library, AppStackPage.LibraryComposers))
         playlistsListState.resetAfterPagePop(uiState.pageStateGenerationFor(AppDestination.Library, AppStackPage.LibraryPlaylists))
+        duplicatesListState.resetAfterPagePop(uiState.pageStateGenerationFor(AppDestination.Library, AppStackPage.LibraryDuplicates))
         val coroutineScope = rememberCoroutineScope()
         var previousDestination by remember { mutableStateOf(uiState.selectedDestination) }
         var previousHeaderWasBlurred by remember { mutableStateOf(false) }
@@ -272,7 +274,7 @@ internal fun App(
         var createPlaylistForTracks by remember { mutableStateOf<List<String>?>(null) }
         BackHandler(enabled = showBack) { onIntent(AppIntent.NavigateBack) }
 
-        val isContentScrolled by remember(uiState.selectedDestination, currentPage, homeListState, insightListState, libraryListState, tracksListState, artistsListState, albumsListState, artistDetailsListState, genreDetailsListState, composerDetailsListState, genresListState, composersListState, playlistsListState) {
+        val isContentScrolled by remember(uiState.selectedDestination, currentPage, homeListState, insightListState, libraryListState, tracksListState, artistsListState, albumsListState, artistDetailsListState, genreDetailsListState, composerDetailsListState, genresListState, composersListState, playlistsListState, duplicatesListState) {
             derivedStateOf {
                 when {
                     uiState.selectedDestination == AppDestination.Home && currentPage == AppStackPage.Root ->
@@ -299,6 +301,8 @@ internal fun App(
                         composersListState.firstVisibleItemIndex > 0 || composersListState.firstVisibleItemScrollOffset > 0
                     currentPage == AppStackPage.LibraryPlaylists ->
                         playlistsListState.firstVisibleItemIndex > 0 || playlistsListState.firstVisibleItemScrollOffset > 0
+                    currentPage == AppStackPage.LibraryDuplicates ->
+                        duplicatesListState.firstVisibleItemIndex > 0 || duplicatesListState.firstVisibleItemScrollOffset > 0
                     uiState.selectedDestination == AppDestination.Settings -> settingsContentScrolled
                     else -> false
                 }
@@ -334,6 +338,7 @@ internal fun App(
                 genresListState = genresListState,
                 composersListState = composersListState,
                 playlistsListState = playlistsListState,
+                duplicatesListState = duplicatesListState,
                 selectedAlbumId = uiState.selectedAlbumId,
                 selectedPlaylistId = uiState.selectedPlaylistId,
                 selectedArtistId = uiState.selectedArtistId,

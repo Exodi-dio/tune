@@ -159,7 +159,7 @@ class MainActivity : ComponentActivity() {
             }
             val tracksUiState by if (
                 activeDestination == AppDestination.Library &&
-                (activePage == AppStackPage.Root || activePage == AppStackPage.LibraryTracks)
+                (activePage == AppStackPage.Root || activePage == AppStackPage.LibraryTracks || activePage == AppStackPage.LibraryDuplicates)
             ) {
                 tracksViewModel.uiState.collectAsStateWithLifecycle()
             } else {
