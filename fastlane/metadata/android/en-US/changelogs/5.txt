@@ -1,0 +1,1 @@
+Tune 1.0.0: first official launch with per-device builds and in-app updates.

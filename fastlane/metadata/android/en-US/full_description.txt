@@ -1,0 +1,9 @@
+Tune is an Apple Music-inspired local music player for Android.
+It plays the music stored on your device. There is no account, no
+streaming service, no sync, and no advertising or analytics.
+
+Browse and search tracks, artists, albums, genres, composers, and
+playlists. Build queues with shuffle and repeat, find synced lyrics,
+tune the sound with the equalizer, and give playlists and artists your
+own cover art. The interface follows the system theme and speaks twelve
+languages.
