@@ -88,22 +88,27 @@ internal class LocalLibraryScanner(
         } else {
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         }
-        val projection = arrayOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.DISPLAY_NAME,
-            MediaStore.Audio.Media.TITLE,
-            MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.ALBUM,
-            MediaStore.Audio.Media.YEAR,
-            MediaStore.Audio.Media.TRACK,
-            MediaStore.Audio.Media.DISC_NUMBER,
-            MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.SIZE,
-            MediaStore.Audio.Media.DATE_ADDED,
-            MediaStore.Audio.Media.COMPOSER,
-            MediaStore.Audio.Media.MIME_TYPE,
-            MediaStore.Audio.Media.DATA,
-        )
+        val projection = buildList {
+            add(MediaStore.Audio.Media._ID)
+            add(MediaStore.Audio.Media.DISPLAY_NAME)
+            add(MediaStore.Audio.Media.TITLE)
+            add(MediaStore.Audio.Media.ARTIST)
+            add(MediaStore.Audio.Media.ALBUM)
+            add(MediaStore.Audio.Media.YEAR)
+            add(MediaStore.Audio.Media.TRACK)
+            add(MediaStore.Audio.Media.DISC_NUMBER)
+            add(MediaStore.Audio.Media.DURATION)
+            add(MediaStore.Audio.Media.SIZE)
+            add(MediaStore.Audio.Media.DATE_ADDED)
+            add(MediaStore.Audio.Media.COMPOSER)
+            add(MediaStore.Audio.Media.MIME_TYPE)
+            add(MediaStore.Audio.Media.DATA)
+            // F3: DATA is null on scoped storage (Android 10+); RELATIVE_PATH +
+            // DISPLAY_NAME (MediaStore.MediaColumns) are the supported location
+            // fallback. Column only exists on API 29+, so guard the projection;
+            // reads below stay safe via getColumnIndex checks.
+            if (Build.VERSION.SDK_INT >= 29) add(MediaStore.Audio.Media.RELATIVE_PATH)
+        }.toTypedArray()
         val rows = mutableListOf<MediaRow>()
         context.contentResolver.query(
             collection,
@@ -145,6 +150,11 @@ internal class LocalLibraryScanner(
                         label = null,
                         copyright = null,
                         dataPath = str(MediaStore.Audio.Media.DATA)?.takeIf { it.isNotBlank() },
+                        relativePath = if (Build.VERSION.SDK_INT >= 29) {
+                            str(MediaStore.Audio.Media.RELATIVE_PATH)?.takeIf { it.isNotBlank() }
+                        } else {
+                            null
+                        },
                     ),
                 )
             }

@@ -3,6 +3,7 @@ package com.exodidio.tune.ui.screens
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -166,7 +167,21 @@ internal fun MusicSyncContent(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f),
                         )
-                        TextButton(onClick = { scope.launch { scanFolders.removeFolder(folder) } }) {
+                        TextButton(onClick = {
+                            // F5: release the persisted tree grant so removed
+                            // folders do not leak URI permissions. Best-effort:
+                            // file-path entries have nothing to release.
+                            if (folder.startsWith("content://", ignoreCase = true)) {
+                                try {
+                                    context.contentResolver.releasePersistableUriPermission(
+                                        Uri.parse(folder),
+                                        Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                                    )
+                                } catch (_: Exception) {
+                                }
+                            }
+                            scope.launch { scanFolders.removeFolder(folder) }
+                        }) {
                             Text(text = stringResource(R.string.music_sync_folder_remove))
                         }
                     }

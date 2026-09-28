@@ -35,6 +35,7 @@ internal data class MediaRow(
     val label: String?,
     val copyright: String?,
     val dataPath: String? = null,
+    val relativePath: String? = null,
 )
 
 /** Validated scan result. Blank text stays blank: display layers fall back. */
