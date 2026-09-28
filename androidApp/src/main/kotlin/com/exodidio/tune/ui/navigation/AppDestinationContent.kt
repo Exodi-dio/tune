@@ -287,6 +287,8 @@ internal fun AppDestinationContent(
     val onBlendArtworkDuringCrossfadeChanged = settings.onBlendArtworkDuringCrossfadeChanged
     val showFullscreenQualityBadge = settings.showFullscreenQualityBadge
     val onShowFullscreenQualityBadgeChanged = settings.onShowFullscreenQualityBadgeChanged
+    val hideShortAudio = settings.hideShortAudio
+    val onHideShortAudioChanged = settings.onHideShortAudioChanged
     val normalizationAvailable = settings.normalizationAvailable
     val normalization = settings.normalization
     val onNormalizationChanged = settings.onNormalizationChanged
@@ -430,6 +432,8 @@ internal fun AppDestinationContent(
                             AppStackPage.SettingsPlayback -> PlaybackSettingsContent(
                                 showFullscreenQualityBadge = showFullscreenQualityBadge,
                                 onShowFullscreenQualityBadgeChanged = onShowFullscreenQualityBadgeChanged,
+                                hideShortAudio = hideShortAudio,
+                                onHideShortAudioChanged = onHideShortAudioChanged,
                                 onSongTransitionSelected = {
                                     onIntent(AppIntent.OpenPage(AppStackPage.SettingsSongTransition))
                                 },

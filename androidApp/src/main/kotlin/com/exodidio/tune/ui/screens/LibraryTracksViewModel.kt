@@ -3,19 +3,24 @@ package com.exodidio.tune.ui.screens
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.util.Log
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.Dispatchers
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import com.exodidio.tune.sync.AndroidLibrarySyncStore
 import com.exodidio.tune.player.PlaybackController
 import com.exodidio.tune.player.PlaybackRequest
 import com.exodidio.tune.player.PlaybackLogTag
 import com.exodidio.tune.player.MaxPlaybackQueueSize
 import com.exodidio.tune.sync.LibraryTrack
+import com.exodidio.tune.sync.metadataObject
 import com.exodidio.tune.ui.libraryAlphabeticalComparator
 import kotlin.random.Random
 
@@ -50,14 +55,16 @@ data class HomeUiState(
 internal class LibraryTracksViewModel(
     syncStore: AndroidLibrarySyncStore,
     private val playbackController: PlaybackController,
+    hideShortAudio: Flow<Boolean> = flowOf(false),
 ) : ViewModel() {
     class Factory(
         private val syncStore: AndroidLibrarySyncStore,
         private val playbackController: PlaybackController,
+        private val hideShortAudio: Flow<Boolean> = flowOf(false),
     ) : androidx.lifecycle.ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return LibraryTracksViewModel(syncStore, playbackController) as T
+            return LibraryTracksViewModel(syncStore, playbackController, hideShortAudio) as T
         }
     }
 
@@ -85,12 +92,14 @@ internal class LibraryTracksViewModel(
         sortOptionFlow,
         sortOrderFlow,
         filterQueryFlow,
-    ) { rawTracks, option, order, query ->
-        val filtered = rawTracks.filter { track ->
+        hideShortAudio,
+    ) { rawTracks, option, order, query, hideShort ->
+        val visible = filterShortAudioTracks(rawTracks, hideShort)
+        val filtered = visible.filter { track ->
             matchesVisibleTrackTextFilter(query, track)
         }
         val sorted = sortTracks(filtered, option, order)
-        val recent = rawTracks
+        val recent = visible
             .sortedWith(compareByDescending<LibraryTrack> { it.createdAt }.thenBy(libraryAlphabeticalComparator) { it.sortTitle }.thenBy { it.id })
             .take(50)
         LibraryTracksUiState(
@@ -172,6 +181,31 @@ internal fun forgottenTracks(tracks: List<LibraryTrack>): List<LibraryTrack> = t
 /** Keeps track search aligned with the title and artist labels rendered in each row. */
 internal fun matchesVisibleTrackTextFilter(query: String, track: LibraryTrack): Boolean =
     matchesLibraryTextFilter(query, track.title, track.artists)
+
+/** Tracks shorter than this are hidden while the short-audio filter is enabled. */
+internal const val HideShortAudioThresholdSeconds = 40L
+
+/**
+ * Tolerantly reads a track's metadata `duration` in seconds. Both int and
+ * float strings are accepted, mirroring the track-info parse convention.
+ * Null means unknown: unknown durations are never hidden.
+ */
+internal fun shortAudioDurationSeconds(track: LibraryTrack): Long? =
+    (track.metadataObject()?.get("duration") as? JsonPrimitive)
+        ?.contentOrNull?.toDoubleOrNull()?.takeIf { it.isFinite() }?.toLong()?.coerceAtLeast(0L)
+
+/** Unknown durations are never treated as short audio. */
+internal fun isShortAudioTrack(
+    track: LibraryTrack,
+    thresholdSeconds: Long = HideShortAudioThresholdSeconds,
+): Boolean = shortAudioDurationSeconds(track)?.let { it < thresholdSeconds } == true
+
+internal fun filterShortAudioTracks(
+    tracks: List<LibraryTrack>,
+    hideEnabled: Boolean,
+    thresholdSeconds: Long = HideShortAudioThresholdSeconds,
+): List<LibraryTrack> =
+    if (!hideEnabled) tracks else tracks.filterNot { isShortAudioTrack(it, thresholdSeconds) }
 
 internal fun playbackRequestFor(tracks: List<LibraryTrack>, trackId: String): PlaybackRequest? {
     val startIndex = tracks.indexOfFirst { it.id == trackId }

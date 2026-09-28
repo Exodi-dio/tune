@@ -16,4 +16,15 @@ class ThemeModeTest {
             assertEquals(expected, ThemeMode.fromStorage(expected.storageValue))
         }
     }
+
+    @Test
+    fun `restores amoled theme from storage`() {
+        assertEquals(ThemeMode.Amoled, ThemeMode.fromStorage("amoled"))
+    }
+
+    @Test
+    fun `amoled theme round-trips through its storage value`() {
+        assertEquals("amoled", ThemeMode.Amoled.storageValue)
+        assertEquals(ThemeMode.Amoled, ThemeMode.fromStorage(ThemeMode.Amoled.storageValue))
+    }
 }
