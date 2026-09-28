@@ -80,6 +80,8 @@ import com.exodidio.tune.ui.screens.LibraryGenresUiState
 import com.exodidio.tune.ui.screens.LibraryComposersContent
 import com.exodidio.tune.ui.screens.LibraryComposersUiState
 import com.exodidio.tune.ui.screens.LibraryDuplicatesContent
+import com.exodidio.tune.ui.screens.visibleTracksAfterRemoval
+import com.exodidio.tune.ui.screens.visiblePlaybackQueueAfterRemoval
 import com.exodidio.tune.ui.screens.LibraryPlaylistsContent
 import com.exodidio.tune.ui.screens.LibraryPlaylistsUiState
 import com.exodidio.tune.ui.screens.PlaylistDetailsContent
@@ -152,6 +154,8 @@ internal fun AppDestinationContent(
     onTrackAddToQueue: (String) -> Unit,
     onTrackFavoriteToggle: (String, Boolean) -> Unit,
     onTrackContextBottomSheet: (com.exodidio.tune.ui.components.TrackContextBottomSheetRequest) -> Unit = {},
+    removedTrackIds: Set<String> = emptySet(),
+    onTracksRemovedFromLibrary: (List<String>) -> Unit = {},
     onAlbumHeroColorChanged: (Color) -> Unit = {},
     onSettingsContentScrolled: (Boolean) -> Unit = {},
     onContentScroll: (ContentScrollDelta) -> Unit = {},
@@ -161,17 +165,51 @@ internal fun AppDestinationContent(
     val insightUiState = destinations.insight.state
     val library = destinations.library
     val tracksUiState = library.tracks.state
+    // F1 round 2: REAL library removal, centralized choke point. No per-track
+    // delete/hide mutation exists in the store (library is scan-replaced), so the
+    // App-level hoisted `removedTrackIds` set filters losers out of EVERY surface
+    // that can show a track: tracks + recents, home lists, search (all categories
+    // keep entity rows — keep-best always keeps one copy — but their track lists
+    // are filtered), albums' internal track list, all details track lists
+    // (album/artist/genre/composer/playlist), and the queue snapshot. Favorites
+    // derive from the track favorite flag, so filtered tracks cover them too.
+    // In-memory only by design: a rescan resurrects removed copies (files are
+    // never deleted) — see `duplicates_rescan_note`.
+    val visibleTracks = visibleTracksAfterRemoval(tracksUiState.tracks, removedTrackIds)
+    val visibleTracksUiState = if (removedTrackIds.isEmpty()) tracksUiState else tracksUiState.copy(
+        tracks = visibleTracks,
+        recentTracks = visibleTracksAfterRemoval(tracksUiState.recentTracks, removedTrackIds),
+    )
+    // Playing-track-removed re-anchors to the next valid track (or clean empty
+    // state) — never a stale -1 on a non-empty queue.
+    val visiblePlaybackQueue = visiblePlaybackQueueAfterRemoval(playbackQueue, removedTrackIds)
     val artistsUiState = library.artists.state
-    val albumsUiState = library.albums.state
+    val albumsUiState = if (removedTrackIds.isEmpty()) library.albums.state else library.albums.state.copy(
+        tracks = visibleTracksAfterRemoval(library.albums.state.tracks, removedTrackIds),
+    )
     val genresUiState = library.genres.state
     val composersUiState = library.composers.state
     val playlistsUiState = library.playlists.state
-    val searchUiState = library.search.state
-    val albumDetailsUiState = library.details.albums
-    val playlistDetailsUiState = library.details.playlists
-    val artistDetailsUiState = library.details.artists
-    val genreDetailsUiState = library.details.genres
-    val composerDetailsUiState = library.details.composers
+    val searchUiState = if (removedTrackIds.isEmpty()) library.search.state else library.search.state.copy(
+        tracks = visibleTracksAfterRemoval(library.search.state.tracks, removedTrackIds),
+        allTracks = visibleTracksAfterRemoval(library.search.state.allTracks, removedTrackIds),
+    )
+    val albumDetailsUiState = if (removedTrackIds.isEmpty()) library.details.albums else library.details.albums.copy(
+        tracks = visibleTracksAfterRemoval(library.details.albums.tracks, removedTrackIds),
+    )
+    val playlistDetailsUiState = if (removedTrackIds.isEmpty()) library.details.playlists else library.details.playlists.copy(
+        tracks = visibleTracksAfterRemoval(library.details.playlists.tracks, removedTrackIds),
+        allTracks = visibleTracksAfterRemoval(library.details.playlists.allTracks, removedTrackIds),
+    )
+    val artistDetailsUiState = if (removedTrackIds.isEmpty()) library.details.artists else library.details.artists.copy(
+        tracks = visibleTracksAfterRemoval(library.details.artists.tracks, removedTrackIds),
+    )
+    val genreDetailsUiState = if (removedTrackIds.isEmpty()) library.details.genres else library.details.genres.copy(
+        tracks = visibleTracksAfterRemoval(library.details.genres.tracks, removedTrackIds),
+    )
+    val composerDetailsUiState = if (removedTrackIds.isEmpty()) library.details.composers else library.details.composers.copy(
+        tracks = visibleTracksAfterRemoval(library.details.composers.tracks, removedTrackIds),
+    )
     val selectedAlbumDetails = remember(albumDetailsUiState, selectedAlbumId) {
         selectedAlbumId?.let { albumDetailsUiStateFor(albumDetailsUiState, it) } ?: AlbumDetailsUiState()
     }
@@ -331,11 +369,11 @@ internal fun AppDestinationContent(
                                 listState = homeListState,
                                 contentPadding = contentPadding,
                                 isLoaded = homeUiState.isLoaded,
-                                keepListeningTracks = homeUiState.keepListeningTracks,
-                                mostPlayedTracks = homeUiState.mostPlayedTracks,
-                                forgottenTracks = homeUiState.forgottenTracks,
+                                keepListeningTracks = visibleTracksAfterRemoval(homeUiState.keepListeningTracks, removedTrackIds),
+                                mostPlayedTracks = visibleTracksAfterRemoval(homeUiState.mostPlayedTracks, removedTrackIds),
+                                forgottenTracks = visibleTracksAfterRemoval(homeUiState.forgottenTracks, removedTrackIds),
                                 onTrackClick = onHomeTrackClick,
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                                 onTrackPlayNext = { track -> onTrackPlayNext(track.id) },
                                 onTrackAddToQueue = { track -> onTrackAddToQueue(track.id) },
                                 onTrackFavoriteToggle = { track, favorite -> onTrackFavoriteToggle(track.id, favorite) },
@@ -477,7 +515,7 @@ internal fun AppDestinationContent(
                                 onArtistClick = { onIntent(AppIntent.OpenArtistDetails(it)) },
                                 onPlaylistClick = { onIntent(AppIntent.OpenPlaylistDetails(it)) },
                                 onComposerClick = { onIntent(AppIntent.OpenComposerDetails(it)) },
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                                 onTrackPlayNext = { onTrackPlayNext(it.id) },
                                 onTrackAddToQueue = { onTrackAddToQueue(it.id) },
                                 onTrackFavoriteToggle = { track, favorite -> onTrackFavoriteToggle(track.id, favorite) },
@@ -499,7 +537,7 @@ internal fun AppDestinationContent(
                                 onArtistUpdate = onArtistUpdate,
                                 onTrackContextBottomSheet = onArtistTrackContextBottomSheet,
                                 hazeState = hazeState,
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                             )
                             AppStackPage.ArtistDetails -> ArtistDetailsContent(
                                 uiState = selectedArtistDetails,
@@ -516,7 +554,7 @@ internal fun AppDestinationContent(
                                 onArtistUpdate = onArtistUpdate,
                                 onTrackContextBottomSheet = onArtistTrackContextBottomSheet,
                                 onAlbumClick = { album -> onIntent(AppIntent.OpenAlbumDetails(album.id)) },
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                             )
                             AppStackPage.GenreDetails -> GenreDetailsContent(
                                 uiState = selectedGenreDetails,
@@ -532,7 +570,7 @@ internal fun AppDestinationContent(
                                 onAddToQueue = onGenreAddToQueue,
                                 onTrackContextBottomSheet = onGenreTrackContextBottomSheet,
                                 onAlbumClick = { album -> onIntent(AppIntent.OpenAlbumDetails(album.id)) },
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                             )
                             AppStackPage.ComposerDetails -> ComposerDetailsContent(
                                 uiState = selectedComposerDetails,
@@ -548,7 +586,7 @@ internal fun AppDestinationContent(
                                 onAddToQueue = onComposerAddToQueue,
                                 onTrackContextBottomSheet = onComposerTrackContextBottomSheet,
                                 onAlbumClick = { album -> onIntent(AppIntent.OpenAlbumDetails(album.id)) },
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                             )
                             AppStackPage.LibraryAlbums -> LibraryAlbumsContent(
                                 uiState = albumsUiState,
@@ -557,7 +595,7 @@ internal fun AppDestinationContent(
                                 modifier = Modifier.fillMaxSize(),
                                 onAlbumClick = { album -> onIntent(AppIntent.OpenAlbumDetails(album.id)) },
                                 hazeState = hazeState,
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                                 onAlbumPlay = onAlbumPlay,
                                 onPlayAll = onAlbumsPlayAll,
                                 onAlbumPlayNext = onAlbumPlayNext,
@@ -576,7 +614,7 @@ internal fun AppDestinationContent(
                                 onPlay = { selectedAlbumId?.let { onAlbumPlay(it, false) } },
                                 onShuffle = { selectedAlbumId?.let { onAlbumPlay(it, true) } },
                                 onTrackClick = { trackId -> selectedAlbumId?.let { onAlbumTrackPlay(it, trackId) } },
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                                 onTrackPlayNext = onTrackPlayNext,
                                 onTrackAddToQueue = onTrackAddToQueue,
                                 onTrackFavoriteToggle = onTrackFavoriteToggle,
@@ -598,7 +636,7 @@ internal fun AppDestinationContent(
                                 onGenreAddToQueue = onGenreAddToQueue,
                                 onTrackContextBottomSheet = onGenreTrackContextBottomSheet,
                                 hazeState = hazeState,
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                             )
                             AppStackPage.LibraryComposers -> LibraryComposersContent(
                                 uiState = composersUiState,
@@ -612,14 +650,14 @@ internal fun AppDestinationContent(
                                 onComposerAddToQueue = onComposerAddToQueue,
                                 onTrackContextBottomSheet = onComposerTrackContextBottomSheet,
                                 hazeState = hazeState,
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                             )
                             AppStackPage.LibraryDuplicates -> LibraryDuplicatesContent(
-                                tracks = tracksUiState.tracks,
+                                tracks = visibleTracks,
                                 listState = duplicatesListState,
                                 contentPadding = contentPadding,
                                 modifier = Modifier.fillMaxSize(),
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                                 onTrackClick = { track -> onTrackClick(track.id) },
                                 onTrackPlayNext = { track -> onTrackPlayNext(track.id) },
                                 onTrackAddToQueue = { track -> onTrackAddToQueue(track.id) },
@@ -627,6 +665,7 @@ internal fun AppDestinationContent(
                                 onTrackAlbumClick = { track -> onIntent(AppIntent.OpenAlbumDetails(track.albumId)) },
                                 onTrackArtistClick = { artist -> onIntent(AppIntent.OpenArtistDetails(artist.id)) },
                                 onTrackContextBottomSheet = onTrackContextBottomSheet,
+                                onTracksRemovedFromLibrary = onTracksRemovedFromLibrary,
                             )
                             AppStackPage.LibraryPlaylists -> LibraryPlaylistsContent(
                                 uiState = playlistsUiState,
@@ -649,7 +688,7 @@ internal fun AppDestinationContent(
                                 onPlay = { selectedPlaylistId?.let { onPlaylistPlay(it, false) } },
                                 onShuffle = { selectedPlaylistId?.let { onPlaylistPlay(it, true) } },
                                 onTrackClick = { trackId -> selectedPlaylistId?.let { onPlaylistTrackPlay(it, trackId) } },
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                                 onTrackPlayNext = onTrackPlayNext,
                                 onTrackAddToQueue = onTrackAddToQueue,
                                 onTrackFavoriteToggle = onTrackFavoriteToggle,
@@ -666,14 +705,14 @@ internal fun AppDestinationContent(
                                 },
                             )
                             AppStackPage.LibraryTracks -> LibraryTracksContent(
-                                uiState = tracksUiState,
+                                uiState = visibleTracksUiState,
                                 onSortOptionSelected = onSortOptionSelected,
                                 onToggleSortOrder = onToggleSortOrder,
                                 listState = tracksListState,
                                 contentPadding = contentPadding,
                                 modifier = Modifier.fillMaxSize(),
                                 onTrackClick = { track -> onTrackClick(track.id) },
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                                 onTrackPlayNext = { track -> onTrackPlayNext(track.id) },
                                 onTrackAddToQueue = { track -> onTrackAddToQueue(track.id) },
                                 onTrackFavoriteToggle = { track, favorite -> onTrackFavoriteToggle(track.id, favorite) },
@@ -687,10 +726,10 @@ internal fun AppDestinationContent(
                             else -> LibraryContent(
                                 modifier = Modifier.fillMaxSize(),
                                 contentPadding = contentPadding,
-                                recentTracks = tracksUiState.recentTracks,
+                                recentTracks = visibleTracksUiState.recentTracks,
                                 listState = libraryListState,
                                 onTrackClick = onRecentTrackClick,
-                                playbackQueue = playbackQueue,
+                                playbackQueue = visiblePlaybackQueue,
                                 onTrackPlayNext = { track -> onTrackPlayNext(track.id) },
                                 onTrackAddToQueue = { track -> onTrackAddToQueue(track.id) },
                                 onTrackFavoriteToggle = { track, favorite -> onTrackFavoriteToggle(track.id, favorite) },

@@ -210,6 +210,17 @@ internal fun App(
         var isFullScreenPlayerDragging by remember { mutableStateOf(false) }
         var pendingFullScreenPlayerAction by remember { mutableStateOf<(() -> Unit)?>(null) }
         var trackContextSheet by remember { mutableStateOf<TrackContextBottomSheetRequest?>(null) }
+        // F1: hoisted library-removal set. No per-track delete/hide mutation exists
+        // in the store (library is scan-replaced), so keep-best losers + confirmed
+        // device-deletes accumulate here and are filtered out of every library
+        // surface + the playback queue in AppDestinationContent. Entries only,
+        // never files (delete-from-device files go through MediaStore consent).
+        // In-memory only by design (plain `remember`, not persisted): a library
+        // rescan/scan-replace rebuilds the store from disk and removed copies
+        // reappear — files were never deleted. Dismissed duplicate groups behave
+        // the same way. Deliberate, and surfaced to the user via
+        // `duplicates_rescan_note`; not an accident.
+        var removedTrackIds by remember { mutableStateOf(emptySet<String>()) }
         var equalizerProfileSheet by remember { mutableStateOf<EqualizerProfileSheet?>(null) }
         var isNavigationCompact by remember { mutableStateOf(false) }
         var albumHeroColor by remember { mutableStateOf<Color?>(null) }
@@ -354,6 +365,8 @@ internal fun App(
                 onTrackAddToQueue = playback.onTrackAddToQueue,
                 onTrackFavoriteToggle = playback.onFavoriteToggle,
                 onTrackContextBottomSheet = { request -> trackContextSheet = request },
+                removedTrackIds = removedTrackIds,
+                onTracksRemovedFromLibrary = { ids -> removedTrackIds = removedTrackIds + ids.toSet() },
                 onAlbumHeroColorChanged = { color ->
                     albumHeroColor = color
                     library.details.onHeroColorChanged(color)

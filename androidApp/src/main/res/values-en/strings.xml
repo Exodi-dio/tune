@@ -372,6 +372,7 @@
     <string name="duplicates_keep_best">Keep best</string>
     <string name="duplicates_dismiss">Dismiss</string>
     <string name="duplicates_kept_badge">Kept</string>
+    <string name="duplicates_rescan_note">Kept-best removals and dismissed groups only hide entries here — files stay on the device, and a library rescan brings hidden copies back.</string>
     <string name="track_context_delete_from_device">Delete files from device</string>
 </resources>
 

@@ -42,6 +42,7 @@ import com.exodidio.tune.library.duplicateDurationSec
 import com.exodidio.tune.library.duplicateQualityOf
 import com.exodidio.tune.library.groupDuplicateTracks
 import com.exodidio.tune.library.keepBestRemovalIds
+import com.exodidio.tune.library.pendingDeleteTrackIds
 import com.exodidio.tune.player.PlaybackQueueSnapshot
 import com.exodidio.tune.sync.LibraryTrack
 import com.exodidio.tune.sync.metadataObject
@@ -67,6 +68,7 @@ internal data class DuplicateCopyUiState(
 /** One duplicate group section in [LibraryDuplicatesContent]. */
 internal data class DuplicateGroupUiState(
     val key: String,
+    val engineKey: String,
     val title: String,
     val artist: String,
     val copies: List<DuplicateCopyUiState>,
@@ -133,6 +135,7 @@ internal fun duplicatesUiStateFor(
             val uiKey = group.key + " | " + formatDuplicateDuration(duplicateDurationSec(first))
             DuplicateGroupUiState(
                 key = uiKey, // filtered below: engine keys are shared across clusters
+                engineKey = group.key,
                 title = first.title,
                 artist = first.artists,
                 copies = copies.map { track ->
@@ -149,6 +152,75 @@ internal fun duplicatesUiStateFor(
             )
         }
     return LibraryDuplicatesUiState(groups = groups.filter { it.key !in dismissedKeys })
+}
+
+/**
+ * Library-visible tracks after REAL library removal of [removedIds].
+ *
+ * App-level hoisted hidden set lives in `App` (see `removedTrackIds`): losers
+ * disappear from ALL library surfaces (tracks list, duplicates, recents) and
+ * the playback queue snapshot is filtered in `AppDestinationContent`. Pure for
+ * unit-testing that removed entries leave the visible track list.
+ *
+ * Deliberate limitation (rescan-resurrection): the set is in-memory only and is
+ * NOT persisted. A library rescan/scan-replace rebuilds the store from disk and
+ * the removed copies reappear (files were never deleted). Dismissed groups behave
+ * the same way. This is by design — see the user-visible note
+ * (`duplicates_rescan_note`) — not an accident.
+ */
+internal fun visibleTracksAfterRemoval(
+    tracks: List<LibraryTrack>,
+    removedIds: Set<String>,
+): List<LibraryTrack> =
+    if (removedIds.isEmpty()) tracks else tracks.filter { it.id !in removedIds }
+
+/**
+ * Exact ids the Keep-best tap removes from the library for [group].
+ *
+ * Single choke point for the tap handler below: resolves the retained
+ * [DuplicateGroupUiState.engineKey] (never the duration-qualified UI key) and
+ * returns the loser ids. The caller hides them locally AND forwards them to
+ * [onTracksRemovedFromLibrary] so App-level `removedTrackIds` filtering fires.
+ * Pure for unit-testing that the callback payload equals the loser ids.
+ */
+internal fun keepBestTapRemovalIds(
+    group: DuplicateGroupUiState,
+    byId: Map<String, LibraryTrack>,
+): List<String> = keepBestRemovalIds(
+    com.exodidio.tune.library.DuplicateGroup(group.engineKey, group.trackIds),
+    byId,
+)
+
+/**
+ * Queue snapshot with removed entries filtered out.
+ *
+ * Playing-track-removed is handled gracefully: when the current track was
+ * removed, playback re-anchors to the next valid track — the entry that slid
+ * into the removed position (or the new last entry if the tail was removed) —
+ * so the player can skip forward cleanly. The index is always valid for a
+ * non-empty queue; it is `-1` only when the queue itself is empty (clean
+ * paused/empty state, no stale index, no crash). Pure for unit-testing.
+ */
+internal fun visiblePlaybackQueueAfterRemoval(
+    queue: PlaybackQueueSnapshot,
+    removedIds: Set<String>,
+): PlaybackQueueSnapshot {
+    if (removedIds.isEmpty()) return queue
+    val visibleOriginal = queue.originalTrackIds.filter { it !in removedIds }
+    val visibleActive = queue.activeTrackIds.filter { it !in removedIds }
+    val currentId = queue.currentTrackId
+    val newIndex = when {
+        visibleActive.isEmpty() -> -1
+        currentId == null || currentId !in removedIds ->
+            if (currentId == null) queue.currentIndex.coerceIn(-1, visibleActive.lastIndex)
+            else visibleActive.indexOf(currentId).takeIf { it >= 0 } ?: queue.currentIndex.coerceIn(0, visibleActive.lastIndex)
+        else -> queue.currentIndex.coerceIn(0, visibleActive.lastIndex)
+    }
+    return queue.copy(
+        originalTrackIds = visibleOriginal,
+        activeTrackIds = visibleActive,
+        currentIndex = newIndex,
+    )
 }
 
 /**
@@ -177,7 +249,7 @@ internal fun rememberDeleteFilesFromDeviceLauncher(
         { tracks: List<LibraryTrack> ->
             val uris = deviceDeleteUris(tracks).mapNotNull { runCatching { Uri.parse(it) }.getOrNull() }
             if (uris.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                pendingIds = tracks.map { it.id }
+                pendingIds = pendingDeleteTrackIds(tracks)
                 val request = MediaStore.createDeleteRequest(context.contentResolver, uris)
                 consentLauncher.launch(IntentSenderRequest.Builder(request.intentSender).build())
             }
@@ -228,6 +300,13 @@ internal fun LibraryDuplicatesContent(
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        item(key = "duplicates_rescan_note", contentType = "duplicates_note") {
+            Text(
+                text = stringResource(R.string.duplicates_rescan_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.textMuted,
+            )
+        }
         items(uiState.groups, key = { it.key }, contentType = { "duplicate_group" }) { group ->
             Column(Modifier.fillMaxWidth()) {
                 Text(
@@ -266,10 +345,9 @@ internal fun LibraryDuplicatesContent(
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(onClick = {
-                        val removalIds = keepBestRemovalIds(
-                            com.exodidio.tune.library.DuplicateGroup(group.key, group.trackIds),
-                            tracks.associateBy(LibraryTrack::id),
-                        )
+                        // Keep-best tap: hide locally AND notify the host so the
+                        // App-level `removedTrackIds` filter fires on every surface.
+                        val removalIds = keepBestTapRemovalIds(group, tracks.associateBy(LibraryTrack::id))
                         hiddenTrackIds = hiddenTrackIds + removalIds.toSet()
                         onTracksRemovedFromLibrary(removalIds)
                     }) {

@@ -20,6 +20,18 @@ fun deviceDeleteUris(tracks: List<LibraryTrack>): List<String> =
         track.audioPath?.takeIf { it.startsWith("content://", ignoreCase = true) }
     }.distinct()
 
+private fun isDeviceDeleteEligible(track: LibraryTrack): Boolean =
+    track.audioPath?.startsWith("content://", ignoreCase = true) == true
+
+/**
+ * Ids eligible for a [android.provider.MediaStore] delete request: only tracks
+ * whose files were actually sent to MediaStore (content URIs). Derive pending
+ * ids from this (never from all track ids) so a grant removes exactly the
+ * entries whose files were deleted.
+ */
+fun pendingDeleteTrackIds(tracks: List<LibraryTrack>): List<String> =
+    tracks.filter(::isDeviceDeleteEligible).map { it.id }.distinct()
+
 /**
  * Library ids to drop after the system delete consent dialog resolves.
  * Consent granted → remove library entries for the deleted tracks.
