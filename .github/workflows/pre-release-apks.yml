@@ -1,0 +1,77 @@
+name: pre-release-apks
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Pre-release tag (e.g. v1.1.0-beta.2)'
+        required: true
+        default: 'v1.1.0-beta.2'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      MOBILE_KEYSTORE_FILE: ${{ github.workspace }}/tools/keystore/tune-beta.keystore
+      MOBILE_KEYSTORE_PASSWORD: android
+      MOBILE_KEY_ALIAS: tune-beta
+      MOBILE_KEY_PASSWORD: android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-36 ndk;30.0.15729638 cmake;3.22.1
+      - name: Install font tooling
+        run: pip install --quiet fonttools brotli
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Restore FFmpeg outputs arm64-v8a
+        id: ffmpeg-cache-arm64-v8a
+        uses: actions/cache@v4
+        with:
+          path: |
+            androidApp/src/main/jniLibs
+            androidApp/build/ffmpeg
+          key: ffmpeg-arm64-v8a-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
+      - name: Restore FFmpeg outputs armeabi-v7a
+        id: ffmpeg-cache-armeabi-v7a
+        uses: actions/cache@v4
+        with:
+          path: |
+            androidApp/src/main/jniLibs
+            androidApp/build/ffmpeg
+          key: ffmpeg-armeabi-v7a-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
+      - name: Restore FFmpeg outputs x86_64
+        id: ffmpeg-cache-x86_64
+        uses: actions/cache@v4
+        with:
+          path: |
+            androidApp/src/main/jniLibs
+            androidApp/build/ffmpeg
+          key: ffmpeg-x86_64-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
+      - name: Build FFmpeg arm64-v8a
+        if: steps.ffmpeg-cache-arm64-v8a.outputs.cache-hit != 'true'
+        run: bash scripts/build-ffmpeg-android.sh arm64-v8a
+      - name: Build FFmpeg armeabi-v7a
+        if: steps.ffmpeg-cache-armeabi-v7a.outputs.cache-hit != 'true'
+        run: bash scripts/build-ffmpeg-android.sh armeabi-v7a
+      - name: Build FFmpeg x86_64
+        if: steps.ffmpeg-cache-x86_64.outputs.cache-hit != 'true'
+        run: bash scripts/build-ffmpeg-android.sh x86_64
+      - name: Unit tests
+        run: ./gradlew :sharedLogic:testAndroidHostTest --no-daemon
+      - name: Android unit tests
+        run: ./gradlew :androidApp:testDevDebugUnitTest --no-daemon
+      - name: Assemble signed prod release APKs
+        run: ./gradlew :androidApp:assembleProdRelease --no-daemon
+      - name: Rename APKs
+        run: |
+          ls androidApp/build/outputs/apk/prod/release/
+          for f in androidApp/build/outputs/apk/prod/release/*.apk; do echo "$f"; done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tune-prerelease-apks
+          path: androidApp/build/outputs/apk/prod/release/*.apk
