@@ -127,8 +127,8 @@ android {
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 5
-        versionName = "1.0.0"
+        versionCode = 6
+        versionName = "1.1.0"
 
         val lastFmApiKey = localProperties.getProperty("LASTFM_API_KEY")
             ?: providers.environmentVariable("LASTFM_API_KEY").getOrElse("")
@@ -219,10 +219,10 @@ android {
 }
 
 // Per-ABI versionCode + APK naming for ABI splits (AGP 9 androidComponents API).
-// Scheme: base versionCode (5) x 1000 + offset — universal +0 (=5000),
-// armeabi-v7a +1 (=5001), x86_64 +2 (=5002), arm64-v8a +3 (=5003, highest).
+// Scheme: base versionCode (6) x 1000 + offset — universal +0 (=6000),
+// armeabi-v7a +1 (=6001), x86_64 +2 (=6002), arm64-v8a +3 (=6003, highest).
 // arm64-v8a gets the highest code so capable devices prefer it.
-// Keep the literals 5 / "1.0.0" below in sync with defaultConfig versionCode/versionName.
+// Keep the literals 6 / "1.1.0" below in sync with defaultConfig versionCode/versionName.
 // Uses the current AGP VariantOutput Property API via set(...) calls, plus
 // output.filters with FilterType.ABI to detect the per-split ABI.
 androidComponents {
@@ -236,9 +236,9 @@ androidComponents {
                 "arm64-v8a" -> 3
                 else -> error("unknown ABI \"$abi\"")
             }
-            output.versionCode.set(5 * 1000 + offset)
+            output.versionCode.set(6 * 1000 + offset)
             val suffix = if (abi != null) "_$abi" else ""
-            output.outputFileName.set("Tune-v1.0.0$suffix.apk")
+            output.outputFileName.set("Tune-v1.1.0$suffix.apk")
         }
     }
 }
