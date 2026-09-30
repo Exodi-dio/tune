@@ -1,0 +1,1 @@
+Tune 1.1.0: folder whitelist, AMOLED black, in-app updates, duplicate finder, composers/genres, .lrc lyrics, short-audio filter.
