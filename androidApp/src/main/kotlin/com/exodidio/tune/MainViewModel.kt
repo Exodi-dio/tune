@@ -71,28 +71,22 @@ class MainViewModel(
         val fullscreenLyrics: Boolean = true,
     )
 
-    private val appearancePrefs = combine(
-        themeModeStore.themeMode,
-        themeModeStore.reduceTransparency,
-        themeModeStore.playerTheme,
-        themeModeStore.showVolumeSlider,
-        themeModeStore.fullscreenArtwork,
-        themeModeStore.fullscreenLyrics,
-    ) { themeMode: ThemeMode,
-        reduceTransparency: Boolean,
-        playerTheme: PlayerTheme,
-        showVolumeSlider: Boolean,
-        fullscreenArtwork: Boolean,
-        fullscreenLyrics: Boolean ->
-        AppearancePrefs(
-            themeMode = themeMode,
-            reduceTransparency = reduceTransparency,
-            playerTheme = playerTheme,
-            showVolumeSlider = showVolumeSlider,
-            fullscreenArtwork = fullscreenArtwork,
-            fullscreenLyrics = fullscreenLyrics,
-        )
-    }
+    private val appearancePrefs = themeModeStore.themeMode
+        .combine(themeModeStore.reduceTransparency) { themeMode, reduceTransparency ->
+            AppearancePrefs(themeMode = themeMode, reduceTransparency = reduceTransparency)
+        }
+        .combine(themeModeStore.playerTheme) { prefs, playerTheme ->
+            prefs.copy(playerTheme = playerTheme)
+        }
+        .combine(themeModeStore.showVolumeSlider) { prefs, showVolumeSlider ->
+            prefs.copy(showVolumeSlider = showVolumeSlider)
+        }
+        .combine(themeModeStore.fullscreenArtwork) { prefs, fullscreenArtwork ->
+            prefs.copy(fullscreenArtwork = fullscreenArtwork)
+        }
+        .combine(themeModeStore.fullscreenLyrics) { prefs, fullscreenLyrics ->
+            prefs.copy(fullscreenLyrics = fullscreenLyrics)
+        }
 
     val uiState: StateFlow<AppUiState> = combine(
         appearancePrefs,
