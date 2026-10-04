@@ -203,7 +203,7 @@ internal fun FloatingNavigationBar(
                     modifier = Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    visibleDestinations.forEach { destination ->}
+                    visibleDestinations.forEach { destination ->
                         FloatingNavigationTarget(
                             destination = destination,
                             selected = destination == selectedDestination,
@@ -280,7 +280,7 @@ private fun FloatingNavigationVisuals(
         modifier = modifier.clearAndSetSemantics { },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        visibleDestinations.forEach { destination ->}
+        visibleDestinations.forEach { destination ->
             FloatingNavigationVisual(
                 destination = destination,
                 foreground = foreground,

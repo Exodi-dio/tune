@@ -340,7 +340,7 @@ internal fun FullScreenPlayer(
                         crossfadeProgress = crossfadeProgress,
                         isArtworkCrossfading = isArtworkCrossfading,
                         fullscreen = fullscreenArtworkEnabled,
-                        Modifier
+                        modifier = Modifier
                             .size(artworkSize)
                             .offset(x = artworkHorizontalOffset)
                             .semantics { testTag = FullScreenPlayerArtworkTestTag }
