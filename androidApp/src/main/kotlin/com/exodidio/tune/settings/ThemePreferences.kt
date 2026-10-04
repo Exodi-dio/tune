@@ -80,7 +80,7 @@ class ThemePreferences(
         preferences[FullscreenLyricsKey] ?: false
     }
     override val showInsightsTab: Flow<Boolean> = context.themeDataStore.data.map { preferences: Preferences ->
-        preferences[ShowInsightsTabKey] ?: true
+        preferences[ShowInsightsTabKey] ?: false
     }
 
     override suspend fun setThemeMode(themeMode: ThemeMode) {
