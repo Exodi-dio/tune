@@ -11,17 +11,37 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      MOBILE_KEYSTORE_FILE: ${{ github.workspace }}/tools/keystore/tune-beta.keystore
-      MOBILE_KEYSTORE_PASSWORD: android
-      MOBILE_KEY_ALIAS: tune-beta
-      MOBILE_KEY_PASSWORD: android
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
+      - name: Generate fresh temporary release key
+        shell: bash
+        run: |
+          set -euo pipefail
+          store_file="$GITHUB_WORKSPACE/build/fresh-release.keystore"
+          store_pass="$(openssl rand -hex 24)"
+          key_alias="tune-temp-$(openssl rand -hex 8)"
+          key_pass="$(openssl rand -hex 24)"
+          mkdir -p "$(dirname "$store_file")"
+          keytool -genkeypair -v \
+            -keystore "$store_file" \
+            -alias "$key_alias" \
+            -keyalg RSA \
+            -keysize 3072 \
+            -validity 30 \
+            -storepass "$store_pass" \
+            -keypass "$key_pass" \
+            -dname "CN=Tune Temporary Beta, OU=GitHub Actions, O=Exodi-dio, L=Cloud, C=US" \
+            -noprompt
+          {
+            echo "MOBILE_KEYSTORE_FILE=$store_file"
+            echo "MOBILE_KEYSTORE_PASSWORD=$store_pass"
+            echo "MOBILE_KEY_ALIAS=$key_alias"
+            echo "MOBILE_KEY_PASSWORD=$key_pass"
+          } >> "$GITHUB_ENV"
       - uses: android-actions/setup-android@v3
         with:
           packages: platform-tools platforms;android-36 ndk;30.0.15729638 cmake;3.22.1
@@ -65,13 +85,20 @@ jobs:
         run: ./gradlew :sharedLogic:testAndroidHostTest --no-daemon
       - name: Android unit tests
         run: ./gradlew :androidApp:testDevDebugUnitTest --no-daemon
-      - name: Assemble signed prod release APKs
-        run: ./gradlew :androidApp:assembleProdRelease --no-daemon
-      - name: Rename APKs
+      - name: Assemble one signed universal prod release APK
+        run: ./gradlew :androidApp:assembleProdRelease -PenableReleaseAbiSplits=false --no-daemon
+      - name: Validate one universal APK
+        shell: bash
         run: |
-          ls androidApp/build/outputs/apk/prod/release/
-          for f in androidApp/build/outputs/apk/prod/release/*.apk; do echo "$f"; done
+          mapfile -t apks < <(find androidApp/build/outputs/apk/prod/release -maxdepth 1 -name "*.apk" -print)
+          if [ "${#apks[@]}" -ne 1 ]; then
+            echo "Expected exactly one APK, found ${#apks[@]}" >&2
+            find androidApp/build/outputs/apk/prod/release -maxdepth 1 -name "*.apk" -print >&2
+            exit 1
+          fi
+          echo "APK_PATH=${apks[0]}" >> "$GITHUB_ENV"
+          echo "Using ${apks[0]}"
       - uses: actions/upload-artifact@v4
         with:
           name: tune-prerelease-apks
-          path: androidApp/build/outputs/apk/prod/release/*.apk
+          path: ${{ env.APK_PATH }}
