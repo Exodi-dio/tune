@@ -33,7 +33,7 @@ internal fun AppearanceContent(
     onFullscreenArtworkChanged: (Boolean) -> Unit = {},
     fullscreenLyrics: Boolean = false,
     onFullscreenLyricsChanged: (Boolean) -> Unit = {},
-    showInsightsTab: Boolean = true,
+    showInsightsTab: Boolean = false,
     onShowInsightsTabChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
     hazeState: HazeState? = null,
