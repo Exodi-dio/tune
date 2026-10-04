@@ -24,7 +24,7 @@ jobs:
           store_file="$GITHUB_WORKSPACE/build/fresh-release.keystore"
           store_pass="$(openssl rand -hex 24)"
           key_alias="tune-temp-$(openssl rand -hex 8)"
-          key_pass="$(openssl rand -hex 24)"
+          key_pass="$store_pass"
           mkdir -p "$(dirname "$store_file")"
           keytool -genkeypair -v \
             -keystore "$store_file" \
