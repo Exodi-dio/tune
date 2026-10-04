@@ -180,6 +180,7 @@ internal fun FloatingNavigationBar(
                 FloatingNavigationVisuals(
                     foreground = colors.textMain,
                     filled = true,
+                    visibleDestinations = visibleDestinations,
                     modifier = Modifier
                         .fillMaxSize()
                         .navigationForegroundMask(
@@ -191,6 +192,7 @@ internal fun FloatingNavigationBar(
                 FloatingNavigationVisuals(
                     foreground = colors.primary,
                     filled = true,
+                    visibleDestinations = visibleDestinations,
                     modifier = Modifier
                         .fillMaxSize()
                         .navigationForegroundMask(
@@ -275,6 +277,7 @@ private fun FloatingNavigationVisuals(
     foreground: Color,
     filled: Boolean,
     modifier: Modifier = Modifier,
+    visibleDestinations: List<AppDestination> = AppDestination.entries,
 ) {
     Row(
         modifier = modifier.clearAndSetSemantics { },
