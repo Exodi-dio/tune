@@ -132,7 +132,7 @@ internal fun AppDestinationContent(
     showVolumeSlider: Boolean = false,
     fullscreenArtwork: Boolean = false,
     fullscreenLyrics: Boolean = false,
-    showInsightsTab: Boolean = true,
+    showInsightsTab: Boolean = false,
     onShowInsightsTabChanged: (Boolean) -> Unit = {},
     hazeState: HazeState?,
     navigationBottomPadding: Dp,
