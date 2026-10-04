@@ -16,6 +16,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.test.resetMain
 import com.exodidio.tune.settings.ThemeMode
+import com.exodidio.tune.settings.PlayerTheme
 import com.exodidio.tune.settings.ThemeModeStore
 import org.junit.After
 import org.junit.Before
@@ -227,6 +228,10 @@ private class FakeThemeModeStore(initialThemeMode: ThemeMode = ThemeMode.System)
     private val mutableReduceTransparency = MutableStateFlow(false)
     override val themeMode: Flow<ThemeMode> = mutableThemeMode
     override val reduceTransparency: Flow<Boolean> = mutableReduceTransparency
+    override val playerTheme: Flow<PlayerTheme> = kotlinx.coroutines.flow.MutableStateFlow(PlayerTheme.Adaptive)
+    override val showVolumeSlider: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(true)
+    override val fullscreenArtwork: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(true)
+    override val fullscreenLyrics: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(true)
     val savedModes = mutableListOf<ThemeMode>()
     val savedReduceTransparencyValues = mutableListOf<Boolean>()
 
@@ -239,5 +244,9 @@ private class FakeThemeModeStore(initialThemeMode: ThemeMode = ThemeMode.System)
         savedReduceTransparencyValues += enabled
         mutableReduceTransparency.value = enabled
     }
+    override suspend fun setPlayerTheme(theme: PlayerTheme) {}
+    override suspend fun setShowVolumeSlider(enabled: Boolean) {}
+    override suspend fun setFullscreenArtwork(enabled: Boolean) {}
+    override suspend fun setFullscreenLyrics(enabled: Boolean) {}
 
 }

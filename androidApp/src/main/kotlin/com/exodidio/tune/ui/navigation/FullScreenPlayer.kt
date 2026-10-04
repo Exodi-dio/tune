@@ -49,6 +49,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.CompositionLocalProvider
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -65,6 +66,7 @@ import com.exodidio.tune.player.RepeatMode
 import com.exodidio.tune.sync.LibraryTrack
 import com.exodidio.tune.sync.metadataObject
 import com.exodidio.tune.ui.components.TrackContextBottomSheetRequest
+import com.exodidio.tune.settings.PlayerTheme
 import com.exodidio.tune.ui.theme.LocalTuneColors
 private val FullScreenPlayerCompactArtworkSize = 80.dp
 private val FullScreenPlayerCompactGap = 24.dp
@@ -88,6 +90,10 @@ internal fun FullScreenPlayer(
     artworkCrossfade: ArtworkCrossfadeTransition? = null,
     blendArtworkDuringCrossfade: Boolean = true,
     showQualityBadge: Boolean = true,
+    playerTheme: PlayerTheme = PlayerTheme.Adaptive,
+    showVolumeSlider: Boolean = true,
+    fullscreenArtwork: Boolean = true,
+    fullscreenLyrics: Boolean = true,
     volume: Float,
     onSeek: (Long) -> Unit,
     onVolumeChange: (Float) -> Unit,
@@ -213,7 +219,26 @@ internal fun FullScreenPlayer(
         label = "full-screen-player-swipe",
     )
 
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+    val adaptiveEnabled = playerTheme == PlayerTheme.Adaptive
+    val fullscreenArtworkEnabled = adaptiveEnabled && fullscreenArtwork
+    val adaptiveColors = rememberAdaptivePlayerColors(
+        bitmap = artwork?.sourceBitmap,
+        enabled = adaptiveEnabled,
+    )
+    val basePlayerColors = LocalTuneColors.current
+    val effectivePlayerColors = if (adaptiveEnabled) {
+        basePlayerColors.copy(
+            playerBackdrop = adaptiveColors.background,
+            onPrimary = adaptiveColors.accent,
+            textMain = adaptiveColors.accent,
+            textMuted = adaptiveColors.dim,
+            foregroundSubtle = adaptiveColors.faint,
+        )
+    } else {
+        basePlayerColors
+    }
+    CompositionLocalProvider(LocalTuneColors provides effectivePlayerColors) {
+        BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         // The player column has 20dp padding on each side. On short screens,
         // cap the square cover by height so the controls retain their space.
         val expandedArtworkSize = minOf(
@@ -275,6 +300,7 @@ internal fun FullScreenPlayer(
                 incomingArtwork = incomingArtwork,
                 crossfadeProgress = crossfadeProgress,
                 isArtworkCrossfading = isArtworkCrossfading,
+                adaptiveBackground = fullscreenArtworkEnabled,
                 modifier = Modifier
                     .fillMaxSize()
                     .then(if (glassHazeState == null) Modifier else Modifier.hazeSource(glassHazeState)),
@@ -489,9 +515,12 @@ internal fun FullScreenPlayer(
                 onPlayPause = onPlayPause,
                 onNext = onNext,
                 onOpenMediaOutputSwitcher = onOpenMediaOutputSwitcher,
+                showVolumeSlider = showVolumeSlider,
+                showLyricsButton = fullscreenLyrics,
                 modifier = Modifier.weight(1f),
             )
             }
+        }
         }
     }
 }

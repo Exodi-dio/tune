@@ -44,6 +44,7 @@ private val FullScreenArtworkShape = RoundedCornerShape(16.dp)
 internal data class FullScreenArtwork(
     val image: androidx.compose.ui.graphics.ImageBitmap,
     val dominant: Color,
+    val sourceBitmap: Bitmap? = null,
 )
 
 @Composable
@@ -54,6 +55,7 @@ internal fun FullScreenPlayerBackground(
     crossfadeProgress: Float,
     isArtworkCrossfading: Boolean,
     modifier: Modifier,
+    adaptiveBackground: Boolean = false,
 ) {
     val colors = LocalTuneColors.current
     val dominantColor by animateColorAsState(
@@ -61,14 +63,25 @@ internal fun FullScreenPlayerBackground(
         animationSpec = tween(280, easing = FastOutSlowInEasing),
         label = "full-screen-background-colour",
     )
-    Box(modifier.background(colors.playerBackdrop)) {
-        if (isArtworkCrossfading) {
-            PlayerBackgroundGradient(outgoingArtwork?.dominant ?: colors.playerBackdrop, equalPowerOutgoing(crossfadeProgress))
-            PlayerBackgroundGradient(incomingArtwork?.dominant ?: colors.playerBackdrop, equalPowerIncoming(crossfadeProgress))
-        } else {
-            PlayerBackgroundGradient(dominantColor, 1f)
+    if (adaptiveBackground) {
+        Box(modifier.background(dominantColor)) {
+            if (isArtworkCrossfading) {
+                PlayerBackgroundGradient(outgoingArtwork?.dominant ?: dominantColor, equalPowerOutgoing(crossfadeProgress))
+                PlayerBackgroundGradient(incomingArtwork?.dominant ?: dominantColor, equalPowerIncoming(crossfadeProgress))
+            } else {
+                PlayerBackgroundGradient(dominantColor, 1f)
+            }
         }
-        Box(Modifier.fillMaxSize().background(colors.playerBackdrop.copy(alpha = 0.24f)))
+    } else {
+        Box(modifier.background(colors.playerBackdrop)) {
+            if (isArtworkCrossfading) {
+                PlayerBackgroundGradient(outgoingArtwork?.dominant ?: colors.playerBackdrop, equalPowerOutgoing(crossfadeProgress))
+                PlayerBackgroundGradient(incomingArtwork?.dominant ?: colors.playerBackdrop, equalPowerIncoming(crossfadeProgress))
+            } else {
+                PlayerBackgroundGradient(dominantColor, 1f)
+            }
+            Box(Modifier.fillMaxSize().background(colors.playerBackdrop.copy(alpha = 0.24f)))
+        }
     }
 }
 
@@ -149,7 +162,7 @@ internal fun rememberFullscreenArtwork(artworkPath: String?, keepPrevious: Boole
         if (!file.isFile) { artwork = null; return@LaunchedEffect }
         val key = ArtworkThumbnailCache.cacheKey(file.absolutePath, 1080)
         ArtworkThumbnailCache.get(key)?.let { cached ->
-            artwork = FullScreenArtwork(cached, withContext(Dispatchers.Default) { dominantColor(cached.asAndroidBitmap()) })
+            artwork = FullScreenArtwork(cached, withContext(Dispatchers.Default) { adaptiveDominantColor(cached.asAndroidBitmap()) }, cached.asAndroidBitmap())
             return@LaunchedEffect
         }
         artwork = withContext(Dispatchers.IO) {
@@ -163,7 +176,7 @@ internal fun rememberFullscreenArtwork(artworkPath: String?, keepPrevious: Boole
                 }) ?: return@runCatching null
                 val image = bitmap.asImageBitmap()
                 ArtworkThumbnailCache.put(key, image)
-                FullScreenArtwork(image, dominantColor(bitmap))
+                FullScreenArtwork(image, adaptiveDominantColor(bitmap), bitmap)
             }.getOrNull()
         }
     }
@@ -176,7 +189,11 @@ internal fun fullscreenArtworkMemoryKey(artworkPath: String?, keepPrevious: Bool
 
 private object FullscreenArtworkRetainedKey
 
-private fun dominantColor(bitmap: Bitmap): Color {
+internal fun adaptiveDominantColor(bitmap: Bitmap): Color {
+    return runCatching { bitmap.extractAdaptivePlayerColors().background }.getOrDefault(fallbackDominantColor(bitmap))
+}
+
+private fun fallbackDominantColor(bitmap: Bitmap): Color {
     val sample = Bitmap.createScaledBitmap(bitmap, 24, 24, true)
     val pixels = IntArray(24 * 24)
     sample.getPixels(pixels, 0, 24, 0, 0, 24, 24)

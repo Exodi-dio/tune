@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import com.exodidio.tune.R
+import com.exodidio.tune.settings.PlayerTheme
 import com.exodidio.tune.settings.ThemeMode
 import com.exodidio.tune.ui.components.ActionList
 import com.exodidio.tune.ui.components.ActionListContainerStyle
@@ -24,6 +25,14 @@ internal fun AppearanceContent(
     onThemeModeSelected: (ThemeMode) -> Unit,
     reduceTransparency: Boolean,
     onReduceTransparencyChanged: (Boolean) -> Unit,
+    playerTheme: PlayerTheme = PlayerTheme.Adaptive,
+    onPlayerThemeSelected: (PlayerTheme) -> Unit = {},
+    showVolumeSlider: Boolean = true,
+    onShowVolumeSliderChanged: (Boolean) -> Unit = {},
+    fullscreenArtwork: Boolean = true,
+    onFullscreenArtworkChanged: (Boolean) -> Unit = {},
+    fullscreenLyrics: Boolean = true,
+    onFullscreenLyricsChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
     hazeState: HazeState? = null,
 ) {
@@ -53,6 +62,54 @@ internal fun AppearanceContent(
                             )
                         },
                         onClick = { onReduceTransparencyChanged(!reduceTransparency) },
+                    ),
+                ),
+                containerStyle = ActionListContainerStyle.Plain,
+            )
+        }
+        Card {
+            Selection(
+                labelRes = R.string.appearance_player_theme_title,
+                options = listOf(
+                    SelectionOption(value = PlayerTheme.Standard, labelRes = R.string.appearance_player_standard),
+                    SelectionOption(value = PlayerTheme.Adaptive, labelRes = R.string.appearance_player_adaptive),
+                ),
+                selectedValue = playerTheme,
+                onValueSelected = onPlayerThemeSelected,
+                hazeState = hazeState,
+            )
+            ActionListDivider(style = ActionListDividerStyle.FullWidth)
+            ActionList(
+                items = listOf(
+                    ActionListItem(
+                        labelRes = R.string.appearance_show_volume,
+                        trailingContent = {
+                            Switch(
+                                checked = showVolumeSlider,
+                                onCheckedChange = onShowVolumeSliderChanged,
+                            )
+                        },
+                        onClick = { onShowVolumeSliderChanged(!showVolumeSlider) },
+                    ),
+                    ActionListItem(
+                        labelRes = R.string.appearance_fullscreen_artwork,
+                        trailingContent = {
+                            Switch(
+                                checked = fullscreenArtwork,
+                                onCheckedChange = onFullscreenArtworkChanged,
+                            )
+                        },
+                        onClick = { onFullscreenArtworkChanged(!fullscreenArtwork) },
+                    ),
+                    ActionListItem(
+                        labelRes = R.string.appearance_fullscreen_lyrics,
+                        trailingContent = {
+                            Switch(
+                                checked = fullscreenLyrics,
+                                onCheckedChange = onFullscreenLyricsChanged,
+                            )
+                        },
+                        onClick = { onFullscreenLyricsChanged(!fullscreenLyrics) },
                     ),
                 ),
                 containerStyle = ActionListContainerStyle.Plain,

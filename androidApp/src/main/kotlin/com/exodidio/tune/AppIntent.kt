@@ -1,5 +1,6 @@
 package com.exodidio.tune
 
+import com.exodidio.tune.settings.PlayerTheme
 import com.exodidio.tune.settings.ThemeMode
 
 /** User-initiated inputs accepted by the app shell. */
@@ -23,6 +24,14 @@ sealed interface AppIntent {
     data class SetThemeMode(val themeMode: ThemeMode) : AppIntent
 
     data class SetReduceTransparency(val enabled: Boolean) : AppIntent
+
+    data class SetPlayerTheme(val theme: PlayerTheme) : AppIntent
+
+    data class SetShowVolumeSlider(val enabled: Boolean) : AppIntent
+
+    data class SetFullscreenArtwork(val enabled: Boolean) : AppIntent
+
+    data class SetFullscreenLyrics(val enabled: Boolean) : AppIntent
 
     data class OpenExternalUrl(val url: String) : AppIntent
 }

@@ -42,6 +42,7 @@ import com.exodidio.tune.AppDestinationModels
 import com.exodidio.tune.AppIntent
 import com.exodidio.tune.AppStackPage
 import com.exodidio.tune.StackPageEntry
+import com.exodidio.tune.settings.PlayerTheme
 import com.exodidio.tune.settings.ThemeMode
 import com.exodidio.tune.ui.components.HomeContent
 import com.exodidio.tune.ui.components.StackPageLayout
@@ -127,6 +128,10 @@ internal fun AppDestinationContent(
     stackPage: StackPageEntry,
     themeMode: ThemeMode,
     reduceTransparency: Boolean,
+    playerTheme: PlayerTheme = PlayerTheme.Adaptive,
+    showVolumeSlider: Boolean = true,
+    fullscreenArtwork: Boolean = true,
+    fullscreenLyrics: Boolean = true,
     hazeState: HazeState?,
     navigationBottomPadding: Dp,
     homeListState: LazyListState,
@@ -426,6 +431,22 @@ internal fun AppDestinationContent(
                                 },
                                 onReduceTransparencyChanged = { enabled ->
                                     onIntent(AppIntent.SetReduceTransparency(enabled))
+                                },
+                                playerTheme = playerTheme,
+                                onPlayerThemeSelected = { theme ->
+                                    onIntent(AppIntent.SetPlayerTheme(theme))
+                                },
+                                showVolumeSlider = showVolumeSlider,
+                                onShowVolumeSliderChanged = { enabled ->
+                                    onIntent(AppIntent.SetShowVolumeSlider(enabled))
+                                },
+                                fullscreenArtwork = fullscreenArtwork,
+                                onFullscreenArtworkChanged = { enabled ->
+                                    onIntent(AppIntent.SetFullscreenArtwork(enabled))
+                                },
+                                fullscreenLyrics = fullscreenLyrics,
+                                onFullscreenLyricsChanged = { enabled ->
+                                    onIntent(AppIntent.SetFullscreenLyrics(enabled))
                                 },
                                 hazeState = hazeState,
                             )
