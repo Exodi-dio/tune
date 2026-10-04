@@ -1,0 +1,52 @@
+name: screenshots
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to screenshot'
+        required: false
+        default: 'beta/adaptive-theme'
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21" }
+      - uses: android-actions/setup-android@v3
+        with: { packages: platform-tools platforms;android-34 system-images;android-34;google_apis;x86_64 }
+      - name: Install font tooling
+        run: pip install --quiet fonttools brotli
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Pre-start adb daemon
+        run: |
+          adb kill-server || true
+          adb start-server
+          adb devices
+      - name: Capture adaptive screenshots
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          ram-size: 2048M
+          heap-size: 256M
+          disable-animations: true
+          emulator-options: -no-snapshot -no-audio -no-boot-anim -no-window -gpu swiftshader_indirect
+          script: |
+            adb shell settings put global window_animation_scale 0 || true
+            adb shell settings put global transition_animation_scale 0 || true
+            adb shell settings put global animator_duration_scale 0 || true
+            ./gradlew :androidApp:connectedDevDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.exodidio.tune.ui.navigation.AdaptiveScreenshotsTest --no-daemon
+            mkdir -p shots
+            adb pull /sdcard/Android/data/com.exodidio.tune.dev/files/shots shots || true
+            ls -la shots || true
+            find . -name "01-appearance-adaptive.png" -o -name "*.png" | head -n 20
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tune-screenshots
+          path: shots/
+          if-no-files-found: error
