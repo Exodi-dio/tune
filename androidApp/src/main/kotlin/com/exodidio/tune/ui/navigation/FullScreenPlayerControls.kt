@@ -125,6 +125,8 @@ internal fun FullScreenPlayerControls(
     onPlayPause: () -> Unit,
     onNext: () -> Unit,
     onOpenMediaOutputSwitcher: () -> Unit,
+    showVolumeSlider: Boolean = true,
+    showLyricsButton: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalTuneColors.current
@@ -243,17 +245,23 @@ internal fun FullScreenPlayerControls(
                 FullScreenTransportButton(MaterialSymbols.SkipNext, stringResource(R.string.player_next), onNext, enabled = canNavigateNext, iconSize = 36.dp, skipForward = true)
             }
             Column {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    MaterialSymbol(MaterialSymbols.VolumeDown, null, tint = volumeColor, size = 20.dp, filled = true, modifier = Modifier.offset(x = -volumeOffset))
-                    Spacer(Modifier.width(10.dp))
-                    TuneTrackSlider(volume, onVolumeChange, onInteractionChange = { volumeInteracting = it }, trackHeight = 7.dp,
-                        modifier = Modifier.weight(1f).semantics { contentDescription = volumeLabel })
-                    Spacer(Modifier.width(10.dp))
-                    MaterialSymbol(MaterialSymbols.VolumeUp, null, tint = volumeColor, size = 20.dp, filled = true, modifier = Modifier.offset(x = volumeOffset))
+                if (showVolumeSlider) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        MaterialSymbol(MaterialSymbols.VolumeDown, null, tint = volumeColor, size = 20.dp, filled = true, modifier = Modifier.offset(x = -volumeOffset))
+                        Spacer(Modifier.width(10.dp))
+                        TuneTrackSlider(volume, onVolumeChange, onInteractionChange = { volumeInteracting = it }, trackHeight = 7.dp,
+                            modifier = Modifier.weight(1f).semantics { contentDescription = volumeLabel })
+                        Spacer(Modifier.width(10.dp))
+                        MaterialSymbol(MaterialSymbols.VolumeUp, null, tint = volumeColor, size = 20.dp, filled = true, modifier = Modifier.offset(x = volumeOffset))
+                    }
+                    Spacer(Modifier.height(4.dp))
                 }
-                Spacer(Modifier.height(4.dp))
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    FullScreenControlSlot { FullScreenTransportButton(MaterialSymbols.Chat, stringResource(R.string.player_lyrics), { onPanelSelected(if (lyricsSelected) null else FullScreenPlayerPanel.Lyrics) }, iconSize = 24.dp, tint = lyricsIcon, containerColor = lyricsBackground, filled = false) }
+                    if (showLyricsButton) {
+                        FullScreenControlSlot { FullScreenTransportButton(MaterialSymbols.Chat, stringResource(R.string.player_lyrics), { onPanelSelected(if (lyricsSelected) null else FullScreenPlayerPanel.Lyrics) }, iconSize = 24.dp, tint = lyricsIcon, containerColor = lyricsBackground, filled = false) }
+                    } else {
+                        FullScreenControlSlot { }
+                    }
                     FullScreenControlSlot { FullScreenTransportButton(MaterialSymbols.Airplay, stringResource(R.string.player_cast), onOpenMediaOutputSwitcher, iconSize = 24.dp, tint = colors.foregroundSubtle, filled = false) }
                     FullScreenControlSlot {
                         Box(Modifier.size(64.dp)) {

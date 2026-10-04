@@ -17,6 +17,7 @@ junit = "4.13.2"
 kotlin = "2.4.10"
 material3 = "1.11.0-alpha07"
 datastore = "1.1.7"
+palette = "1.0.0"
 haze = "2.0.0-alpha03"
 serialization = "1.9.0"
 room = "2.8.4"
@@ -56,6 +57,7 @@ room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
+androidx-palette = { module = "androidx.palette:palette-ktx", version.ref = "palette" }
 vico-compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vico" }
 
 [plugins]

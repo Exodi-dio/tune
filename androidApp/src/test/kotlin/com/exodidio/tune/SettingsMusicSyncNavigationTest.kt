@@ -1,6 +1,7 @@
 package com.exodidio.tune
 
 import com.exodidio.tune.settings.ThemeMode
+import com.exodidio.tune.settings.PlayerTheme
 import com.exodidio.tune.settings.ThemeModeStore
 import com.exodidio.tune.ui.navigation.titleRes
 import kotlinx.coroutines.Dispatchers
@@ -69,10 +70,18 @@ private class MusicSyncFakeThemeModeStore(initialThemeMode: ThemeMode = ThemeMod
     private val mutableReduceTransparency = MutableStateFlow(false)
     override val themeMode: Flow<ThemeMode> = mutableThemeMode
     override val reduceTransparency: Flow<Boolean> = mutableReduceTransparency
+    override val playerTheme: Flow<PlayerTheme> = kotlinx.coroutines.flow.MutableStateFlow(PlayerTheme.Adaptive)
+    override val showVolumeSlider: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(true)
+    override val fullscreenArtwork: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(true)
+    override val fullscreenLyrics: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(true)
     override suspend fun setThemeMode(themeMode: ThemeMode) {
         mutableThemeMode.value = themeMode
     }
     override suspend fun setReduceTransparency(enabled: Boolean) {
         mutableReduceTransparency.value = enabled
     }
+    override suspend fun setPlayerTheme(theme: PlayerTheme) {}
+    override suspend fun setShowVolumeSlider(enabled: Boolean) {}
+    override suspend fun setFullscreenArtwork(enabled: Boolean) {}
+    override suspend fun setFullscreenLyrics(enabled: Boolean) {}
 }

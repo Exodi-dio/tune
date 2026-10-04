@@ -100,6 +100,7 @@ dependencies {
     debugImplementation(libs.compose.uiToolingPreview)
     implementation(libs.haze.core)
     implementation(libs.haze.blur)
+    implementation(libs.androidx.palette)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.room.runtime)

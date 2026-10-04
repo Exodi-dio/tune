@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.exodidio.tune.settings.PlayerTheme
 import com.exodidio.tune.settings.ThemeMode
 import com.exodidio.tune.settings.ThemeModeStore
 
@@ -24,6 +25,10 @@ data class AppUiState(
     val selectedDestination: AppDestination = AppDestination.Home,
     val themeMode: ThemeMode = ThemeMode.System,
     val reduceTransparency: Boolean = false,
+    val playerTheme: PlayerTheme = PlayerTheme.Adaptive,
+    val showVolumeSlider: Boolean = true,
+    val fullscreenArtwork: Boolean = true,
+    val fullscreenLyrics: Boolean = true,
     val selectedAlbumId: String? = null,
     val selectedArtistId: String? = null,
     val selectedGenreId: String? = null,
@@ -60,14 +65,30 @@ class MainViewModel(
     val uiState: StateFlow<AppUiState> = combine(
         themeModeStore.themeMode,
         themeModeStore.reduceTransparency,
+        themeModeStore.playerTheme,
+        themeModeStore.showVolumeSlider,
+        themeModeStore.fullscreenArtwork,
+        themeModeStore.fullscreenLyrics,
         selectedDestination,
         destinationStacks,
         selectedAlbumId,
-    ) { themeMode, reduceTransparency, destination, pages, albumId ->
+    ) { themeMode: ThemeMode,
+        reduceTransparency: Boolean,
+        playerTheme: PlayerTheme,
+        showVolumeSlider: Boolean,
+        fullscreenArtwork: Boolean,
+        fullscreenLyrics: Boolean,
+        destination: AppDestination,
+        pages: Map<AppDestination, List<AppStackPage>>,
+        albumId: String? ->
         AppUiState(
             selectedDestination = destination,
             themeMode = themeMode,
             reduceTransparency = reduceTransparency,
+            playerTheme = playerTheme,
+            showVolumeSlider = showVolumeSlider,
+            fullscreenArtwork = fullscreenArtwork,
+            fullscreenLyrics = fullscreenLyrics,
             selectedAlbumId = albumId,
             destinationStacks = pages,
         )
@@ -99,6 +120,10 @@ class MainViewModel(
             AppIntent.NavigateBack -> navigateBack()
             is AppIntent.SetThemeMode -> setThemeMode(intent.themeMode)
             is AppIntent.SetReduceTransparency -> setReduceTransparency(intent.enabled)
+            is AppIntent.SetPlayerTheme -> setPlayerTheme(intent.theme)
+            is AppIntent.SetShowVolumeSlider -> setShowVolumeSlider(intent.enabled)
+            is AppIntent.SetFullscreenArtwork -> setFullscreenArtwork(intent.enabled)
+            is AppIntent.SetFullscreenLyrics -> setFullscreenLyrics(intent.enabled)
             is AppIntent.OpenExternalUrl -> _effects.trySend(AppEffect.OpenExternalUrl(intent.url))
         }
     }
@@ -198,6 +223,30 @@ class MainViewModel(
     private fun setReduceTransparency(enabled: Boolean) {
         viewModelScope.launch {
             themeModeStore.setReduceTransparency(enabled)
+        }
+    }
+
+    private fun setPlayerTheme(theme: PlayerTheme) {
+        viewModelScope.launch {
+            themeModeStore.setPlayerTheme(theme)
+        }
+    }
+
+    private fun setShowVolumeSlider(enabled: Boolean) {
+        viewModelScope.launch {
+            themeModeStore.setShowVolumeSlider(enabled)
+        }
+    }
+
+    private fun setFullscreenArtwork(enabled: Boolean) {
+        viewModelScope.launch {
+            themeModeStore.setFullscreenArtwork(enabled)
+        }
+    }
+
+    private fun setFullscreenLyrics(enabled: Boolean) {
+        viewModelScope.launch {
+            themeModeStore.setFullscreenLyrics(enabled)
         }
     }
 
