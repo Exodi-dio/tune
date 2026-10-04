@@ -36,7 +36,7 @@ internal class PlaybackPreferences(private val context: Context) {
 
     val crossfadeSeconds: Flow<Int> = settings.map { it.seconds }
     val showFullscreenQualityBadge: Flow<Boolean> = context.playbackPreferencesDataStore.data.map {
-        it[ShowFullscreenQualityBadgeKey] ?: true
+        it[ShowFullscreenQualityBadgeKey] ?: false
     }
 
     val hideShortAudio: Flow<Boolean> = context.playbackPreferencesDataStore.data.map {
