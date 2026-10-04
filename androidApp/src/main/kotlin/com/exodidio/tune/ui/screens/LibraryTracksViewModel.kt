@@ -72,12 +72,13 @@ internal class LibraryTracksViewModel(
     private val sortOrderFlow = MutableStateFlow(SortOrder.Ascending)
     private val filterQueryFlow = MutableStateFlow("")
 
-    val homeUiState: StateFlow<HomeUiState> = combine(syncStore.tracks, syncStore.lastListenedAt) { rawTracks, lastListenedAt ->
+    val homeUiState: StateFlow<HomeUiState> = combine(syncStore.tracks, syncStore.lastListenedAt, hideShortAudio) { rawTracks, lastListenedAt, hideShort ->
+            val visible = filterShortAudioTracks(rawTracks, hideShort)
             HomeUiState(
                 isLoaded = true,
-                keepListeningTracks = keepListeningTracks(rawTracks, lastListenedAt),
-                mostPlayedTracks = mostPlayedTracks(rawTracks),
-                forgottenTracks = forgottenTracks(rawTracks),
+                keepListeningTracks = keepListeningTracks(visible, lastListenedAt),
+                mostPlayedTracks = mostPlayedTracks(visible),
+                forgottenTracks = forgottenTracks(visible),
             )
         }
         .flowOn(Dispatchers.Default)

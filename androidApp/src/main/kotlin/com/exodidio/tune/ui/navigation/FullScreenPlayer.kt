@@ -90,10 +90,10 @@ internal fun FullScreenPlayer(
     artworkCrossfade: ArtworkCrossfadeTransition? = null,
     blendArtworkDuringCrossfade: Boolean = true,
     showQualityBadge: Boolean = true,
-    playerTheme: PlayerTheme = PlayerTheme.Adaptive,
-    showVolumeSlider: Boolean = true,
-    fullscreenArtwork: Boolean = true,
-    fullscreenLyrics: Boolean = true,
+    playerTheme: PlayerTheme = PlayerTheme.Standard,
+    showVolumeSlider: Boolean = false,
+    fullscreenArtwork: Boolean = false,
+    fullscreenLyrics: Boolean = false,
     volume: Float,
     onSeek: (Long) -> Unit,
     onVolumeChange: (Float) -> Unit,
@@ -220,7 +220,9 @@ internal fun FullScreenPlayer(
     )
 
     val adaptiveEnabled = playerTheme == PlayerTheme.Adaptive
-    val fullscreenArtworkEnabled = adaptiveEnabled && fullscreenArtwork
+    // Fullscreen cover art = album art blends with the now-playing background.
+    // Off (default) = normal card-shaped artwork. Independent of Adaptive theme.
+    val fullscreenArtworkEnabled = fullscreenArtwork
     val adaptiveColors = rememberAdaptivePlayerColors(
         bitmap = artwork?.sourceBitmap,
         enabled = adaptiveEnabled,
@@ -247,8 +249,9 @@ internal fun FullScreenPlayer(
         )
         val compactMetadataWidth = maxWidth - 20.dp
         val queuePanelWidth = maxWidth
+        val lyricsFullscreenOpen = selectedPanel == FullScreenPlayerPanel.Lyrics && fullscreenLyrics
         val artworkSize by animateDpAsState(
-            targetValue = if (isPanelOpen) FullScreenPlayerCompactArtworkSize else expandedArtworkSize,
+            targetValue = if (lyricsFullscreenOpen) 0.dp else if (isPanelOpen) FullScreenPlayerCompactArtworkSize else expandedArtworkSize,
             animationSpec = tween(320, easing = FastOutSlowInEasing),
             label = "full-screen-artwork-size",
         )
@@ -260,7 +263,8 @@ internal fun FullScreenPlayer(
         // Keep the top block's expanded footprint reserved while a panel is open.
         // During a queue reorder, it temporarily grows through the controls area
         // so the list can use the complete safe fullscreen height.
-        val restingTopBlockHeight = expandedArtworkSize + 96.dp
+        // Fullscreen lyrics takes over: collapse artwork footprint so lyrics fill the screen.
+        val restingTopBlockHeight = if (lyricsFullscreenOpen) 120.dp else expandedArtworkSize + 96.dp
         val topBlockHeight by animateDpAsState(
             targetValue = if (isQueueReordering) maxHeight else restingTopBlockHeight,
             animationSpec = tween(QueueReorderTransitionDurationMs, easing = FastOutSlowInEasing),
@@ -335,7 +339,8 @@ internal fun FullScreenPlayer(
                         incomingArtwork = incomingArtwork,
                         crossfadeProgress = crossfadeProgress,
                         isArtworkCrossfading = isArtworkCrossfading,
-                        Modifier
+                        fullscreen = fullscreenArtworkEnabled,
+                        modifier = Modifier
                             .size(artworkSize)
                             .offset(x = artworkHorizontalOffset)
                             .semantics { testTag = FullScreenPlayerArtworkTestTag }
@@ -482,6 +487,7 @@ internal fun FullScreenPlayer(
                                     seekRequestId = lyricsSeekRequestId,
                                     onSeek = onSeek,
                                     modifier = Modifier.fillMaxSize(),
+                                    fullscreen = fullscreenLyrics,
                                 )
                             }
                         }
@@ -516,7 +522,8 @@ internal fun FullScreenPlayer(
                 onNext = onNext,
                 onOpenMediaOutputSwitcher = onOpenMediaOutputSwitcher,
                 showVolumeSlider = showVolumeSlider,
-                showLyricsButton = fullscreenLyrics,
+                // Lyrics is compulsory: button always visible. fullscreenLyrics only controls presentation.
+                showLyricsButton = true,
                 modifier = Modifier.weight(1f),
             )
             }

@@ -25,10 +25,11 @@ data class AppUiState(
     val selectedDestination: AppDestination = AppDestination.Home,
     val themeMode: ThemeMode = ThemeMode.System,
     val reduceTransparency: Boolean = false,
-    val playerTheme: PlayerTheme = PlayerTheme.Adaptive,
-    val showVolumeSlider: Boolean = true,
-    val fullscreenArtwork: Boolean = true,
-    val fullscreenLyrics: Boolean = true,
+    val playerTheme: PlayerTheme = PlayerTheme.Standard,
+    val showVolumeSlider: Boolean = false,
+    val fullscreenArtwork: Boolean = false,
+    val fullscreenLyrics: Boolean = false,
+    val showInsightsTab: Boolean = true,
     val selectedAlbumId: String? = null,
     val selectedArtistId: String? = null,
     val selectedGenreId: String? = null,
@@ -65,10 +66,11 @@ class MainViewModel(
     private data class AppearancePrefs(
         val themeMode: ThemeMode = ThemeMode.System,
         val reduceTransparency: Boolean = false,
-        val playerTheme: PlayerTheme = PlayerTheme.Adaptive,
-        val showVolumeSlider: Boolean = true,
-        val fullscreenArtwork: Boolean = true,
-        val fullscreenLyrics: Boolean = true,
+        val playerTheme: PlayerTheme = PlayerTheme.Standard,
+        val showVolumeSlider: Boolean = false,
+        val fullscreenArtwork: Boolean = false,
+        val fullscreenLyrics: Boolean = false,
+        val showInsightsTab: Boolean = true,
     )
 
     private val appearancePrefs = themeModeStore.themeMode
@@ -86,6 +88,9 @@ class MainViewModel(
         }
         .combine(themeModeStore.fullscreenLyrics) { prefs, fullscreenLyrics ->
             prefs.copy(fullscreenLyrics = fullscreenLyrics)
+        }
+        .combine(themeModeStore.showInsightsTab) { prefs, showInsightsTab ->
+            prefs.copy(showInsightsTab = showInsightsTab)
         }
 
     val uiState: StateFlow<AppUiState> = combine(
@@ -105,6 +110,7 @@ class MainViewModel(
             showVolumeSlider = appearance.showVolumeSlider,
             fullscreenArtwork = appearance.fullscreenArtwork,
             fullscreenLyrics = appearance.fullscreenLyrics,
+            showInsightsTab = appearance.showInsightsTab,
             selectedAlbumId = albumId,
             destinationStacks = pages,
         )
@@ -140,6 +146,7 @@ class MainViewModel(
             is AppIntent.SetShowVolumeSlider -> setShowVolumeSlider(intent.enabled)
             is AppIntent.SetFullscreenArtwork -> setFullscreenArtwork(intent.enabled)
             is AppIntent.SetFullscreenLyrics -> setFullscreenLyrics(intent.enabled)
+            is AppIntent.SetShowInsightsTab -> setShowInsightsTab(intent.enabled)
             is AppIntent.OpenExternalUrl -> _effects.trySend(AppEffect.OpenExternalUrl(intent.url))
         }
     }
@@ -263,6 +270,15 @@ class MainViewModel(
     private fun setFullscreenLyrics(enabled: Boolean) {
         viewModelScope.launch {
             themeModeStore.setFullscreenLyrics(enabled)
+        }
+    }
+
+    private fun setShowInsightsTab(enabled: Boolean) {
+        viewModelScope.launch {
+            themeModeStore.setShowInsightsTab(enabled)
+            if (!enabled && selectedDestination.value == AppDestination.Insight) {
+                selectedDestination.value = AppDestination.Home
+            }
         }
     }
 

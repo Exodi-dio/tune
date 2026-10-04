@@ -28,6 +28,25 @@ class LocalLrcResolverTest {
     }
 
     @Test
+    fun ttmlSiblingUsedWhenNoLrcPresent() {
+        val ttml = "<tt><body><div><p begin=\"00:00:01.000\">Hello</p></div></body></tt>"
+        val files = mapOf("/music/song.ttml" to ttml)
+        val result = resolveLocalLrcContent("/music/song.mp3", "Artist", "Title") { files[it] }
+        assertEquals(ttml, result)
+    }
+
+    @Test
+    fun lrcStillPreferredOverTtml() {
+        val ttml = "<tt><body><div><p begin=\"00:00:01.000\">Hello</p></div></body></tt>"
+        val files = mapOf(
+            "/music/song.lrc" to parsableBasename,
+            "/music/song.ttml" to ttml,
+        )
+        val result = resolveLocalLrcContent("/music/song.mp3", "Artist", "Title") { files[it] }
+        assertEquals(parsableBasename, result)
+    }
+
+    @Test
     fun missingFilesResolveToNullSoCallerFallsBackOnline() {
         val result = resolveLocalLrcContent("/music/song.mp3", "Artist", "Title") { null }
         assertNull(result)

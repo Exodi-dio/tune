@@ -73,6 +73,14 @@ internal fun HomeContent(
                 }
             }
         } else {
+            item {
+                HomeHero(
+                    keepListeningTracks = keepListeningTracks,
+                    mostPlayedTracks = mostPlayedTracks,
+                    onTrackClick = onTrackClick,
+                    titleHorizontalPadding = titleHorizontalPadding,
+                )
+            }
             if (keepListeningTracks.isNotEmpty()) item {
                 HomeTrackSection(
                     titleRes = R.string.home_keep_listening,
@@ -188,3 +196,55 @@ private fun HomeTrackSection(
 internal fun homeTrackSectionRows(trackCount: Int) = minOf(trackCount, 2)
 
 internal fun homeTrackSectionHeight(trackCount: Int) = if (homeTrackSectionRows(trackCount) == 1) 182.dp else 384.dp
+
+@Composable
+private fun HomeHero(
+    keepListeningTracks: List<LibraryTrack>,
+    mostPlayedTracks: List<LibraryTrack>,
+    onTrackClick: (List<LibraryTrack>, String) -> Unit,
+    titleHorizontalPadding: androidx.compose.ui.unit.Dp,
+) {
+    val colors = LocalTuneColors.current
+    val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+    val greetingRes = when (hour) {
+        in 5..11 -> R.string.home_greeting_morning
+        in 12..17 -> R.string.home_greeting_afternoon
+        in 18..22 -> R.string.home_greeting_evening
+        else -> R.string.home_greeting_night
+    }
+    val featured = keepListeningTracks.firstOrNull() ?: mostPlayedTracks.firstOrNull()
+    Column(
+        modifier = Modifier.padding(horizontal = titleHorizontalPadding),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = stringResource(greetingRes),
+                style = MaterialTheme.typography.titleMedium,
+                color = colors.textMuted,
+            )
+            Text(
+                text = stringResource(R.string.home_hero_title),
+                style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
+                color = colors.textMain,
+            )
+        }
+        if (featured != null) {
+            val shelf = (keepListeningTracks + mostPlayedTracks).distinctBy { it.id }.take(6)
+            HeroCard(
+                symbol = MaterialSymbols.MusicNote,
+                title = featured.title,
+                description = featured.artists,
+            ) {
+                DiscCard(
+                    title = featured.title,
+                    subtitle = featured.artists,
+                    artworkPath = featured.artworkPath,
+                    modifier = Modifier.width(160.dp),
+                    onClick = { onTrackClick(shelf.ifEmpty { listOf(featured) }, featured.id) },
+                    onLongClick = {},
+                )
+            }
+        }
+    }
+}

@@ -131,6 +131,12 @@ internal fun AboutContent(
                 modifier = Modifier.size(64.dp),
             )
         }
+        Text(
+            text = stringResource(R.string.about_section_app),
+            style = MaterialTheme.typography.titleSmall,
+            color = colors.textMain,
+            modifier = Modifier.padding(top = 4.dp),
+        )
         ActionList(
             items = listOf(
                 ActionListItem(
@@ -177,6 +183,18 @@ internal fun AboutContent(
                     },
                     onClick = ::checkForUpdates,
                 ),
+            ),
+            containerStyle = ActionListContainerStyle.Card,
+            dividerStyle = ActionListDividerStyle.FullWidth,
+        )
+        Text(
+            text = stringResource(R.string.about_section_project),
+            style = MaterialTheme.typography.titleSmall,
+            color = colors.textMain,
+            modifier = Modifier.padding(top = 4.dp),
+        )
+        ActionList(
+            items = listOf(
                 ActionListItem(
                     labelRes = R.string.about_github,
                     onClick = { onOpenExternalUrl(TuneGithubUrl) },

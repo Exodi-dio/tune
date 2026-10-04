@@ -257,12 +257,9 @@ internal fun FullScreenPlayerControls(
                     Spacer(Modifier.height(4.dp))
                 }
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    if (showLyricsButton) {
-                        FullScreenControlSlot { FullScreenTransportButton(MaterialSymbols.Chat, stringResource(R.string.player_lyrics), { onPanelSelected(if (lyricsSelected) null else FullScreenPlayerPanel.Lyrics) }, iconSize = 24.dp, tint = lyricsIcon, containerColor = lyricsBackground, filled = false) }
-                    } else {
-                        FullScreenControlSlot { }
-                    }
-                    FullScreenControlSlot { FullScreenTransportButton(MaterialSymbols.Airplay, stringResource(R.string.player_cast), onOpenMediaOutputSwitcher, iconSize = 24.dp, tint = colors.foregroundSubtle, filled = false) }
+                    // Lyrics is a compulsory player feature: always available. Fullscreen lyrics
+                    // only controls presentation (see FullScreenPlayerLyricsPanel fullscreen flag).
+                    FullScreenControlSlot { FullScreenTransportButton(MaterialSymbols.Chat, stringResource(R.string.player_lyrics), { onPanelSelected(if (lyricsSelected) null else FullScreenPlayerPanel.Lyrics) }, iconSize = 24.dp, tint = lyricsIcon, containerColor = lyricsBackground, filled = false) }
                     FullScreenControlSlot {
                         Box(Modifier.size(64.dp)) {
                             FullScreenTransportButton(MaterialSymbols.QueueMusic, stringResource(R.string.player_queue), { onPanelSelected(if (queueSelected) null else FullScreenPlayerPanel.Queue) }, iconSize = 24.dp, tint = queueIcon, containerColor = queueBackground, filled = false)

@@ -98,18 +98,36 @@ internal fun FullScreenPlayerArtwork(
     crossfadeProgress: Float,
     isArtworkCrossfading: Boolean,
     modifier: Modifier,
+    fullscreen: Boolean = false,
 ) {
     val colors = LocalTuneColors.current
-    Box(
-        modifier.clip(FullScreenArtworkShape).background(colors.glassElevated)
-            .border(1.dp, colors.borderGlass, FullScreenArtworkShape),
-        contentAlignment = Alignment.Center,
-    ) {
+    // Off (default) = normal card-shaped artwork. On = artwork blends with the
+    // now-playing screen (full-bleed, no card chrome); the background gradient
+    // behind it is already tinted from the same artwork.
+    if (fullscreen) {
+        Box(
+            modifier.background(colors.glassElevated),
+            contentAlignment = Alignment.Center,
+        ) {
         if (isArtworkCrossfading) {
             ArtworkLayer(outgoingArtwork, equalPowerOutgoing(crossfadeProgress))
             ArtworkLayer(incomingArtwork, equalPowerIncoming(crossfadeProgress))
         } else {
             ArtworkLayer(artwork, 1f)
+        }
+        }
+    } else {
+        Box(
+            modifier.clip(FullScreenArtworkShape).background(colors.glassElevated)
+                .border(1.dp, colors.borderGlass, FullScreenArtworkShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (isArtworkCrossfading) {
+                ArtworkLayer(outgoingArtwork, equalPowerOutgoing(crossfadeProgress))
+                ArtworkLayer(incomingArtwork, equalPowerIncoming(crossfadeProgress))
+            } else {
+                ArtworkLayer(artwork, 1f)
+            }
         }
     }
 }

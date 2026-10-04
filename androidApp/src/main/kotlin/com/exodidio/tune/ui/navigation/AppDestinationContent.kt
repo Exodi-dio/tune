@@ -128,10 +128,12 @@ internal fun AppDestinationContent(
     stackPage: StackPageEntry,
     themeMode: ThemeMode,
     reduceTransparency: Boolean,
-    playerTheme: PlayerTheme = PlayerTheme.Adaptive,
-    showVolumeSlider: Boolean = true,
-    fullscreenArtwork: Boolean = true,
-    fullscreenLyrics: Boolean = true,
+    playerTheme: PlayerTheme = PlayerTheme.Standard,
+    showVolumeSlider: Boolean = false,
+    fullscreenArtwork: Boolean = false,
+    fullscreenLyrics: Boolean = false,
+    showInsightsTab: Boolean = true,
+    onShowInsightsTabChanged: (Boolean) -> Unit = {},
     hazeState: HazeState?,
     navigationBottomPadding: Dp,
     homeListState: LazyListState,
@@ -448,6 +450,8 @@ internal fun AppDestinationContent(
                                 onFullscreenLyricsChanged = { enabled ->
                                     onIntent(AppIntent.SetFullscreenLyrics(enabled))
                                 },
+                                showInsightsTab = showInsightsTab,
+                                onShowInsightsTabChanged = onShowInsightsTabChanged,
                                 hazeState = hazeState,
                             )
                             AppStackPage.SettingsPlayback -> PlaybackSettingsContent(

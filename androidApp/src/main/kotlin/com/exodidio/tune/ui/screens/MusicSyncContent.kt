@@ -37,8 +37,11 @@ import com.exodidio.tune.library.scanPathForTreeUriString
 import com.exodidio.tune.sync.AndroidSyncRuntime
 import com.exodidio.tune.ui.components.ActionList
 import com.exodidio.tune.ui.components.ActionListContainerStyle
+import com.exodidio.tune.ui.components.ActionListDivider
 import com.exodidio.tune.ui.components.ActionListDividerStyle
 import com.exodidio.tune.ui.components.ActionListItem
+import com.exodidio.tune.ui.components.Card
+import com.exodidio.tune.ui.components.HeroCard
 import com.exodidio.tune.ui.components.MaterialSymbols
 import com.exodidio.tune.ui.theme.LocalTuneColors
 import kotlinx.coroutines.flow.first
@@ -58,7 +61,7 @@ internal fun MusicSyncContent(
     val scanFolders = remember(context.applicationContext) {
         ScanFolderPreferences(context.applicationContext)
     }
-    val folders by scanFolders.folders.collectAsState(initial = emptySet())
+    val folder by scanFolders.folder.collectAsState(initial = null)
     val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri != null) {
             try {
@@ -68,7 +71,7 @@ internal fun MusicSyncContent(
                 )
             } catch (_: Exception) {
             }
-            scope.launch { scanFolders.addFolder(uri.toString()) }
+            scope.launch { scanFolders.setFolder(uri.toString()) }
         }
     }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -76,7 +79,7 @@ internal fun MusicSyncContent(
         val rationale = activity?.shouldShowRequestPermissionRationale(audioPermission()) == true
         scope.launch {
             scanner.refreshPermission(granted, rationale)
-            if (granted) scanner.scan(scanFolders.folders.first())
+            if (granted) scanFolders.folder.first()?.let { scanner.scan(setOf(it)) } ?: scanner.scan(emptySet())
         }
     }
     LaunchedEffect(scanner) {
@@ -87,118 +90,129 @@ internal fun MusicSyncContent(
     }
     fun startScan() {
         if (context.checkSelfPermission(audioPermission()) == PackageManager.PERMISSION_GRANTED) {
-            scope.launch { scanner.refreshPermission(true, false); scanner.scan(scanFolders.folders.first()) }
+            scope.launch { scanner.refreshPermission(true, false); val single = scanFolders.folder.first(); scanner.scan(if (single.isNullOrBlank()) emptySet() else setOf(single)) }
         } else {
             permissionLauncher.launch(audioPermission())
         }
+    }
+    fun clearFolderSelection(previous: String?) {
+        if (previous?.startsWith("content://", ignoreCase = true) == true) {
+            try {
+                context.contentResolver.releasePersistableUriPermission(
+                    Uri.parse(previous),
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                )
+            } catch (_: Exception) {
+            }
+        }
+        scope.launch { scanFolders.clearFolder() }
     }
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        ActionList(
-            items = listOf(
-                ActionListItem(
-                    labelRes = R.string.library_scan_local,
-                    leadingSymbol = MaterialSymbols.Refresh,
-                    leadingIconTint = colors.primary,
-                    trailingContent = if (scanState.scanning) {
-                        { CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
-                    } else {
-                        null
-                    },
-                    onClick = ::startScan,
+        HeroCard(
+            symbol = MaterialSymbols.Refresh,
+            title = stringResource(R.string.music_sync_title),
+            description = stringResource(R.string.music_sync_desc),
+        )
+        Card {
+            ActionList(
+                items = listOf(
+                    ActionListItem(
+                        labelRes = R.string.library_scan_local,
+                        leadingSymbol = MaterialSymbols.Refresh,
+                        leadingIconTint = colors.primary,
+                        trailingContent = if (scanState.scanning) {
+                            { CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
+                        } else {
+                            null
+                        },
+                        onClick = ::startScan,
+                    ),
                 ),
-            ),
-            containerStyle = ActionListContainerStyle.Card,
-            dividerStyle = ActionListDividerStyle.FullWidth,
-        )
-        when (scanState.permission) {
-            ScanPermission.NeedsRationale -> Text(
-                text = stringResource(R.string.music_sync_permission_rationale),
-                style = MaterialTheme.typography.bodyMedium,
-                color = colors.textMuted,
+                containerStyle = ActionListContainerStyle.Plain,
             )
-            ScanPermission.Denied -> Text(
-                text = stringResource(R.string.music_sync_permission_denied),
-                style = MaterialTheme.typography.bodyMedium,
-                color = colors.textMuted,
-            )
-            else -> Unit
-        }
-        scanState.lastResult?.let { result ->
-            Text(
-                text = stringResource(R.string.music_sync_last_result, result.inserted, result.skipped),
-                style = MaterialTheme.typography.bodyMedium,
-                color = colors.textMuted,
-            )
-        }
-        scanState.error?.let { error ->
-            Text(
-                text = stringResource(R.string.music_sync_error, error),
-                style = MaterialTheme.typography.bodyMedium,
-                color = colors.textMuted,
-            )
-        }
-        Text(
-            text = stringResource(R.string.music_sync_folders_title),
-            style = MaterialTheme.typography.titleSmall,
-            color = colors.textMain,
-            modifier = Modifier.padding(top = 4.dp),
-        )
-        if (folders.isEmpty()) {
-            Text(
-                text = stringResource(R.string.music_sync_folders_empty),
-                style = MaterialTheme.typography.bodyMedium,
-                color = colors.textMuted,
-            )
-        } else {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                folders.sorted().forEach { folder ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = scanPathForTreeUriString(folder) ?: folder,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = colors.textMain,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f),
-                        )
-                        TextButton(onClick = {
-                            // F5: release the persisted tree grant so removed
-                            // folders do not leak URI permissions. Best-effort:
-                            // file-path entries have nothing to release.
-                            if (folder.startsWith("content://", ignoreCase = true)) {
-                                try {
-                                    context.contentResolver.releasePersistableUriPermission(
-                                        Uri.parse(folder),
-                                        Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                                    )
-                                } catch (_: Exception) {
-                                }
-                            }
-                            scope.launch { scanFolders.removeFolder(folder) }
-                        }) {
-                            Text(text = stringResource(R.string.music_sync_folder_remove))
-                        }
-                    }
-                }
+            when (scanState.permission) {
+                ScanPermission.NeedsRationale -> Text(
+                    text = stringResource(R.string.music_sync_permission_rationale),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.textMuted,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+                ScanPermission.Denied -> Text(
+                    text = stringResource(R.string.music_sync_permission_denied),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.textMuted,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+                else -> Unit
+            }
+            scanState.lastResult?.let { result ->
+                Text(
+                    text = stringResource(R.string.music_sync_last_result, result.inserted, result.skipped),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.textMuted,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            }
+            scanState.error?.let { error ->
+                Text(
+                    text = stringResource(R.string.music_sync_error, error),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.textMuted,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
             }
         }
-        ActionList(
-            items = listOf(
-                ActionListItem(
-                    labelRes = R.string.music_sync_folder_add,
-                    leadingSymbol = MaterialSymbols.Add,
-                    leadingIconTint = colors.primary,
-                    onClick = { folderPicker.launch(null) },
-                ),
-            ),
-            containerStyle = ActionListContainerStyle.Card,
-            dividerStyle = ActionListDividerStyle.FullWidth,
-        )
+        Card {
+            Text(
+                text = stringResource(R.string.music_sync_folder_single_title),
+                style = MaterialTheme.typography.titleSmall,
+                color = colors.textMain,
+                modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 16.dp),
+            )
+            if (folder.isNullOrBlank()) {
+                Text(
+                    text = stringResource(R.string.music_sync_folder_single_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.textMuted,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            } else {
+                Text(
+                    text = scanPathForTreeUriString(folder!!) ?: folder!!,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.textMain,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            }
+            ActionListDivider(style = ActionListDividerStyle.FullWidth)
+            ActionList(
+                items = buildList {
+                    add(
+                        ActionListItem(
+                            labelRes = if (folder.isNullOrBlank()) R.string.music_sync_folder_choose else R.string.music_sync_folder_change,
+                            leadingSymbol = MaterialSymbols.Add,
+                            leadingIconTint = colors.primary,
+                            onClick = { folderPicker.launch(null) },
+                        ),
+                    )
+                    if (!folder.isNullOrBlank()) {
+                        add(
+                            ActionListItem(
+                                labelRes = R.string.music_sync_folder_clear,
+                                leadingSymbol = MaterialSymbols.Refresh,
+                                leadingIconTint = colors.textMuted,
+                                onClick = { clearFolderSelection(folder) },
+                            ),
+                        )
+                    }
+                },
+                containerStyle = ActionListContainerStyle.Plain,
+            )
+        }
     }
 }

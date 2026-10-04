@@ -86,7 +86,37 @@ internal enum class LyricsSeekDirection { Backward, Forward }
 internal fun lyricsSeekDirection(targetIndex: Int, firstVisibleIndex: Int): LyricsSeekDirection =
     if (targetIndex < firstVisibleIndex) LyricsSeekDirection.Backward else LyricsSeekDirection.Forward
 
-internal fun parsePlayerLyrics(content: String): List<PlayerLyricLine> = content.lineSequence()
+private val TtmlParagraph = Regex("<p[^>]*begin=\"([^\"]+)\"[^>]*>(.*?)</p>", RegexOption.DOT_MATCHES_ALL)
+private val TtmlTag = Regex("<[^>]+>")
+
+internal fun parseTtmlTimestamp(value: String): Float? {
+    val v = value.trim()
+    // Formats: HH:MM:SS.mmm, MM:SS.mmm, SS.mmm, with comma or dot
+    val normalized = v.replace(',', '.')
+    val parts = normalized.split(':')
+    return try {
+        when (parts.size) {
+            3 -> parts[0].toFloat() * 3600f + parts[1].toFloat() * 60f + parts[2].toFloat()
+            2 -> parts[0].toFloat() * 60f + parts[1].toFloat()
+            1 -> parts[0].trimEnd('s').toFloat()
+            else -> null
+        }
+    } catch (_: Exception) { null }
+}
+
+internal fun parseTtmlLyrics(content: String): List<PlayerLyricLine> =
+    TtmlParagraph.findAll(content).mapNotNull { match ->
+        val timestamp = parseTtmlTimestamp(match.groupValues[1])
+        val text = match.groupValues[2].replace(TtmlTag, "").replace("&amp;", "&")
+            .replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").trim()
+        text.takeIf { it.isNotEmpty() }?.let { parsePlayerLyricText(it, timestamp) }
+    }.toList()
+
+internal fun parsePlayerLyrics(content: String): List<PlayerLyricLine> {
+    if (content.contains("<tt", ignoreCase = true) || TtmlParagraph.containsMatchIn(content)) {
+        parseTtmlLyrics(content).takeIf { it.isNotEmpty() }?.let { return it }
+    }
+    return content.lineSequence()
     .mapNotNull { rawLine ->
         val match = TimestampedLyricLine.matchEntire(rawLine)
         val timestamp = match?.let { it.groupValues[1].toFloat() * 60f + it.groupValues[2].toFloat() }
@@ -94,6 +124,7 @@ internal fun parsePlayerLyrics(content: String): List<PlayerLyricLine> = content
         text.trim().takeIf(String::isNotEmpty)?.let { parsePlayerLyricText(it, timestamp) }
     }
     .toList()
+}
 
 internal fun hasSyncedPlayerLyrics(content: String?): Boolean = content != null && parsePlayerLyrics(content).any { it.timestampSeconds != null }
 
@@ -153,6 +184,7 @@ internal fun FullScreenPlayerLyricsPanel(
     seekRequestId: Long = 0L,
     onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    fullscreen: Boolean = false,
 ) {
     val parsedLines = remember(lyrics) { lyrics?.let(::parsePlayerLyrics).orEmpty() }
     val syncedLines = remember(parsedLines) { parsedLines.filter { it.timestampSeconds != null } }
@@ -188,8 +220,9 @@ internal fun FullScreenPlayerLyricsPanel(
                 Modifier.fillMaxSize(),
                 secondary,
                 showToggle,
+                fullscreen = fullscreen,
             )
-            else -> PlainLyricsList(parsedLines, Modifier.fillMaxSize(), secondary, showToggle)
+            else -> PlainLyricsList(parsedLines, Modifier.fillMaxSize(), secondary, showToggle, fullscreen = fullscreen)
         }
         if (showToggle) {
             RomanizationToggle(
@@ -259,6 +292,7 @@ private fun SyncedLyricsList(
     modifier: Modifier,
     secondary: List<String?>,
     showToggle: Boolean,
+    fullscreen: Boolean = false,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val listState = rememberLazyListState()
@@ -442,6 +476,7 @@ private fun SyncedLyricsList(
         itemsIndexed(lines, key = { index, _ -> index }) { index, line ->
             SyncedLyricRow(
                 line = line,
+                fullscreen = fullscreen,
                 secondary = secondary.getOrNull(index) ?: line.secondary,
                 distance = if (activeIndex >= 0) kotlin.math.abs(index - activeIndex) else Int.MAX_VALUE,
                 onClick = {
@@ -463,6 +498,7 @@ private fun SyncedLyricsList(
 @Composable
 private fun SyncedLyricRow(
     line: PlayerLyricLine,
+    fullscreen: Boolean = false,
     secondary: String?,
     distance: Int,
     onClick: () -> Unit,
@@ -535,7 +571,7 @@ private fun SyncedLyricRow(
         Text(
             text = line.primary,
             color = colors.onPrimary.copy(alpha = opacity),
-            style = MaterialTheme.typography.headlineSmall,
+            style = if (fullscreen) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.headlineSmall,
             // Keep glyph metrics stable when the line becomes active; changing
             // weight here would re-wrap the same text during scale animation.
             fontWeight = FontWeight.Bold,
@@ -558,14 +594,14 @@ private fun SyncedLyricRow(
 }
 
 @Composable
-private fun PlainLyricsList(lines: List<PlayerLyricLine>, modifier: Modifier, secondary: List<String?>, showToggle: Boolean) {
+private fun PlainLyricsList(lines: List<PlayerLyricLine>, modifier: Modifier, secondary: List<String?>, showToggle: Boolean, fullscreen: Boolean = false) {
     val colors = LocalTuneColors.current
     LazyColumn(modifier = modifier.testTag("plain_lyrics_list"), contentPadding = PaddingValues(bottom = if (showToggle) 72.dp else 0.dp)) {
         itemsIndexed(lines, key = { index, _ -> index }) { index, line ->
-            Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-                Text(text = line.primary, color = colors.onPrimary, style = MaterialTheme.typography.bodyLarge)
+            Column(Modifier.fillMaxWidth().padding(vertical = if (fullscreen) 12.dp else 8.dp)) {
+                Text(text = line.primary, color = colors.onPrimary, style = if (fullscreen) MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold) else MaterialTheme.typography.bodyLarge)
                 (secondary.getOrNull(index) ?: line.secondary)?.let {
-                    Text(text = it, color = colors.foregroundSubtle, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 2.dp))
+                    Text(text = it, color = colors.foregroundSubtle, style = if (fullscreen) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 2.dp))
                 }
             }
         }
