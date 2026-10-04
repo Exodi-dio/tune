@@ -194,7 +194,7 @@ class MainActivity : ComponentActivity() {
             val crossfadeSettings by playbackPreferences.settings.collectAsStateWithLifecycle(
                 initialValue = com.exodidio.tune.player.CrossfadeSettings(0, 4, true),
             )
-            val showFullscreenQualityBadge by playbackPreferences.showFullscreenQualityBadge.collectAsStateWithLifecycle(initialValue = true)
+            val showFullscreenQualityBadge by playbackPreferences.showFullscreenQualityBadge.collectAsStateWithLifecycle(initialValue = false)
             val hideShortAudio by playbackPreferences.hideShortAudio.collectAsStateWithLifecycle(initialValue = false)
             val normalizationSettings by normalizationPreferences.settings.collectAsStateWithLifecycle(
                 initialValue = com.exodidio.tune.player.NormalizationSettings(),

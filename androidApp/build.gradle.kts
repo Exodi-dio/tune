@@ -166,7 +166,8 @@ android {
         abi {
             // ABI splits only for release builds: keep debug as a single fast APK.
             val buildingRelease = gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
-            isEnable = buildingRelease
+            val releaseAbiSplitsRequested = gradle.startParameter.projectProperties["enableReleaseAbiSplits"] != "false"
+            isEnable = buildingRelease && releaseAbiSplitsRequested
             reset()
             include("arm64-v8a", "armeabi-v7a", "x86_64")
             isUniversalApk = true

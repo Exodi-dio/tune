@@ -29,7 +29,7 @@ data class AppUiState(
     val showVolumeSlider: Boolean = false,
     val fullscreenArtwork: Boolean = false,
     val fullscreenLyrics: Boolean = false,
-    val showInsightsTab: Boolean = true,
+    val showInsightsTab: Boolean = false,
     val selectedAlbumId: String? = null,
     val selectedArtistId: String? = null,
     val selectedGenreId: String? = null,
@@ -70,7 +70,7 @@ class MainViewModel(
         val showVolumeSlider: Boolean = false,
         val fullscreenArtwork: Boolean = false,
         val fullscreenLyrics: Boolean = false,
-        val showInsightsTab: Boolean = true,
+        val showInsightsTab: Boolean = false,
     )
 
     private val appearancePrefs = themeModeStore.themeMode
