@@ -62,33 +62,55 @@ class MainViewModel(
 
     val effects = _effects.receiveAsFlow()
 
-    val uiState: StateFlow<AppUiState> = combine(
+    private data class AppearancePrefs(
+        val themeMode: ThemeMode = ThemeMode.System,
+        val reduceTransparency: Boolean = false,
+        val playerTheme: PlayerTheme = PlayerTheme.Adaptive,
+        val showVolumeSlider: Boolean = true,
+        val fullscreenArtwork: Boolean = true,
+        val fullscreenLyrics: Boolean = true,
+    )
+
+    private val appearancePrefs = combine(
         themeModeStore.themeMode,
         themeModeStore.reduceTransparency,
         themeModeStore.playerTheme,
         themeModeStore.showVolumeSlider,
         themeModeStore.fullscreenArtwork,
         themeModeStore.fullscreenLyrics,
-        selectedDestination,
-        destinationStacks,
-        selectedAlbumId,
     ) { themeMode: ThemeMode,
         reduceTransparency: Boolean,
         playerTheme: PlayerTheme,
         showVolumeSlider: Boolean,
         fullscreenArtwork: Boolean,
-        fullscreenLyrics: Boolean,
-        destination: AppDestination,
-        pages: Map<AppDestination, List<AppStackPage>>,
-        albumId: String? ->
-        AppUiState(
-            selectedDestination = destination,
+        fullscreenLyrics: Boolean ->
+        AppearancePrefs(
             themeMode = themeMode,
             reduceTransparency = reduceTransparency,
             playerTheme = playerTheme,
             showVolumeSlider = showVolumeSlider,
             fullscreenArtwork = fullscreenArtwork,
             fullscreenLyrics = fullscreenLyrics,
+        )
+    }
+
+    val uiState: StateFlow<AppUiState> = combine(
+        appearancePrefs,
+        selectedDestination,
+        destinationStacks,
+        selectedAlbumId,
+    ) { appearance: AppearancePrefs,
+        destination: AppDestination,
+        pages: Map<AppDestination, List<AppStackPage>>,
+        albumId: String? ->
+        AppUiState(
+            selectedDestination = destination,
+            themeMode = appearance.themeMode,
+            reduceTransparency = appearance.reduceTransparency,
+            playerTheme = appearance.playerTheme,
+            showVolumeSlider = appearance.showVolumeSlider,
+            fullscreenArtwork = appearance.fullscreenArtwork,
+            fullscreenLyrics = appearance.fullscreenLyrics,
             selectedAlbumId = albumId,
             destinationStacks = pages,
         )
