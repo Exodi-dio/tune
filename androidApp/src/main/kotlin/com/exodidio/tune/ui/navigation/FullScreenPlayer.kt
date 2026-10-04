@@ -89,7 +89,7 @@ internal fun FullScreenPlayer(
     onRomanizationToggle: () -> Unit = {},
     artworkCrossfade: ArtworkCrossfadeTransition? = null,
     blendArtworkDuringCrossfade: Boolean = true,
-    showQualityBadge: Boolean = true,
+    showQualityBadge: Boolean = false,
     playerTheme: PlayerTheme = PlayerTheme.Standard,
     showVolumeSlider: Boolean = false,
     fullscreenArtwork: Boolean = false,
