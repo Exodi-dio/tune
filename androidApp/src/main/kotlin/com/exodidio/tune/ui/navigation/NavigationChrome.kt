@@ -34,6 +34,7 @@ internal fun PlaybackState.showsMiniPlayer(): Boolean = when (this) {
 @Composable
 internal fun NavigationChrome(
     selectedDestination: AppDestination,
+    visibleDestinations: List<AppDestination> = AppDestination.entries,
     playbackState: PlaybackState,
     playbackQueue: PlaybackQueueSnapshot = PlaybackQueueSnapshot(),
     hazeState: HazeState?,
@@ -124,6 +125,7 @@ internal fun NavigationChrome(
             }
             FloatingNavigationBar(
                 selectedDestination = selectedDestination,
+                visibleDestinations = visibleDestinations,
                 hazeState = hazeState,
                 onDestinationSelected = onDestinationSelected,
                 fullNavigationContentAlpha = fullNavigationContentAlpha,

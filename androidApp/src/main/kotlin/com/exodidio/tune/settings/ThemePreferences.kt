@@ -16,6 +16,7 @@ private val PlayerThemeKey = stringPreferencesKey("player_theme")
 private val ShowVolumeSliderKey = booleanPreferencesKey("show_volume_slider")
 private val FullscreenArtworkKey = booleanPreferencesKey("fullscreen_artwork")
 private val FullscreenLyricsKey = booleanPreferencesKey("fullscreen_lyrics")
+private val ShowInsightsTabKey = booleanPreferencesKey("show_insights_tab")
 
 enum class ThemeMode(val storageValue: String, val labelRes: Int) {
     System("system", com.exodidio.tune.R.string.theme_system),
@@ -35,7 +36,7 @@ enum class PlayerTheme(val storageValue: String) {
     ;
 
     companion object {
-        fun fromStorage(value: String?): PlayerTheme = entries.firstOrNull { it.storageValue == value } ?: Adaptive
+        fun fromStorage(value: String?): PlayerTheme = entries.firstOrNull { it.storageValue == value } ?: Standard
     }
 }
 
@@ -46,12 +47,14 @@ interface ThemeModeStore {
     val showVolumeSlider: Flow<Boolean>
     val fullscreenArtwork: Flow<Boolean>
     val fullscreenLyrics: Flow<Boolean>
+    val showInsightsTab: Flow<Boolean>
 
     suspend fun setThemeMode(themeMode: ThemeMode)
     suspend fun setReduceTransparency(enabled: Boolean)
     suspend fun setPlayerTheme(theme: PlayerTheme)
     suspend fun setShowVolumeSlider(enabled: Boolean)
     suspend fun setFullscreenArtwork(enabled: Boolean)
+    suspend fun setShowInsightsTab(enabled: Boolean)
     suspend fun setFullscreenLyrics(enabled: Boolean)
 }
 
@@ -68,13 +71,16 @@ class ThemePreferences(
         PlayerTheme.fromStorage(preferences[PlayerThemeKey])
     }
     override val showVolumeSlider: Flow<Boolean> = context.themeDataStore.data.map { preferences: Preferences ->
-        preferences[ShowVolumeSliderKey] ?: true
+        preferences[ShowVolumeSliderKey] ?: false
     }
     override val fullscreenArtwork: Flow<Boolean> = context.themeDataStore.data.map { preferences: Preferences ->
-        preferences[FullscreenArtworkKey] ?: true
+        preferences[FullscreenArtworkKey] ?: false
     }
     override val fullscreenLyrics: Flow<Boolean> = context.themeDataStore.data.map { preferences: Preferences ->
-        preferences[FullscreenLyricsKey] ?: true
+        preferences[FullscreenLyricsKey] ?: false
+    }
+    override val showInsightsTab: Flow<Boolean> = context.themeDataStore.data.map { preferences: Preferences ->
+        preferences[ShowInsightsTabKey] ?: true
     }
 
     override suspend fun setThemeMode(themeMode: ThemeMode) {
@@ -110,6 +116,12 @@ class ThemePreferences(
     override suspend fun setFullscreenLyrics(enabled: Boolean) {
         context.themeDataStore.edit { preferences ->
             preferences[FullscreenLyricsKey] = enabled
+        }
+    }
+
+    override suspend fun setShowInsightsTab(enabled: Boolean) {
+        context.themeDataStore.edit { preferences ->
+            preferences[ShowInsightsTabKey] = enabled
         }
     }
 }

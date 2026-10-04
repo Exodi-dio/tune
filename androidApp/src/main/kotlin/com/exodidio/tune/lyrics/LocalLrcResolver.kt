@@ -4,7 +4,7 @@ import com.exodidio.tune.ui.navigation.parsePlayerLyrics
 import java.io.File
 
 /**
- * Local sibling `.lrc` resolution (Part A).
+ * Local sibling `.lrc`/`.ttml` resolution (Part A, v1.2.0 adds TTML).
  *
  * Order: `<trackbasename>.lrc` in the track's directory, then
  * `<artist> - <title>.lrc` in the same directory. The first candidate
@@ -29,6 +29,8 @@ internal fun localLrcCandidates(trackFilePath: String, artist: String, title: St
         val second = "$safeArtist - $safeTitle".replace('/', '_').replace('\u0000', '_')
         candidates += join("$second.lrc")
     }
+    // TTML siblings (v1.2.0): same basenames with .ttml extension, after .lrc.
+    candidates += candidates.filter { it.endsWith(".lrc") }.map { it.dropLast(4) + ".ttml" }
     return candidates.distinct()
 }
 

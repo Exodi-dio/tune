@@ -74,6 +74,7 @@ internal fun FloatingNavigationBar(
     selectedDestination: AppDestination,
     hazeState: HazeState?,
     onDestinationSelected: (AppDestination) -> Unit,
+    visibleDestinations: List<AppDestination> = AppDestination.entries,
     fullNavigationContentAlpha: Float = 1f,
     onCompactClick: () -> Unit = {},
     height: Dp = FloatingNavigationHeight,
@@ -122,11 +123,11 @@ internal fun FloatingNavigationBar(
                             translationY = contentTranslationY,
                         ),
                 ) {
-            val itemWidth = maxWidth / AppDestination.entries.size
+            val itemWidth = maxWidth / visibleDestinations.size.coerceAtLeast(1)
             val maxIndicatorOffset = maxWidth - itemWidth
             var isDragging by remember { mutableStateOf(false) }
             var dragOffset by remember { mutableStateOf(0.dp) }
-            val targetOffset = if (isDragging) dragOffset else itemWidth * selectedDestination.ordinal
+            val targetOffset = if (isDragging) dragOffset else itemWidth * visibleDestinations.indexOf(selectedDestination).coerceAtLeast(0)
             val indicatorOffset by animateDpAsState(
                 targetValue = targetOffset,
                 animationSpec = if (isDragging) snap() else spring(
@@ -142,7 +143,7 @@ internal fun FloatingNavigationBar(
                         detectDragGestures(
                             onDragStart = {
                                 isDragging = true
-                                dragOffset = itemWidth * selectedDestination.ordinal
+                                dragOffset = itemWidth * visibleDestinations.indexOf(selectedDestination).coerceAtLeast(0)
                             },
                             onDragCancel = { isDragging = false },
                             onDragEnd = {
@@ -150,8 +151,8 @@ internal fun FloatingNavigationBar(
                                 // The leading edge can still be in the previous slot when the
                                 // pill visually covers nearly all of the next destination.
                                 val destinationIndex = ((dragOffset + (itemWidth / 2)) / itemWidth).toInt()
-                                    .coerceIn(0, AppDestination.entries.lastIndex)
-                                val destination = AppDestination.entries[destinationIndex]
+                                    .coerceIn(0, visibleDestinations.lastIndex)
+                                val destination = visibleDestinations[destinationIndex]
                                 // A drag is only a selection gesture when it finishes in a
                                 // different slot. In particular, returning to the original
                                 // tab must not reselect it and reset its stack.
@@ -202,7 +203,7 @@ internal fun FloatingNavigationBar(
                     modifier = Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    AppDestination.entries.forEach { destination ->
+                    visibleDestinations.forEach { destination ->}
                         FloatingNavigationTarget(
                             destination = destination,
                             selected = destination == selectedDestination,
@@ -279,7 +280,7 @@ private fun FloatingNavigationVisuals(
         modifier = modifier.clearAndSetSemantics { },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AppDestination.entries.forEach { destination ->
+        visibleDestinations.forEach { destination ->}
             FloatingNavigationVisual(
                 destination = destination,
                 foreground = foreground,

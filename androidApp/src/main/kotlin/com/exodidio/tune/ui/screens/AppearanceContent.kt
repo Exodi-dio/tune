@@ -25,14 +25,16 @@ internal fun AppearanceContent(
     onThemeModeSelected: (ThemeMode) -> Unit,
     reduceTransparency: Boolean,
     onReduceTransparencyChanged: (Boolean) -> Unit,
-    playerTheme: PlayerTheme = PlayerTheme.Adaptive,
+    playerTheme: PlayerTheme = PlayerTheme.Standard,
     onPlayerThemeSelected: (PlayerTheme) -> Unit = {},
-    showVolumeSlider: Boolean = true,
+    showVolumeSlider: Boolean = false,
     onShowVolumeSliderChanged: (Boolean) -> Unit = {},
-    fullscreenArtwork: Boolean = true,
+    fullscreenArtwork: Boolean = false,
     onFullscreenArtworkChanged: (Boolean) -> Unit = {},
-    fullscreenLyrics: Boolean = true,
+    fullscreenLyrics: Boolean = false,
     onFullscreenLyricsChanged: (Boolean) -> Unit = {},
+    showInsightsTab: Boolean = true,
+    onShowInsightsTabChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
     hazeState: HazeState? = null,
 ) {
@@ -100,6 +102,16 @@ internal fun AppearanceContent(
                             )
                         },
                         onClick = { onFullscreenArtworkChanged(!fullscreenArtwork) },
+                    ),
+                    ActionListItem(
+                        labelRes = R.string.appearance_show_insights,
+                        trailingContent = {
+                            Switch(
+                                checked = showInsightsTab,
+                                onCheckedChange = onShowInsightsTabChanged,
+                            )
+                        },
+                        onClick = { onShowInsightsTabChanged(!showInsightsTab) },
                     ),
                     ActionListItem(
                         labelRes = R.string.appearance_fullscreen_lyrics,

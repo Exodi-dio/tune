@@ -33,6 +33,8 @@ sealed interface AppIntent {
 
     data class SetFullscreenLyrics(val enabled: Boolean) : AppIntent
 
+    data class SetShowInsightsTab(val enabled: Boolean) : AppIntent
+
     data class OpenExternalUrl(val url: String) : AppIntent
 }
 

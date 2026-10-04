@@ -153,21 +153,9 @@ private fun FullScreenPlayerMetadata(
             glassColor = fullScreenSecondaryControlBackground(colors), hazeState = hazeState, showGlassBorder = false,
             circleSize = 36.dp, iconSize = 20.dp, filled = isFavorite, suppressPressedIndication = true,
         )
-        @Composable fun moreButton(onClick: () -> Unit) = TuneIconButton(
-            MaterialSymbols.MoreVert, stringResource(R.string.player_more), onClick,
-            variant = TuneIconButtonVariant.Glass, tint = colors.onPrimary,
-            glassColor = fullScreenSecondaryControlBackground(colors), hazeState = hazeState, showGlassBorder = false,
-            circleSize = if (compact) 32.dp else 36.dp, iconSize = if (compact) 18.dp else 20.dp,
-        )
-        if (contextTrack == null) moreButton({}) else TrackContextMenu(
-            track = contextTrack, expanded = contextMenuExpanded, onDismiss = onContextMenuDismiss, hazeState = hazeState,
-            playbackQueue = playbackQueue, onPlayNext = { onTrackPlayNext(it.id) }, onAddToQueue = { onTrackAddToQueue(it.id) },
-            actions = TrackContextMenuActions(moodRadio = contextTrack.id in moodRadioEligibleTrackIds), onStartMoodRadio = { onStartMoodRadio(it.id) },
-            onFavoriteChange = { track, favorite -> onFavoriteToggle(track.id, favorite) }, onGoToAlbum = { onTrackGoToAlbum(it.albumId) },
-            onGoToArtist = { onTrackGoToArtist(it.id) },
-            onBottomSheetRequested = { onCloseFullscreenThen { onTrackContextBottomSheet(it) } },
-            onCloseFullscreenThen = onCloseFullscreenThen,
-        ) { moreButton(onContextMenuOpen) }
+        // Now-playing keeps only the favorites action. The overflow (three-dot)
+        // menu was removed per v1.2.0 feedback; track actions remain available
+        // from library rows and queue entries.
     }
 }
 

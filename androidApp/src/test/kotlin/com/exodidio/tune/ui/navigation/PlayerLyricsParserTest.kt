@@ -46,6 +46,36 @@ class PlayerLyricsParserTest {
     }
 
     @Test
+    fun parsesTtmlParagraphsWithBeginTimestamps() {
+        val ttml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<tt xmlns=\"http://www.w3.org/ns/ttml\"><body><div>" +
+            "<p begin=\"00:00:01.000\" end=\"00:00:04.000\">First line</p>" +
+            "<p begin=\"00:00:05.500\" end=\"00:00:08.000\">Second <span>line</span></p>" +
+            "</div></body></tt>"
+        val lines = parsePlayerLyrics(ttml)
+        assertEquals(2, lines.size)
+        assertEquals("First line", lines[0].primary)
+        assertEquals(1.0f, lines[0].timestampSeconds)
+        assertEquals("Second line", lines[1].primary)
+        assertEquals(5.5f, lines[1].timestampSeconds)
+    }
+
+    @Test
+    fun parsesTtmlMinuteSecondTimestamps() {
+        val ttml = "<tt><body><div><p begin=\"01:02.500\">Hello</p></div></body></tt>"
+        val lines = parsePlayerLyrics(ttml)
+        assertEquals(1, lines.size)
+        assertEquals(62.5f, lines[0].timestampSeconds)
+    }
+
+    @Test
+    fun lrcContentStillParsesAfterTtmlSupport() {
+        val lines = parsePlayerLyrics("[00:01.00]Hello\n[00:02.00]World")
+        assertEquals(2, lines.size)
+        assertEquals("Hello", lines[0].primary)
+    }
+
+    @Test
     fun followsActiveLineAgainAfterReturningFromBackground() {
         assertTrue(
             shouldFollowLyricsActiveLine(

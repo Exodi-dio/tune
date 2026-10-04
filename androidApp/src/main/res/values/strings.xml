@@ -67,6 +67,7 @@
     <string name="appearance_player_adaptive">Adaptive</string>
     <string name="appearance_show_volume">Show volume slider</string>
     <string name="appearance_fullscreen_artwork">Fullscreen cover art</string>
+    <string name="appearance_show_insights">Show Insights tab</string>
     <string name="appearance_fullscreen_lyrics">Fullscreen lyrics</string>
     <string name="settings_appearance">Appearance</string>
     <string name="close">Close</string>
@@ -198,6 +199,12 @@
     <string name="music_sync_folders_empty">Scanning everything. Add folders to limit the scan.</string>
     <string name="music_sync_folder_add">Add folder</string>
     <string name="music_sync_folder_remove">Remove</string>
+    <string name="music_sync_folder_single_title">Music folder</string>
+    <string name="music_sync_folder_single_empty">Scanning everything on this device. Choose one folder to limit the scan.</string>
+    <string name="music_sync_folder_choose">Choose folder</string>
+    <string name="music_sync_folder_change">Change folder</string>
+    <string name="music_sync_folder_clear">Scan everything instead</string>
+    <string name="music_sync_desc">Pick exactly one folder to keep your library focused. Scanning stays on this device.</string>
     <string name="lastfm_title">Last.fm</string>
     <string name="lastfm_description">Scrobble your plays and sync favorite tracks with Last.fm.</string>
     <string name="lastfm_connected_as">Connected as %1$s</string>
@@ -219,6 +226,8 @@
     <string name="settings_about">About</string>
     <string name="about_title">About</string>
     <string name="about_description">A modern local music player</string>
+    <string name="about_section_app">App</string>
+    <string name="about_section_project">Project</string>
     <string name="about_version">Version</string>
     <string name="about_update">App updates</string>
     <string name="about_update_check">Check for updates</string>
@@ -236,6 +245,7 @@
     <string name="theme_dark">Dark</string>
     <string name="theme_amoled">AMOLED</string>
     <string name="navigate_back">Go back</string>
+    <string name="home_hero_title">Made for you</string>
     <string name="home_keep_listening">Keep listening</string>
     <string name="home_most_played">Most played</string>
     <string name="home_forgotten">You seem to have forgotten</string>
