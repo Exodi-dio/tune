@@ -6,5 +6,5 @@ diff --git a/packages/lyric/tsdown.config.ts b/packages/lyric/tsdown.config.ts
  	...baseConfig,
  	entry: { "amll-lyric": "./src/index.ts" },
  	dts: { tsconfig: "./tsconfig.app.json" },
-+	deps: { alwaysBundle: ["pako"] },
+\tdeps: { alwaysBundle: ["pako", "@applemusic-like-lyrics/ttml"] },
  });
