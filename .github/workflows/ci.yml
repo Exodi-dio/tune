@@ -24,6 +24,9 @@ jobs:
         run: scripts/build-amll-assets.sh "$GITHUB_WORKSPACE/androidApp/build/generated/amllAssets/amll"
       - name: Verify AMLL source pins
         run: node tools/amll/verify-amll-assets.mjs
+        env:
+          AMLL_SOURCE_REVISION: 86200dead453bb067e554e989110cbadca8d4756
+          TTML_TOOL_SOURCE_REVISION: d4953b351ae073c1447464790fff17aa9bc1d807
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
