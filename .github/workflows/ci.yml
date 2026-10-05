@@ -27,6 +27,10 @@ jobs:
         env:
           AMLL_SOURCE_REVISION: 86200dead453bb067e554e989110cbadca8d4756
           TTML_TOOL_SOURCE_REVISION: d4953b351ae073c1447464790fff17aa9bc1d807
+      - name: Reject stale fullscreen behavior
+        run: |
+          ! rg -n 'fullscreenArtwork|fullscreenLyrics|SetFullscreenArtwork|SetFullscreenLyrics' \
+            androidApp/src
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
