@@ -22,7 +22,7 @@ const plainLine = (content) => ({
       words: [
         {
           startTime: 0,
-          endTime: 0,
+          endTime: Infinity,
           word: content.trim(),
         },
       ],
@@ -31,7 +31,7 @@ const plainLine = (content) => ({
       isBG: false,
       isDuet: false,
       startTime: 0,
-      endTime: 0,
+      endTime: Infinity,
     },
   ],
 });
@@ -69,6 +69,18 @@ const post = (payload) => {
 const reportFallback = (trackId, reason) => {
   post({ type: "fallback", trackId, reason: String(reason) });
 };
+
+const finiteLines = (lines) =>
+  lines.map((line) => ({
+    ...line,
+    startTime: Number.isFinite(line.startTime) ? line.startTime : 0,
+    endTime: Number.isFinite(line.endTime) ? line.endTime : line.startTime,
+    words: line.words.map((word) => ({
+      ...word,
+      startTime: Number.isFinite(word.startTime) ? word.startTime : 0,
+      endTime: Number.isFinite(word.endTime) ? word.endTime : word.startTime,
+    })),
+  }));
 
 const ensurePlayer = async () => {
   const generation = playerGeneration;
@@ -124,14 +136,15 @@ const load = async ({ trackId, content, format }) => {
       reportFallback(trackId, parsed.error);
       return;
     }
+    const lines = finiteLines(parsed.lines);
     const amllPlayer = await ensurePlayer();
     if (!amllPlayer || disposed || activeTrackId !== trackId) return;
-    amllPlayer.setLyricLines(parsed.lines, 0);
+    amllPlayer.setLyricLines(lines, 0);
     amllPlayer.setCurrentTime(0, true);
     post({
       type: "ready",
       trackId,
-      lines: parsed.lines,
+      lines,
     });
   } catch (error) {
     if (!disposed && activeTrackId === trackId) {
