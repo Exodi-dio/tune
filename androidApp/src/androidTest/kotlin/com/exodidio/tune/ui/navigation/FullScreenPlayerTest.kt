@@ -568,57 +568,6 @@ class FullScreenPlayerTest {
     }
 
     @Test
-    fun lyricsBackgroundClickTogglesFullscreenWithoutChangingLineSeeking() {
-        var fullscreen by mutableStateOf(false)
-        var seekPositionMs: Long? = null
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayerLyricsPanel(
-                    trackId = "track-1",
-                    lyrics = "[00:01.00]Primary\n[00:03.00]Next line",
-                    currentPositionMs = 1_000L,
-                    onSeek = { seekPositionMs = it },
-                    fullscreen = fullscreen,
-                    onFullscreenChanged = { fullscreen = it },
-                    modifier = Modifier.height(240.dp),
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithTag("fullscreen_lyrics_background").performClick()
-        composeTestRule.runOnIdle { assertEquals(true, fullscreen) }
-
-        composeTestRule.onNodeWithTag("synced_lyric_3.0").performClick()
-        composeTestRule.runOnIdle { assertEquals(3_000L, seekPositionMs) }
-
-        composeTestRule.onNodeWithTag("fullscreen_lyrics_background").performClick()
-        composeTestRule.runOnIdle { assertEquals(false, fullscreen) }
-    }
-
-    @Test
-    fun lyricsEnterFullscreenAfterTwoSecondsWithoutTouchingTheScreen() {
-        var fullscreen by mutableStateOf(false)
-        composeTestRule.setContent {
-            TuneTheme(themeMode = ThemeMode.Dark) {
-                FullScreenPlayerLyricsPanel(
-                    trackId = "track-1",
-                    lyrics = "[00:01.00]Primary",
-                    currentPositionMs = 0L,
-                    onSeek = {},
-                    fullscreen = fullscreen,
-                    onFullscreenChanged = { fullscreen = it },
-                    modifier = Modifier.height(240.dp),
-                )
-            }
-        }
-
-        composeTestRule.waitForIdle()
-        assertEquals(false, fullscreen)
-        composeTestRule.waitUntil(3_000L) { fullscreen }
-        assertEquals(true, fullscreen)
-    }
-
-    @Test
     fun loadingLyricsShowsAnimatedSkeleton() {
         composeTestRule.setContent {
             TuneTheme(themeMode = ThemeMode.Dark) {

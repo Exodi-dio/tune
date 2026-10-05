@@ -1,5 +1,9 @@
 package com.exodidio.tune.ui.navigation
 
+import android.webkit.JavascriptInterface
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -63,16 +67,20 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.exodidio.tune.R
 import com.exodidio.tune.ui.theme.LocalTuneColors
 import com.exodidio.tune.ui.components.LocalReduceMotion
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.awaitCancellation
+import com.exodidio.tune.lyrics.AmllLyricFormat
+import com.exodidio.tune.lyrics.AmllBridgeController
 import com.exodidio.tune.lyrics.RomanizationUiState
+import org.json.JSONObject
 import kotlin.math.roundToInt
 
 internal data class PlayerLyricLine(
@@ -248,6 +256,7 @@ internal fun FullScreenPlayerLyricsPanel(
     lyrics: String?,
     loading: Boolean = false,
     visible: Boolean = true,
+    forcedFallbackReason: String? = null,
     romanization: RomanizationUiState = RomanizationUiState(),
     romanizationAllowed: Boolean = false,
     onRomanizationInput: (List<String>, Boolean) -> Unit = { _, _ -> },
@@ -262,6 +271,9 @@ internal fun FullScreenPlayerLyricsPanel(
     val syncedLines = remember(parsedLines) { parsedLines.filter { it.timestampSeconds != null } }
     val primary = remember(parsedLines, syncedLines) { (syncedLines.ifEmpty { parsedLines }).map { it.primary } }
     val lifecycleOwner = LocalLifecycleOwner.current
+    var bridgeFallbackReason by remember(trackId, forcedFallbackReason) {
+        mutableStateOf(forcedFallbackReason)
+    }
     val currentOnInput by rememberUpdatedState(onRomanizationInput)
     LaunchedEffect(trackId, primary, visible, loading, lifecycleOwner) {
         if (visible && !loading) {
@@ -282,6 +294,17 @@ internal fun FullScreenPlayerLyricsPanel(
         when {
             loading -> LyricsLoadingState(Modifier.fillMaxSize())
             lyrics.isNullOrBlank() -> LyricsEmptyState(Modifier.fillMaxSize())
+            bridgeFallbackReason == null -> AmllLyricsWebView(
+                trackId,
+                lyrics,
+                detectAmllLyricFormat(lyrics),
+                currentPositionMs,
+                pendingSeekPositionMs,
+                seekRequestId,
+                romanization.enabled,
+                { bridgeFallbackReason = it },
+                Modifier.fillMaxSize(),
+            )
             syncedLines.isNotEmpty() -> SyncedLyricsList(
                 trackId,
                 syncedLines,
@@ -309,6 +332,149 @@ internal fun FullScreenPlayerLyricsPanel(
         }
     }
 }
+
+private val LrcTimestampPattern = Regex("""(?m)(?:\\[|<)?\\d{1,3}:\\d{2}(?:[.:]\\d{1,3})?(?:\\]|>)""")
+
+internal fun detectAmllLyricFormat(content: String): AmllLyricFormat {
+    val trimmed = content.trimStart()
+    return when {
+        trimmed.startsWith("<") -> AmllLyricFormat.Ttml
+        LrcTimestampPattern.containsMatchIn(content) -> AmllLyricFormat.Lrc
+        else -> AmllLyricFormat.Plain
+    }
+}
+
+@Composable
+internal fun AmllLyricsWebView(
+    trackId: String,
+    content: String,
+    format: AmllLyricFormat,
+    currentPositionMs: Long,
+    pendingSeekPositionMs: Long?,
+    seekRequestId: Long,
+    romanizationEnabled: Boolean,
+    onFallback: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentOnFallback by rememberUpdatedState(onFallback)
+    val controller = remember(trackId) {
+        AmllBridgeController().also {
+            it.resultHandler = { result ->
+                if (result is com.exodidio.tune.lyrics.AmllBridgeResult.Fallback) {
+                    currentOnFallback(result.reason)
+                }
+            }
+        }
+    }
+    var webView by remember { mutableStateOf<WebView?>(null) }
+    var pageReady by remember { mutableStateOf(false) }
+
+    DisposableEffect(controller, lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> webView?.onPause()
+                Lifecycle.Event.ON_RESUME -> webView?.onResume()
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            controller.dispose()
+        }
+    }
+
+    AndroidView(
+        modifier = modifier,
+        factory = { context ->
+            WebView(context).apply {
+                webView = this
+                settings.javaScriptEnabled = true
+                settings.allowFileAccess = true
+                settings.allowContentAccess = false
+                settings.allowFileAccessFromFileURLs = false
+                settings.allowUniversalAccessFromFileURLs = false
+                settings.blockNetworkLoads = true
+                settings.blockNetworkImage = true
+                settings.cacheMode = WebView.LOAD_NO_CACHE
+                settings.javaScriptCanOpenWindowsAutomatically = false
+                settings.setSupportMultipleWindows(false)
+                settings.mixedContentMode = WebView.MIXED_CONTENT_NEVER_ALLOW
+                addJavascriptInterface(
+                    object {
+                        @JavascriptInterface
+                        fun postMessage(json: String) {
+                            controller.onBridgeMessage(json)
+                        }
+                    },
+                    "TuneAmllBridge",
+                )
+                webViewClient = object : WebViewClient() {
+                    override fun shouldOverrideUrlLoading(
+                        view: WebView,
+                        request: WebResourceRequest,
+                    ): Boolean = request.url.toString() != LocalAmllUrl
+
+                    override fun onPageFinished(view: WebView, url: String) {
+                        pageReady = url == LocalAmllUrl
+                    }
+
+                    override fun onReceivedError(
+                        view: WebView,
+                        request: WebResourceRequest,
+                        error: android.webkit.WebResourceError,
+                    ) {
+                        if (request.isForMainFrame) {
+                            currentOnFallback(error.description.toString())
+                        }
+                    }
+
+                    override fun onRenderProcessGone(
+                        view: WebView,
+                        detail: android.webkit.RenderProcessGoneDetail,
+                    ): Boolean {
+                        currentOnFallback("WebView render process ended")
+                        return true
+                    }
+                }
+                loadUrl(LocalAmllUrl)
+            }
+        },
+        update = { view ->
+            controller.commandHandler = { command ->
+                val expression = "window.TuneAmll && window.TuneAmll.dispatch(${JSONObject.quote(command)})"
+                view.evaluateJavascript(expression, null)
+            }
+        },
+        onRelease = { view ->
+            controller.dispose()
+            view.stopLoading()
+            view.destroy()
+            webView = null
+            pageReady = false
+        },
+    )
+
+    LaunchedEffect(controller, webView, pageReady, trackId, content, format) {
+        if (pageReady && webView != null) {
+            controller.load(trackId, content, format)
+        }
+    }
+    LaunchedEffect(controller, pageReady, currentPositionMs) {
+        if (pageReady) controller.updatePosition(trackId, currentPositionMs)
+    }
+    LaunchedEffect(controller, pageReady, seekRequestId, pendingSeekPositionMs) {
+        if (pageReady && seekRequestId > 0L && pendingSeekPositionMs != null) {
+            controller.requestSeek(trackId, pendingSeekPositionMs, seekRequestId)
+        }
+    }
+    LaunchedEffect(controller, pageReady, romanizationEnabled) {
+        if (pageReady) controller.setRomanizationEnabled(romanizationEnabled)
+    }
+}
+
+private const val LocalAmllUrl = "file:///android_asset/amll/index.html"
 
 @Composable
 private fun LyricsLoadingState(modifier: Modifier) {

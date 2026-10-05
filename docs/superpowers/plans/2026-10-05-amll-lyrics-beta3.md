@@ -311,7 +311,7 @@ git commit -m "feat: validate AMLL bridge payloads"
 - Produces: Compose `AmllLyricsWebView` with the same track/content/position
   inputs and an `onFallback: (String) -> Unit` callback.
 
-- [ ] **Step 1: Add failing controller tests**
+- [x] **Step 1: Add failing controller tests**
 
 Add these named tests:
 
@@ -326,13 +326,13 @@ Add these named tests:
 Add `FullScreenPlayerTest.usesNativeLyricsWhenAmllBridgeFallsBack` to assert
 that a forced fallback keeps the native `plain_lyrics_list` visible.
 
-- [ ] **Step 2: Push RED and watch CI fail**
+- [x] **Step 2: Push RED and watch CI fail**
 
 Push tests only. Expected compile failure because controller is absent.
 For the Compose test, dispatch `emulator-smoke.yml` on the pushed commit and
 watch it fail because forced fallback is not implemented.
 
-- [ ] **Step 3: Implement JavaScript and Kotlin controllers**
+- [x] **Step 3: Implement JavaScript and Kotlin controllers**
 
 In `bridge.js`, create a singleton player on local `index.html`, parse through
 Task 2, serialize ready results through a fixed `TuneAmll` JSON envelope, and
