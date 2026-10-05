@@ -196,10 +196,6 @@ internal fun AboutContent(
         ActionList(
             items = listOf(
                 ActionListItem(
-                    labelRes = R.string.about_github,
-                    onClick = { onOpenExternalUrl(TuneGithubUrl) },
-                ),
-                ActionListItem(
                     labelRes = R.string.about_star,
                     leadingSymbol = MaterialSymbols.Star,
                     onClick = { onOpenExternalUrl(TuneGithubUrl) },

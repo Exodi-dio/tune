@@ -27,8 +27,6 @@ data class AppUiState(
     val reduceTransparency: Boolean = false,
     val playerTheme: PlayerTheme = PlayerTheme.Standard,
     val showVolumeSlider: Boolean = false,
-    val fullscreenArtwork: Boolean = false,
-    val fullscreenLyrics: Boolean = false,
     val showInsightsTab: Boolean = false,
     val selectedAlbumId: String? = null,
     val selectedArtistId: String? = null,
@@ -68,8 +66,6 @@ class MainViewModel(
         val reduceTransparency: Boolean = false,
         val playerTheme: PlayerTheme = PlayerTheme.Standard,
         val showVolumeSlider: Boolean = false,
-        val fullscreenArtwork: Boolean = false,
-        val fullscreenLyrics: Boolean = false,
         val showInsightsTab: Boolean = false,
     )
 
@@ -82,12 +78,6 @@ class MainViewModel(
         }
         .combine(themeModeStore.showVolumeSlider) { prefs, showVolumeSlider ->
             prefs.copy(showVolumeSlider = showVolumeSlider)
-        }
-        .combine(themeModeStore.fullscreenArtwork) { prefs, fullscreenArtwork ->
-            prefs.copy(fullscreenArtwork = fullscreenArtwork)
-        }
-        .combine(themeModeStore.fullscreenLyrics) { prefs, fullscreenLyrics ->
-            prefs.copy(fullscreenLyrics = fullscreenLyrics)
         }
         .combine(themeModeStore.showInsightsTab) { prefs, showInsightsTab ->
             prefs.copy(showInsightsTab = showInsightsTab)
@@ -108,8 +98,6 @@ class MainViewModel(
             reduceTransparency = appearance.reduceTransparency,
             playerTheme = appearance.playerTheme,
             showVolumeSlider = appearance.showVolumeSlider,
-            fullscreenArtwork = appearance.fullscreenArtwork,
-            fullscreenLyrics = appearance.fullscreenLyrics,
             showInsightsTab = appearance.showInsightsTab,
             selectedAlbumId = albumId,
             destinationStacks = pages,
@@ -144,8 +132,6 @@ class MainViewModel(
             is AppIntent.SetReduceTransparency -> setReduceTransparency(intent.enabled)
             is AppIntent.SetPlayerTheme -> setPlayerTheme(intent.theme)
             is AppIntent.SetShowVolumeSlider -> setShowVolumeSlider(intent.enabled)
-            is AppIntent.SetFullscreenArtwork -> setFullscreenArtwork(intent.enabled)
-            is AppIntent.SetFullscreenLyrics -> setFullscreenLyrics(intent.enabled)
             is AppIntent.SetShowInsightsTab -> setShowInsightsTab(intent.enabled)
             is AppIntent.OpenExternalUrl -> _effects.trySend(AppEffect.OpenExternalUrl(intent.url))
         }
@@ -258,18 +244,6 @@ class MainViewModel(
     private fun setShowVolumeSlider(enabled: Boolean) {
         viewModelScope.launch {
             themeModeStore.setShowVolumeSlider(enabled)
-        }
-    }
-
-    private fun setFullscreenArtwork(enabled: Boolean) {
-        viewModelScope.launch {
-            themeModeStore.setFullscreenArtwork(enabled)
-        }
-    }
-
-    private fun setFullscreenLyrics(enabled: Boolean) {
-        viewModelScope.launch {
-            themeModeStore.setFullscreenLyrics(enabled)
         }
     }
 

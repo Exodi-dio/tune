@@ -49,12 +49,12 @@ class FullScreenQueuePanelDragTest {
     @Test
     fun crossfadeArtworkLayersAreResetForEachArtworkPath() {
         assertFalse(
-            fullscreenArtworkMemoryKey("from.jpg", keepPrevious = false) ==
-                fullscreenArtworkMemoryKey("to.jpg", keepPrevious = false),
+            artworkMemoryKey("from.jpg", keepPrevious = false) ==
+                artworkMemoryKey("to.jpg", keepPrevious = false),
         )
         assertEquals(
-            fullscreenArtworkMemoryKey("from.jpg", keepPrevious = true),
-            fullscreenArtworkMemoryKey("to.jpg", keepPrevious = true),
+            artworkMemoryKey("from.jpg", keepPrevious = true),
+            artworkMemoryKey("to.jpg", keepPrevious = true),
         )
     }
 

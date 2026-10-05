@@ -17,6 +17,24 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build AMLL runtime assets
+        run: scripts/build-amll-assets.sh "$GITHUB_WORKSPACE/androidApp/build/generated/amllAssets/amll"
+      - name: Verify AMLL source pins
+        run: node tools/amll/verify-amll-assets.mjs
+        env:
+          AMLL_SOURCE_REVISION: 86200dead453bb067e554e989110cbadca8d4756
+          TTML_TOOL_SOURCE_REVISION: d4953b351ae073c1447464790fff17aa9bc1d807
+      - name: Test AMLL parser bridge
+        run: node tools/amll/test-parse.mjs
+      - name: Install search tooling
+        run: sudo apt-get update && sudo apt-get install --yes ripgrep
+      - name: Reject stale fullscreen behavior
+        run: |
+          ! rg -n 'fullscreenArtwork|fullscreenLyrics|SetFullscreenArtwork|SetFullscreenLyrics' \
+            androidApp/src
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

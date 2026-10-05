@@ -66,9 +66,7 @@
     <string name="appearance_player_standard">Standard</string>
     <string name="appearance_player_adaptive">Adaptive</string>
     <string name="appearance_show_volume">Show volume slider</string>
-    <string name="appearance_fullscreen_artwork">Fullscreen cover art</string>
     <string name="appearance_show_insights">Show Insights tab</string>
-    <string name="appearance_fullscreen_lyrics">Fullscreen lyrics</string>
     <string name="settings_appearance">Appearance</string>
     <string name="close">Close</string>
     <string name="ok">OK</string>

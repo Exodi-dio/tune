@@ -475,7 +475,8 @@ class AppNavigationTest {
         )
         composeTestRule.setContent { harness.Render() }
 
-        composeTestRule.onNodeWithContentDescription(string(R.string.about_github)).performClick()
+        composeTestRule.onNodeWithText(string(R.string.about_github)).assertDoesNotExist()
+        composeTestRule.onNodeWithContentDescription(string(R.string.about_star)).performClick()
 
         assertEquals(
             AppIntent.OpenExternalUrl("https://github.com/Exodi-dio/tune"),
@@ -526,6 +527,26 @@ class AppNavigationTest {
 
         assertEquals("keep-2", playedTrackId)
         assertEquals(listOf("keep-1", "keep-2"), queuedTrackIds)
+    }
+
+    @Test
+    fun homeUsesTheGreetingOnlyOnceAsItsHeader() {
+        composeTestRule.setContent {
+            App(
+                destinations = AppDestinationModels(
+                    home = HomeDestinationModel(
+                        state = com.exodidio.tune.ui.screens.HomeUiState(
+                            keepListeningTracks = listOf(
+                                LibraryTrack(id = "keep-1", title = "Keep listening one", artists = "Artist"),
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        }
+
+        val greeting = string(homeGreetingTitleRes(java.time.LocalTime.now().hour))
+        composeTestRule.onAllNodesWithText(greeting).assertCountEquals(1)
     }
 
     @Test
@@ -909,5 +930,9 @@ private fun reduceAppState(state: AppUiState, intent: AppIntent): AppUiState = w
     }
     is AppIntent.SetThemeMode -> state.copy(themeMode = intent.themeMode)
     is AppIntent.SetReduceTransparency -> state.copy(reduceTransparency = intent.enabled)
+    is AppIntent.SetPlayerTheme -> state.copy(playerTheme = intent.theme)
+    is AppIntent.SetShowVolumeSlider -> state.copy(showVolumeSlider = intent.enabled)
+    is AppIntent.SetShowInsightsTab -> state.copy(showInsightsTab = intent.enabled)
     is AppIntent.OpenExternalUrl -> state
+    else -> state
 }
