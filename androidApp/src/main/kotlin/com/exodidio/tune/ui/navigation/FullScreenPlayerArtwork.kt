@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -66,6 +67,12 @@ internal fun FullScreenPlayerBackground(
     if (adaptiveBackground) {
         Box(modifier.background(dominantColor)) {
             if (isArtworkCrossfading) {
+                ArtworkLayer(outgoingArtwork, equalPowerOutgoing(crossfadeProgress))
+                ArtworkLayer(incomingArtwork, equalPowerIncoming(crossfadeProgress))
+            } else {
+                ArtworkLayer(artwork, 1f)
+            }
+            if (isArtworkCrossfading) {
                 PlayerBackgroundGradient(outgoingArtwork?.dominant ?: dominantColor, equalPowerOutgoing(crossfadeProgress))
                 PlayerBackgroundGradient(incomingArtwork?.dominant ?: dominantColor, equalPowerIncoming(crossfadeProgress))
             } else {
@@ -87,7 +94,20 @@ internal fun FullScreenPlayerBackground(
 
 @Composable
 private fun PlayerBackgroundGradient(dominant: Color, alpha: Float) {
-    Box(Modifier.fillMaxSize().alpha(alpha).background(dominant.copy(alpha = 0.66f)))
+    Box(
+        Modifier
+            .fillMaxSize()
+            .alpha(alpha)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        dominant.copy(alpha = 0.18f),
+                        dominant.copy(alpha = 0.48f),
+                        Color.Black.copy(alpha = 0.72f),
+                    ),
+                ),
+            ),
+    )
 }
 
 @Composable
@@ -105,17 +125,9 @@ internal fun FullScreenPlayerArtwork(
     // now-playing screen (full-bleed, no card chrome); the background gradient
     // behind it is already tinted from the same artwork.
     if (fullscreen) {
-        Box(
-            modifier.background(colors.glassElevated),
-            contentAlignment = Alignment.Center,
-        ) {
-        if (isArtworkCrossfading) {
-            ArtworkLayer(outgoingArtwork, equalPowerOutgoing(crossfadeProgress))
-            ArtworkLayer(incomingArtwork, equalPowerIncoming(crossfadeProgress))
-        } else {
-            ArtworkLayer(artwork, 1f)
-        }
-        }
+        // The full-bleed background already renders the cover and its blend
+        // gradient; keeping this layer empty avoids a second cropped cover.
+        Box(modifier.background(Color.Transparent))
     } else {
         Box(
             modifier.clip(FullScreenArtworkShape).background(colors.glassElevated)

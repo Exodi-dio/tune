@@ -212,6 +212,11 @@ internal fun FullScreenPlayer(
     )
     var lyricsSeekPositionMs by remember(item.trackId) { mutableStateOf<Long?>(null) }
     var lyricsSeekRequestId by remember(item.trackId) { mutableLongStateOf(0L) }
+    var fullscreenLyricsOverride by remember(item.trackId) { mutableStateOf<Boolean?>(null) }
+    val lyricsFullscreenActive = fullscreenLyricsOverride ?: fullscreenLyrics
+    LaunchedEffect(selectedPanel, item.trackId) {
+        if (selectedPanel != FullScreenPlayerPanel.Lyrics) fullscreenLyricsOverride = null
+    }
     val horizontalSwipeState = remember { FullScreenPlayerSwipeState() }
     val displayedHorizontalSwipeOffset by animateFloatAsState(
         targetValue = if (horizontalSwipeState.isDragging) horizontalSwipeState.dragOffset else 0f,
@@ -249,7 +254,7 @@ internal fun FullScreenPlayer(
         )
         val compactMetadataWidth = maxWidth - 20.dp
         val queuePanelWidth = maxWidth
-        val lyricsFullscreenOpen = selectedPanel == FullScreenPlayerPanel.Lyrics && fullscreenLyrics
+        val lyricsFullscreenOpen = selectedPanel == FullScreenPlayerPanel.Lyrics && lyricsFullscreenActive
         val artworkSize by animateDpAsState(
             targetValue = if (lyricsFullscreenOpen) 0.dp else if (isPanelOpen) FullScreenPlayerCompactArtworkSize else expandedArtworkSize,
             animationSpec = tween(320, easing = FastOutSlowInEasing),
@@ -487,7 +492,10 @@ internal fun FullScreenPlayer(
                                     seekRequestId = lyricsSeekRequestId,
                                     onSeek = onSeek,
                                     modifier = Modifier.fillMaxSize(),
-                                    fullscreen = fullscreenLyrics,
+                                    fullscreen = lyricsFullscreenActive,
+                                    onFullscreenChanged = { enabled ->
+                                        fullscreenLyricsOverride = enabled
+                                    },
                                 )
                             }
                         }

@@ -9,6 +9,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Box
@@ -33,6 +34,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,6 +60,10 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -68,6 +74,7 @@ import com.exodidio.tune.ui.theme.LocalTuneColors
 import com.exodidio.tune.ui.components.LocalReduceMotion
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
 import com.exodidio.tune.lyrics.RomanizationUiState
 import kotlin.math.roundToInt
 
@@ -75,6 +82,14 @@ internal data class PlayerLyricLine(
     val primary: String,
     val secondary: String? = null,
     val timestampSeconds: Float? = null,
+    val endSeconds: Float? = null,
+    val words: List<PlayerLyricWord> = emptyList(),
+)
+
+internal data class PlayerLyricWord(
+    val text: String,
+    val beginSeconds: Float,
+    val endSeconds: Float? = null,
 )
 
 private val TimestampedLyricLine = Regex("^\\[(\\d+):(\\d+(?:\\.\\d+)?)\\](.*)$")
@@ -86,8 +101,12 @@ internal enum class LyricsSeekDirection { Backward, Forward }
 internal fun lyricsSeekDirection(targetIndex: Int, firstVisibleIndex: Int): LyricsSeekDirection =
     if (targetIndex < firstVisibleIndex) LyricsSeekDirection.Backward else LyricsSeekDirection.Forward
 
-private val TtmlParagraph = Regex("<p[^>]*begin=\"([^\"]+)\"[^>]*>(.*?)</p>", RegexOption.DOT_MATCHES_ALL)
+private val TtmlParagraph = Regex("<p([^>]*)>(.*?)</p>", RegexOption.DOT_MATCHES_ALL)
+private val TtmlWordSpan = Regex("<span([^>]*)>(.*?)</span>", RegexOption.DOT_MATCHES_ALL)
 private val TtmlTag = Regex("<[^>]+>")
+private val TtmlAttribute = Regex("(?:^|\\s)(begin|end)\\s*=\\s*[\"']([^\"']+)[\"']")
+
+internal const val FullscreenLyricsIdleDelayMs = 2_000L
 
 internal fun parseTtmlTimestamp(value: String): Float? {
     val v = value.trim()
@@ -98,18 +117,52 @@ internal fun parseTtmlTimestamp(value: String): Float? {
         when (parts.size) {
             3 -> parts[0].toFloat() * 3600f + parts[1].toFloat() * 60f + parts[2].toFloat()
             2 -> parts[0].toFloat() * 60f + parts[1].toFloat()
-            1 -> parts[0].trimEnd('s').toFloat()
+            1 -> {
+                val scalar = parts[0].trim()
+                when {
+                    scalar.endsWith("ms", ignoreCase = true) -> scalar.dropLast(2).toFloat() / 1_000f
+                    scalar.endsWith("s", ignoreCase = true) -> scalar.dropLast(1).toFloat()
+                    else -> scalar.toFloat()
+                }
+            }
             else -> null
         }
     } catch (_: Exception) { null }
 }
 
+private fun ttmlAttribute(attributes: String, name: String): String? =
+    TtmlAttribute.findAll(attributes)
+        .firstOrNull { it.groupValues[1].equals(name, ignoreCase = true) }
+        ?.groupValues?.get(2)
+
+private fun decodeTtmlText(value: String): String =
+    value.replace(TtmlTag, "")
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", "\"")
+        .replace("&apos;", "'")
+        .trim()
+
 internal fun parseTtmlLyrics(content: String): List<PlayerLyricLine> =
     TtmlParagraph.findAll(content).mapNotNull { match ->
-        val timestamp = parseTtmlTimestamp(match.groupValues[1])
-        val text = match.groupValues[2].replace(TtmlTag, "").replace("&amp;", "&")
-            .replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").trim()
-        text.takeIf { it.isNotEmpty() }?.let { parsePlayerLyricText(it, timestamp) }
+        val attributes = match.groupValues[1]
+        val body = match.groupValues[2]
+        val words = TtmlWordSpan.findAll(body).mapNotNull { wordMatch ->
+            val begin = ttmlAttribute(wordMatch.groupValues[1], "begin")?.let(::parseTtmlTimestamp)
+                ?: return@mapNotNull null
+            val end = ttmlAttribute(wordMatch.groupValues[1], "end")?.let(::parseTtmlTimestamp)
+            val text = decodeTtmlText(wordMatch.groupValues[2])
+            text.takeIf(String::isNotEmpty)?.let { PlayerLyricWord(it, begin, end) }
+        }.toList()
+        val paragraphBegin = ttmlAttribute(attributes, "begin")?.let(::parseTtmlTimestamp)
+            ?: words.firstOrNull()?.beginSeconds
+        val paragraphEnd = ttmlAttribute(attributes, "end")?.let(::parseTtmlTimestamp)
+            ?: words.lastOrNull()?.endSeconds
+        val text = decodeTtmlText(body)
+        text.takeIf { it.isNotEmpty() }?.let {
+            parsePlayerLyricText(it, paragraphBegin, paragraphEnd, words)
+        }
     }.toList()
 
 internal fun parsePlayerLyrics(content: String): List<PlayerLyricLine> {
@@ -156,6 +209,20 @@ internal fun shouldEnterLyricsBrowseMode(isUserDragging: Boolean, isFollowingSel
 /** Small finger drift on a lyric row is still a seek, not a manual browse. */
 internal fun shouldSeekFromLyricTap(dragDistancePx: Float, tapSlopPx: Float): Boolean = dragDistancePx <= tapSlopPx
 
+internal fun activePlayerLyricWordIndex(
+    words: List<PlayerLyricWord>,
+    positionSeconds: Float,
+    lineEndSeconds: Float? = null,
+): Int? {
+    if (words.isEmpty()) return null
+    val candidate = words.indexOfLast { it.beginSeconds <= positionSeconds }
+    if (candidate < 0) return null
+    val word = words[candidate]
+    val nextBegin = words.getOrNull(candidate + 1)?.beginSeconds
+    val end = word.endSeconds ?: nextBegin ?: lineEndSeconds
+    return if (end == null || positionSeconds < end) candidate else null
+}
+
 internal fun syncedLyricBlurRadius(distance: Int) = when (distance) {
     0 -> 0.dp
     1 -> 0.35.dp
@@ -163,10 +230,21 @@ internal fun syncedLyricBlurRadius(distance: Int) = when (distance) {
     else -> 2.dp
 }
 
-private fun parsePlayerLyricText(text: String, timestampSeconds: Float?): PlayerLyricLine {
+private fun parsePlayerLyricText(
+    text: String,
+    timestampSeconds: Float?,
+    endSeconds: Float? = null,
+    words: List<PlayerLyricWord> = emptyList(),
+): PlayerLyricLine {
     val parts = BilingualSeparator.split(text, limit = 2)
     val secondary = parts.getOrNull(1)?.trim()?.takeIf(String::isNotEmpty)
-    return PlayerLyricLine(primary = parts.first().trim(), secondary = secondary, timestampSeconds = timestampSeconds)
+    return PlayerLyricLine(
+        primary = parts.first().trim(),
+        secondary = secondary,
+        timestampSeconds = timestampSeconds,
+        endSeconds = endSeconds,
+        words = words,
+    )
 }
 
 @Composable
@@ -185,6 +263,7 @@ internal fun FullScreenPlayerLyricsPanel(
     onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier,
     fullscreen: Boolean = false,
+    onFullscreenChanged: (Boolean) -> Unit = {},
 ) {
     val parsedLines = remember(lyrics) { lyrics?.let(::parsePlayerLyrics).orEmpty() }
     val syncedLines = remember(parsedLines) { parsedLines.filter { it.timestampSeconds != null } }
@@ -206,7 +285,29 @@ internal fun FullScreenPlayerLyricsPanel(
     val current = romanization.input == primary && !loading
     val secondary = if (romanizationAllowed && current && romanization.enabled) romanization.secondary else emptyList()
     val showToggle = romanizationAllowed && current && romanization.supported
+    var interactionRevision by remember(trackId) { mutableIntStateOf(0) }
+    val latestFullscreen by rememberUpdatedState(fullscreen)
+    val latestOnFullscreenChanged by rememberUpdatedState(onFullscreenChanged)
+    fun recordInteraction() {
+        interactionRevision++
+    }
+    LaunchedEffect(trackId, visible, fullscreen, interactionRevision) {
+        if (!visible || fullscreen) return@LaunchedEffect
+        delay(FullscreenLyricsIdleDelayMs)
+        if (visible && !latestFullscreen) latestOnFullscreenChanged(true)
+    }
     Box(modifier = modifier.padding(top = 8.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(fullscreen, interactionRevision) {
+                    detectTapGestures {
+                        recordInteraction()
+                        latestOnFullscreenChanged(!latestFullscreen)
+                    }
+                }
+                .testTag("fullscreen_lyrics_background"),
+        )
         when {
             loading -> LyricsLoadingState(Modifier.fillMaxSize())
             lyrics.isNullOrBlank() -> LyricsEmptyState(Modifier.fillMaxSize())
@@ -221,8 +322,16 @@ internal fun FullScreenPlayerLyricsPanel(
                 secondary,
                 showToggle,
                 fullscreen = fullscreen,
+                onInteraction = ::recordInteraction,
             )
-            else -> PlainLyricsList(parsedLines, Modifier.fillMaxSize(), secondary, showToggle, fullscreen = fullscreen)
+            else -> PlainLyricsList(
+                parsedLines,
+                Modifier.fillMaxSize(),
+                secondary,
+                showToggle,
+                fullscreen = fullscreen,
+                onInteraction = ::recordInteraction,
+            )
         }
         if (showToggle) {
             RomanizationToggle(
@@ -293,6 +402,7 @@ private fun SyncedLyricsList(
     secondary: List<String?>,
     showToggle: Boolean,
     fullscreen: Boolean = false,
+    onInteraction: () -> Unit = {},
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val listState = rememberLazyListState()
@@ -474,12 +584,14 @@ private fun SyncedLyricsList(
         modifier = modifier.testTag("synced_lyrics_list"),
     ) {
         itemsIndexed(lines, key = { index, _ -> index }) { index, line ->
+            val distance = if (activeIndex >= 0) kotlin.math.abs(index - activeIndex) else Int.MAX_VALUE
             SyncedLyricRow(
                 line = line,
                 fullscreen = fullscreen,
                 secondary = secondary.getOrNull(index) ?: line.secondary,
-                distance = if (activeIndex >= 0) kotlin.math.abs(index - activeIndex) else Int.MAX_VALUE,
+                distance = distance,
                 onClick = {
+                    onInteraction()
                     isBrowsing = false
                     activeIndexWhenLineSelected = activeIndex
                     selectedLineAnimationComplete = false
@@ -490,6 +602,11 @@ private fun SyncedLyricsList(
                 onRowHeightChanged = { rowHeights[index] = it },
                 onTrailingLineHeightChanged = { trailingLineHeights[index] = it },
                 focusMode = !isBrowsing,
+                activeWordIndex = if (distance == 0) {
+                    activePlayerLyricWordIndex(line.words, displayedPositionMs / 1_000f, line.endSeconds)
+                } else {
+                    null
+                },
             )
         }
     }
@@ -505,6 +622,7 @@ private fun SyncedLyricRow(
     onRowHeightChanged: (Int) -> Unit,
     onTrailingLineHeightChanged: (Int) -> Unit,
     focusMode: Boolean,
+    activeWordIndex: Int? = null,
 ) {
     val colors = LocalTuneColors.current
     // The pointer coroutine remains alive across playback-position and track
@@ -550,12 +668,14 @@ private fun SyncedLyricRow(
             .pointerInput(line.timestampSeconds) {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
+                    down.consume()
                     val startPosition = down.position
                     var dragDistancePx = 0f
                     var pressed = true
                     while (pressed) {
                         val event = awaitPointerEvent()
                         val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                        change.consume()
                         dragDistancePx = maxOf(dragDistancePx, (change.position - startPosition).getDistance())
                         pressed = change.pressed
                     }
@@ -568,8 +688,24 @@ private fun SyncedLyricRow(
             }
             .testTag("synced_lyric_${line.timestampSeconds}"),
     ) {
+        val lyricText = if (line.words.isNotEmpty() && activeWordIndex != null) {
+            buildAnnotatedString {
+                line.words.forEachIndexed { index, word ->
+                    if (index > 0) append(" ")
+                    withStyle(
+                        SpanStyle(
+                            color = if (index == activeWordIndex) colors.onPrimary else colors.onPrimary.copy(alpha = 0.42f),
+                        ),
+                    ) {
+                        append(word.text)
+                    }
+                }
+            }
+        } else {
+            AnnotatedString(line.primary)
+        }
         Text(
-            text = line.primary,
+            text = lyricText,
             color = colors.onPrimary.copy(alpha = opacity),
             style = if (fullscreen) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.headlineSmall,
             // Keep glyph metrics stable when the line becomes active; changing
@@ -594,11 +730,25 @@ private fun SyncedLyricRow(
 }
 
 @Composable
-private fun PlainLyricsList(lines: List<PlayerLyricLine>, modifier: Modifier, secondary: List<String?>, showToggle: Boolean, fullscreen: Boolean = false) {
+private fun PlainLyricsList(
+    lines: List<PlayerLyricLine>,
+    modifier: Modifier,
+    secondary: List<String?>,
+    showToggle: Boolean,
+    fullscreen: Boolean = false,
+    onInteraction: () -> Unit = {},
+) {
     val colors = LocalTuneColors.current
     LazyColumn(modifier = modifier.testTag("plain_lyrics_list"), contentPadding = PaddingValues(bottom = if (showToggle) 72.dp else 0.dp)) {
         itemsIndexed(lines, key = { index, _ -> index }) { index, line ->
-            Column(Modifier.fillMaxWidth().padding(vertical = if (fullscreen) 12.dp else 8.dp)) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = if (fullscreen) 12.dp else 8.dp)
+                    .pointerInput(line) {
+                        detectTapGestures { onInteraction() }
+                    },
+            ) {
                 Text(text = line.primary, color = colors.onPrimary, style = if (fullscreen) MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold) else MaterialTheme.typography.bodyLarge)
                 (secondary.getOrNull(index) ?: line.secondary)?.let {
                     Text(text = it, color = colors.foregroundSubtle, style = if (fullscreen) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 2.dp))

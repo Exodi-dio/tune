@@ -113,16 +113,6 @@ internal fun AppearanceContent(
                         },
                         onClick = { onShowInsightsTabChanged(!showInsightsTab) },
                     ),
-                    ActionListItem(
-                        labelRes = R.string.appearance_fullscreen_lyrics,
-                        trailingContent = {
-                            Switch(
-                                checked = fullscreenLyrics,
-                                onCheckedChange = onFullscreenLyricsChanged,
-                            )
-                        },
-                        onClick = { onFullscreenLyricsChanged(!fullscreenLyrics) },
-                    ),
                 ),
                 containerStyle = ActionListContainerStyle.Plain,
             )
