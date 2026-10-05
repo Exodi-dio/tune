@@ -17,7 +17,11 @@ globalThis.document = {
   getElementById: () => null,
 };
 
-await import(pathToFileURL(path.join(here, "bridge.js")).href);
+const generatedBridge = path.resolve(
+  here,
+  "../../androidApp/build/generated/amllAssets/amll/bridge.js",
+);
+await import(pathToFileURL(generatedBridge).href);
 assert.equal(typeof window.amllParse, "function", "missing window.amllParse");
 
 const parse = (format, content) => {
