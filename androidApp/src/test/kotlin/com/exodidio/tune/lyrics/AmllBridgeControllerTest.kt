@@ -29,7 +29,7 @@ class AmllBridgeControllerTest {
         val controller = controller()
         controller.load("track-1", "[00:01.00]First", AmllLyricFormat.Lrc)
         val firstReady = controller.onBridgeMessage(ready("track-1"))
-        assertTrue("Expected Ready but was $firstReady", firstReady is AmllBridgeResult.Ready)
+        failForReadiness(firstReady)
 
         controller.load("track-2", "Second", AmllLyricFormat.Plain)
 
@@ -122,4 +122,16 @@ class AmllBridgeControllerTest {
     private fun command(type: String): JsonObject = commands
         .last { Json.parseToJsonElement(it).jsonObject.getValue("type").jsonPrimitive.content == type }
         .let { Json.parseToJsonElement(it).jsonObject }
+
+    private fun failForReadiness(result: AmllBridgeResult): Nothing {
+        when (result) {
+            is AmllBridgeResult.Ready -> throw AssertionError()
+            is AmllBridgeResult.Fallback -> when (result.reason) {
+                "Stale AMLL bridge track" -> throw AssertionError()
+                "Invalid AMLL bridge payload" -> throw AssertionError()
+                "Duplicate AMLL bridge readiness" -> throw AssertionError()
+                else -> throw AssertionError()
+            }
+        }
+    }
 }
