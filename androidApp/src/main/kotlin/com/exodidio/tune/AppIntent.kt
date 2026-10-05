@@ -29,10 +29,6 @@ sealed interface AppIntent {
 
     data class SetShowVolumeSlider(val enabled: Boolean) : AppIntent
 
-    data class SetFullscreenArtwork(val enabled: Boolean) : AppIntent
-
-    data class SetFullscreenLyrics(val enabled: Boolean) : AppIntent
-
     data class SetShowInsightsTab(val enabled: Boolean) : AppIntent
 
     data class OpenExternalUrl(val url: String) : AppIntent

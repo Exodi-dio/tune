@@ -29,10 +29,6 @@ internal fun AppearanceContent(
     onPlayerThemeSelected: (PlayerTheme) -> Unit = {},
     showVolumeSlider: Boolean = false,
     onShowVolumeSliderChanged: (Boolean) -> Unit = {},
-    fullscreenArtwork: Boolean = false,
-    onFullscreenArtworkChanged: (Boolean) -> Unit = {},
-    fullscreenLyrics: Boolean = false,
-    onFullscreenLyricsChanged: (Boolean) -> Unit = {},
     showInsightsTab: Boolean = false,
     onShowInsightsTabChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -92,16 +88,6 @@ internal fun AppearanceContent(
                             )
                         },
                         onClick = { onShowVolumeSliderChanged(!showVolumeSlider) },
-                    ),
-                    ActionListItem(
-                        labelRes = R.string.appearance_fullscreen_artwork,
-                        trailingContent = {
-                            Switch(
-                                checked = fullscreenArtwork,
-                                onCheckedChange = onFullscreenArtworkChanged,
-                            )
-                        },
-                        onClick = { onFullscreenArtworkChanged(!fullscreenArtwork) },
                     ),
                     ActionListItem(
                         labelRes = R.string.appearance_show_insights,

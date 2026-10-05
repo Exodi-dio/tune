@@ -9,7 +9,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Box
@@ -34,7 +33,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,7 +72,6 @@ import com.exodidio.tune.ui.theme.LocalTuneColors
 import com.exodidio.tune.ui.components.LocalReduceMotion
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.delay
 import com.exodidio.tune.lyrics.RomanizationUiState
 import kotlin.math.roundToInt
 
@@ -105,8 +102,6 @@ private val TtmlParagraph = Regex("<p([^>]*)>(.*?)</p>", RegexOption.DOT_MATCHES
 private val TtmlWordSpan = Regex("<span([^>]*)>(.*?)</span>", RegexOption.DOT_MATCHES_ALL)
 private val TtmlTag = Regex("<[^>]+>")
 private val TtmlAttribute = Regex("(?:^|\\s)(begin|end)\\s*=\\s*[\"']([^\"']+)[\"']")
-
-internal const val FullscreenLyricsIdleDelayMs = 2_000L
 
 internal fun parseTtmlTimestamp(value: String): Float? {
     val v = value.trim()
@@ -262,8 +257,6 @@ internal fun FullScreenPlayerLyricsPanel(
     seekRequestId: Long = 0L,
     onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier,
-    fullscreen: Boolean = false,
-    onFullscreenChanged: (Boolean) -> Unit = {},
 ) {
     val parsedLines = remember(lyrics) { lyrics?.let(::parsePlayerLyrics).orEmpty() }
     val syncedLines = remember(parsedLines) { parsedLines.filter { it.timestampSeconds != null } }
@@ -285,29 +278,7 @@ internal fun FullScreenPlayerLyricsPanel(
     val current = romanization.input == primary && !loading
     val secondary = if (romanizationAllowed && current && romanization.enabled) romanization.secondary else emptyList()
     val showToggle = romanizationAllowed && current && romanization.supported
-    var interactionRevision by remember(trackId) { mutableIntStateOf(0) }
-    val latestFullscreen by rememberUpdatedState(fullscreen)
-    val latestOnFullscreenChanged by rememberUpdatedState(onFullscreenChanged)
-    fun recordInteraction() {
-        interactionRevision++
-    }
-    LaunchedEffect(trackId, visible, fullscreen, interactionRevision) {
-        if (!visible || fullscreen) return@LaunchedEffect
-        delay(FullscreenLyricsIdleDelayMs)
-        if (visible && !latestFullscreen) latestOnFullscreenChanged(true)
-    }
     Box(modifier = modifier.padding(top = 8.dp)) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(fullscreen, interactionRevision) {
-                    detectTapGestures {
-                        recordInteraction()
-                        latestOnFullscreenChanged(!latestFullscreen)
-                    }
-                }
-                .testTag("fullscreen_lyrics_background"),
-        )
         when {
             loading -> LyricsLoadingState(Modifier.fillMaxSize())
             lyrics.isNullOrBlank() -> LyricsEmptyState(Modifier.fillMaxSize())
@@ -321,16 +292,12 @@ internal fun FullScreenPlayerLyricsPanel(
                 Modifier.fillMaxSize(),
                 secondary,
                 showToggle,
-                fullscreen = fullscreen,
-                onInteraction = ::recordInteraction,
             )
             else -> PlainLyricsList(
                 parsedLines,
                 Modifier.fillMaxSize(),
                 secondary,
                 showToggle,
-                fullscreen = fullscreen,
-                onInteraction = ::recordInteraction,
             )
         }
         if (showToggle) {
@@ -401,8 +368,6 @@ private fun SyncedLyricsList(
     modifier: Modifier,
     secondary: List<String?>,
     showToggle: Boolean,
-    fullscreen: Boolean = false,
-    onInteraction: () -> Unit = {},
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val listState = rememberLazyListState()
@@ -587,11 +552,9 @@ private fun SyncedLyricsList(
             val distance = if (activeIndex >= 0) kotlin.math.abs(index - activeIndex) else Int.MAX_VALUE
             SyncedLyricRow(
                 line = line,
-                fullscreen = fullscreen,
                 secondary = secondary.getOrNull(index) ?: line.secondary,
                 distance = distance,
                 onClick = {
-                    onInteraction()
                     isBrowsing = false
                     activeIndexWhenLineSelected = activeIndex
                     selectedLineAnimationComplete = false
@@ -615,7 +578,6 @@ private fun SyncedLyricsList(
 @Composable
 private fun SyncedLyricRow(
     line: PlayerLyricLine,
-    fullscreen: Boolean = false,
     secondary: String?,
     distance: Int,
     onClick: () -> Unit,
@@ -707,7 +669,7 @@ private fun SyncedLyricRow(
         Text(
             text = lyricText,
             color = colors.onPrimary.copy(alpha = opacity),
-            style = if (fullscreen) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.headlineSmall,
             // Keep glyph metrics stable when the line becomes active; changing
             // weight here would re-wrap the same text during scale animation.
             fontWeight = FontWeight.Bold,
@@ -735,8 +697,6 @@ private fun PlainLyricsList(
     modifier: Modifier,
     secondary: List<String?>,
     showToggle: Boolean,
-    fullscreen: Boolean = false,
-    onInteraction: () -> Unit = {},
 ) {
     val colors = LocalTuneColors.current
     LazyColumn(modifier = modifier.testTag("plain_lyrics_list"), contentPadding = PaddingValues(bottom = if (showToggle) 72.dp else 0.dp)) {
@@ -744,14 +704,11 @@ private fun PlainLyricsList(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .padding(vertical = if (fullscreen) 12.dp else 8.dp)
-                    .pointerInput(line) {
-                        detectTapGestures { onInteraction() }
-                    },
+                    .padding(vertical = 8.dp),
             ) {
-                Text(text = line.primary, color = colors.onPrimary, style = if (fullscreen) MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold) else MaterialTheme.typography.bodyLarge)
+                Text(text = line.primary, color = colors.onPrimary, style = MaterialTheme.typography.bodyLarge)
                 (secondary.getOrNull(index) ?: line.secondary)?.let {
-                    Text(text = it, color = colors.foregroundSubtle, style = if (fullscreen) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 2.dp))
+                    Text(text = it, color = colors.foregroundSubtle, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 2.dp))
                 }
             }
         }

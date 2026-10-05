@@ -56,7 +56,6 @@ internal fun FullScreenPlayerBackground(
     crossfadeProgress: Float,
     isArtworkCrossfading: Boolean,
     modifier: Modifier,
-    adaptiveBackground: Boolean = false,
 ) {
     val colors = LocalTuneColors.current
     val dominantColor by animateColorAsState(
@@ -64,31 +63,14 @@ internal fun FullScreenPlayerBackground(
         animationSpec = tween(280, easing = FastOutSlowInEasing),
         label = "full-screen-background-colour",
     )
-    if (adaptiveBackground) {
-        Box(modifier.background(dominantColor)) {
-            if (isArtworkCrossfading) {
-                ArtworkLayer(outgoingArtwork, equalPowerOutgoing(crossfadeProgress))
-                ArtworkLayer(incomingArtwork, equalPowerIncoming(crossfadeProgress))
-            } else {
-                ArtworkLayer(artwork, 1f)
-            }
-            if (isArtworkCrossfading) {
-                PlayerBackgroundGradient(outgoingArtwork?.dominant ?: dominantColor, equalPowerOutgoing(crossfadeProgress))
-                PlayerBackgroundGradient(incomingArtwork?.dominant ?: dominantColor, equalPowerIncoming(crossfadeProgress))
-            } else {
-                PlayerBackgroundGradient(dominantColor, 1f)
-            }
+    Box(modifier.background(colors.playerBackdrop)) {
+        if (isArtworkCrossfading) {
+            PlayerBackgroundGradient(outgoingArtwork?.dominant ?: colors.playerBackdrop, equalPowerOutgoing(crossfadeProgress))
+            PlayerBackgroundGradient(incomingArtwork?.dominant ?: colors.playerBackdrop, equalPowerIncoming(crossfadeProgress))
+        } else {
+            PlayerBackgroundGradient(dominantColor, 1f)
         }
-    } else {
-        Box(modifier.background(colors.playerBackdrop)) {
-            if (isArtworkCrossfading) {
-                PlayerBackgroundGradient(outgoingArtwork?.dominant ?: colors.playerBackdrop, equalPowerOutgoing(crossfadeProgress))
-                PlayerBackgroundGradient(incomingArtwork?.dominant ?: colors.playerBackdrop, equalPowerIncoming(crossfadeProgress))
-            } else {
-                PlayerBackgroundGradient(dominantColor, 1f)
-            }
-            Box(Modifier.fillMaxSize().background(colors.playerBackdrop.copy(alpha = 0.24f)))
-        }
+        Box(Modifier.fillMaxSize().background(colors.playerBackdrop.copy(alpha = 0.24f)))
     }
 }
 
@@ -118,28 +100,18 @@ internal fun FullScreenPlayerArtwork(
     crossfadeProgress: Float,
     isArtworkCrossfading: Boolean,
     modifier: Modifier,
-    fullscreen: Boolean = false,
 ) {
     val colors = LocalTuneColors.current
-    // Off (default) = normal card-shaped artwork. On = artwork blends with the
-    // now-playing screen (full-bleed, no card chrome); the background gradient
-    // behind it is already tinted from the same artwork.
-    if (fullscreen) {
-        // The full-bleed background already renders the cover and its blend
-        // gradient; keeping this layer empty avoids a second cropped cover.
-        Box(modifier.background(Color.Transparent))
-    } else {
-        Box(
-            modifier.clip(FullScreenArtworkShape).background(colors.glassElevated)
-                .border(1.dp, colors.borderGlass, FullScreenArtworkShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (isArtworkCrossfading) {
-                ArtworkLayer(outgoingArtwork, equalPowerOutgoing(crossfadeProgress))
-                ArtworkLayer(incomingArtwork, equalPowerIncoming(crossfadeProgress))
-            } else {
-                ArtworkLayer(artwork, 1f)
-            }
+    Box(
+        modifier.clip(FullScreenArtworkShape).background(colors.glassElevated)
+            .border(1.dp, colors.borderGlass, FullScreenArtworkShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (isArtworkCrossfading) {
+            ArtworkLayer(outgoingArtwork, equalPowerOutgoing(crossfadeProgress))
+            ArtworkLayer(incomingArtwork, equalPowerIncoming(crossfadeProgress))
+        } else {
+            ArtworkLayer(artwork, 1f)
         }
     }
 }

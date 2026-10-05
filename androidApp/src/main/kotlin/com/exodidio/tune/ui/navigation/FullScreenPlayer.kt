@@ -92,8 +92,6 @@ internal fun FullScreenPlayer(
     showQualityBadge: Boolean = false,
     playerTheme: PlayerTheme = PlayerTheme.Standard,
     showVolumeSlider: Boolean = false,
-    fullscreenArtwork: Boolean = false,
-    fullscreenLyrics: Boolean = false,
     volume: Float,
     onSeek: (Long) -> Unit,
     onVolumeChange: (Float) -> Unit,
@@ -212,11 +210,6 @@ internal fun FullScreenPlayer(
     )
     var lyricsSeekPositionMs by remember(item.trackId) { mutableStateOf<Long?>(null) }
     var lyricsSeekRequestId by remember(item.trackId) { mutableLongStateOf(0L) }
-    var fullscreenLyricsOverride by remember(item.trackId) { mutableStateOf<Boolean?>(null) }
-    val lyricsFullscreenActive = fullscreenLyricsOverride ?: fullscreenLyrics
-    LaunchedEffect(selectedPanel, item.trackId) {
-        if (selectedPanel != FullScreenPlayerPanel.Lyrics) fullscreenLyricsOverride = null
-    }
     val horizontalSwipeState = remember { FullScreenPlayerSwipeState() }
     val displayedHorizontalSwipeOffset by animateFloatAsState(
         targetValue = if (horizontalSwipeState.isDragging) horizontalSwipeState.dragOffset else 0f,
@@ -225,9 +218,6 @@ internal fun FullScreenPlayer(
     )
 
     val adaptiveEnabled = playerTheme == PlayerTheme.Adaptive
-    // Fullscreen cover art = album art blends with the now-playing background.
-    // Off (default) = normal card-shaped artwork. Independent of Adaptive theme.
-    val fullscreenArtworkEnabled = fullscreenArtwork
     val adaptiveColors = rememberAdaptivePlayerColors(
         bitmap = artwork?.sourceBitmap,
         enabled = adaptiveEnabled,
@@ -254,9 +244,8 @@ internal fun FullScreenPlayer(
         )
         val compactMetadataWidth = maxWidth - 20.dp
         val queuePanelWidth = maxWidth
-        val lyricsFullscreenOpen = selectedPanel == FullScreenPlayerPanel.Lyrics && lyricsFullscreenActive
         val artworkSize by animateDpAsState(
-            targetValue = if (lyricsFullscreenOpen) 0.dp else if (isPanelOpen) FullScreenPlayerCompactArtworkSize else expandedArtworkSize,
+            targetValue = if (isPanelOpen) FullScreenPlayerCompactArtworkSize else expandedArtworkSize,
             animationSpec = tween(320, easing = FastOutSlowInEasing),
             label = "full-screen-artwork-size",
         )
@@ -268,8 +257,7 @@ internal fun FullScreenPlayer(
         // Keep the top block's expanded footprint reserved while a panel is open.
         // During a queue reorder, it temporarily grows through the controls area
         // so the list can use the complete safe fullscreen height.
-        // Fullscreen lyrics takes over: collapse artwork footprint so lyrics fill the screen.
-        val restingTopBlockHeight = if (lyricsFullscreenOpen) 120.dp else expandedArtworkSize + 96.dp
+        val restingTopBlockHeight = expandedArtworkSize + 96.dp
         val topBlockHeight by animateDpAsState(
             targetValue = if (isQueueReordering) maxHeight else restingTopBlockHeight,
             animationSpec = tween(QueueReorderTransitionDurationMs, easing = FastOutSlowInEasing),
@@ -309,7 +297,6 @@ internal fun FullScreenPlayer(
                 incomingArtwork = incomingArtwork,
                 crossfadeProgress = crossfadeProgress,
                 isArtworkCrossfading = isArtworkCrossfading,
-                adaptiveBackground = fullscreenArtworkEnabled,
                 modifier = Modifier
                     .fillMaxSize()
                     .then(if (glassHazeState == null) Modifier else Modifier.hazeSource(glassHazeState)),
@@ -344,7 +331,6 @@ internal fun FullScreenPlayer(
                         incomingArtwork = incomingArtwork,
                         crossfadeProgress = crossfadeProgress,
                         isArtworkCrossfading = isArtworkCrossfading,
-                        fullscreen = fullscreenArtworkEnabled,
                         modifier = Modifier
                             .size(artworkSize)
                             .offset(x = artworkHorizontalOffset)
@@ -492,10 +478,6 @@ internal fun FullScreenPlayer(
                                     seekRequestId = lyricsSeekRequestId,
                                     onSeek = onSeek,
                                     modifier = Modifier.fillMaxSize(),
-                                    fullscreen = lyricsFullscreenActive,
-                                    onFullscreenChanged = { enabled ->
-                                        fullscreenLyricsOverride = enabled
-                                    },
                                 )
                             }
                         }
@@ -530,7 +512,7 @@ internal fun FullScreenPlayer(
                 onNext = onNext,
                 onOpenMediaOutputSwitcher = onOpenMediaOutputSwitcher,
                 showVolumeSlider = showVolumeSlider,
-                // Lyrics is compulsory: button always visible. fullscreenLyrics only controls presentation.
+                // Lyrics is compulsory: button always visible.
                 showLyricsButton = true,
                 modifier = Modifier.weight(1f),
             )

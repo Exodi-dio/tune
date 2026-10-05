@@ -14,8 +14,6 @@ private val ThemeModeKey = stringPreferencesKey("theme_mode")
 private val ReduceTransparencyKey = booleanPreferencesKey("reduce_transparency")
 private val PlayerThemeKey = stringPreferencesKey("player_theme")
 private val ShowVolumeSliderKey = booleanPreferencesKey("show_volume_slider")
-private val FullscreenArtworkKey = booleanPreferencesKey("fullscreen_artwork")
-private val FullscreenLyricsKey = booleanPreferencesKey("fullscreen_lyrics")
 private val ShowInsightsTabKey = booleanPreferencesKey("show_insights_tab")
 
 enum class ThemeMode(val storageValue: String, val labelRes: Int) {
@@ -45,17 +43,13 @@ interface ThemeModeStore {
     val reduceTransparency: Flow<Boolean>
     val playerTheme: Flow<PlayerTheme>
     val showVolumeSlider: Flow<Boolean>
-    val fullscreenArtwork: Flow<Boolean>
-    val fullscreenLyrics: Flow<Boolean>
     val showInsightsTab: Flow<Boolean>
 
     suspend fun setThemeMode(themeMode: ThemeMode)
     suspend fun setReduceTransparency(enabled: Boolean)
     suspend fun setPlayerTheme(theme: PlayerTheme)
     suspend fun setShowVolumeSlider(enabled: Boolean)
-    suspend fun setFullscreenArtwork(enabled: Boolean)
     suspend fun setShowInsightsTab(enabled: Boolean)
-    suspend fun setFullscreenLyrics(enabled: Boolean)
 }
 
 class ThemePreferences(
@@ -72,12 +66,6 @@ class ThemePreferences(
     }
     override val showVolumeSlider: Flow<Boolean> = context.themeDataStore.data.map { preferences: Preferences ->
         preferences[ShowVolumeSliderKey] ?: false
-    }
-    override val fullscreenArtwork: Flow<Boolean> = context.themeDataStore.data.map { preferences: Preferences ->
-        preferences[FullscreenArtworkKey] ?: false
-    }
-    override val fullscreenLyrics: Flow<Boolean> = context.themeDataStore.data.map { preferences: Preferences ->
-        preferences[FullscreenLyricsKey] ?: false
     }
     override val showInsightsTab: Flow<Boolean> = context.themeDataStore.data.map { preferences: Preferences ->
         preferences[ShowInsightsTabKey] ?: false
@@ -104,18 +92,6 @@ class ThemePreferences(
     override suspend fun setShowVolumeSlider(enabled: Boolean) {
         context.themeDataStore.edit { preferences ->
             preferences[ShowVolumeSliderKey] = enabled
-        }
-    }
-
-    override suspend fun setFullscreenArtwork(enabled: Boolean) {
-        context.themeDataStore.edit { preferences ->
-            preferences[FullscreenArtworkKey] = enabled
-        }
-    }
-
-    override suspend fun setFullscreenLyrics(enabled: Boolean) {
-        context.themeDataStore.edit { preferences ->
-            preferences[FullscreenLyricsKey] = enabled
         }
     }
 
