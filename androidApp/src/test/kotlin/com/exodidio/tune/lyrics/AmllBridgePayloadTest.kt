@@ -89,7 +89,7 @@ class AmllBridgePayloadTest {
         val missingLineTiming = readyPayload(
             buildJsonObject {
                 put("endTime", 3_000L)
-                put("words", JsonArray(listOf(validWord()))
+                put("words", JsonArray(listOf(validWord())))
             },
         )
         val missingWordTiming = readyPayload(
