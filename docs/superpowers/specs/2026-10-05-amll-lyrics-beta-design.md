@@ -26,6 +26,9 @@ is allowed for this project.
     duet lines, background vocals, interlude behavior, and source seek requests.
 - Use `amll-dev/amll-ttml-tool` as the TTML schema and editor-format reference:
   - Pin commit `d4953b351ae073c1447464790fff17aa9bc1d807`.
+  - Use its `src/types/ttml.ts` and
+    `src/modules/ttml-processor/types/ttml.ts` as the authoritative conversion
+    model. The repository does not provide a fixture corpus.
   - Accept sibling `.ttml` files with the same base name as the audio file,
     after an existing `.lrc` sibling.
   - Accept the AMLL TTML features represented by that tool: `p`/`span` timing,
@@ -51,9 +54,9 @@ Node/pnpm only inside the workflow, builds the three AMLL browser bundles and
 styles, and copies them into Android assets before Gradle runs. The lockfile or
 a generated integrity manifest records the exact dependency resolution.
 
-The local `amll-ttml-tool` checkout is read only and is used to pin the TTML
-fixtures and expected conversion behavior. Its WASM editor binary is not
-packaged with Tune.
+The local `amll-ttml-tool` checkout is read only and is used to verify its
+schema and expected conversion shape. Its WASM editor binary is not packaged
+with Tune.
 
 ### AMLL bridge
 
@@ -122,7 +125,8 @@ preferences.
 
 Tests run only on GitHub Actions.
 
-- Parser tests use fixtures from both pinned repositories and cover:
+- Parser tests use fixtures copied from the pinned AMLL repository plus a
+  fixture authored against the pinned TTML-tool schema, and cover:
   word timings, line timings, translations, transliterations, ruby, duet,
   background vocals, malformed XML, and LRC/plain fallback.
 - Unit tests cover bridge payload validation, stale track/request events, and
