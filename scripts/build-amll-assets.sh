@@ -26,6 +26,8 @@ git clone --filter=blob:none \
   "$AMLL_DIRECTORY"
 git -C "$AMLL_DIRECTORY" checkout --detach "$AMLL_REVISION"
 [[ "$(git -C "$AMLL_DIRECTORY" rev-parse HEAD)" == "$AMLL_REVISION" ]]
+git -C "$AMLL_DIRECTORY" apply \
+  "$REPOSITORY_ROOT/tools/amll/lyric-bundle-pako.patch"
 
 git clone --filter=blob:none \
   https://github.com/amll-dev/amll-ttml-tool.git \

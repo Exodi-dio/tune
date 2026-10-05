@@ -1,0 +1,10 @@
+diff --git a/packages/lyric/tsdown.config.ts b/packages/lyric/tsdown.config.ts
+--- a/packages/lyric/tsdown.config.ts
++++ b/packages/lyric/tsdown.config.ts
+@@ -4,5 +4,6 @@ import { baseConfig } from "../../tsdown.base.ts";
+ export default defineConfig({
+ 	...baseConfig,
+ 	entry: { "amll-lyric": "./src/index.ts" },
+ 	dts: { tsconfig: "./tsconfig.app.json" },
++	deps: { alwaysBundle: ["pako"] },
+ });
