@@ -56,10 +56,10 @@ GitHub Actions, `gh`.
 
 ## Cloud Test Loop
 
-Use one pull request from `impl/v1.2.0-beta.2-lyrics-home` to `main`. Every
-RED step pushes only the new test or assertion and waits for CI to fail for the
-expected reason. Every GREEN step pushes the implementation and waits for CI
-to pass.
+Create one pull request from `impl/v1.2.0-beta.2-lyrics-home` to `main` before
+Task 1; reuse it for every cycle. Every RED step pushes only the new test or
+assertion and waits for CI to fail for the expected reason. Every GREEN step
+pushes the implementation and waits for CI to pass.
 
 ```bash
 gh pr create --repo Exodi-dio/tune --base main \
