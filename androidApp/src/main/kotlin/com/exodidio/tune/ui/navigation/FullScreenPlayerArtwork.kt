@@ -154,7 +154,7 @@ internal fun fullscreenSampleSize(outWidth: Int, outHeight: Int, targetPx: Int =
 @Composable
 internal fun rememberFullscreenArtwork(artworkPath: String?, keepPrevious: Boolean = true): FullScreenArtwork? {
     val context = LocalContext.current
-    var artwork by remember(fullscreenArtworkMemoryKey(artworkPath, keepPrevious)) { mutableStateOf<FullScreenArtwork?>(null) }
+    var artwork by remember(artworkMemoryKey(artworkPath, keepPrevious)) { mutableStateOf<FullScreenArtwork?>(null) }
     LaunchedEffect(artworkPath) {
         if (artworkPath.isNullOrBlank()) {
             artwork = null
@@ -186,7 +186,7 @@ internal fun rememberFullscreenArtwork(artworkPath: String?, keepPrevious: Boole
 }
 
 /** A crossfade layer is path-scoped; only the normal player cover may persist across paths. */
-internal fun fullscreenArtworkMemoryKey(artworkPath: String?, keepPrevious: Boolean): Any? =
+internal fun artworkMemoryKey(artworkPath: String?, keepPrevious: Boolean): Any? =
     if (keepPrevious) FullscreenArtworkRetainedKey else artworkPath
 
 private object FullscreenArtworkRetainedKey

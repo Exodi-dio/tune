@@ -72,8 +72,6 @@ private class MusicSyncFakeThemeModeStore(initialThemeMode: ThemeMode = ThemeMod
     override val reduceTransparency: Flow<Boolean> = mutableReduceTransparency
     override val playerTheme: Flow<PlayerTheme> = kotlinx.coroutines.flow.MutableStateFlow(PlayerTheme.Standard)
     override val showVolumeSlider: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false)
-    override val fullscreenArtwork: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false)
-    override val fullscreenLyrics: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false)
     override val showInsightsTab: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false)
     override suspend fun setThemeMode(themeMode: ThemeMode) {
         mutableThemeMode.value = themeMode
@@ -83,7 +81,5 @@ private class MusicSyncFakeThemeModeStore(initialThemeMode: ThemeMode = ThemeMod
     }
     override suspend fun setPlayerTheme(theme: PlayerTheme) {}
     override suspend fun setShowVolumeSlider(enabled: Boolean) {}
-    override suspend fun setFullscreenArtwork(enabled: Boolean) {}
-    override suspend fun setFullscreenLyrics(enabled: Boolean) {}
     override suspend fun setShowInsightsTab(enabled: Boolean) {}
 }

@@ -932,8 +932,6 @@ private fun reduceAppState(state: AppUiState, intent: AppIntent): AppUiState = w
     is AppIntent.SetReduceTransparency -> state.copy(reduceTransparency = intent.enabled)
     is AppIntent.SetPlayerTheme -> state.copy(playerTheme = intent.theme)
     is AppIntent.SetShowVolumeSlider -> state.copy(showVolumeSlider = intent.enabled)
-    is AppIntent.SetFullscreenArtwork -> state.copy(fullscreenArtwork = intent.enabled)
-    is AppIntent.SetFullscreenLyrics -> state.copy(fullscreenLyrics = intent.enabled)
     is AppIntent.SetShowInsightsTab -> state.copy(showInsightsTab = intent.enabled)
     is AppIntent.OpenExternalUrl -> state
     else -> state

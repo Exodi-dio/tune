@@ -74,10 +74,6 @@ class AdaptiveScreenshotsTest {
                     onPlayerThemeSelected = {},
                     showVolumeSlider = true,
                     onShowVolumeSliderChanged = {},
-                    fullscreenArtwork = true,
-                    onFullscreenArtworkChanged = {},
-                    fullscreenLyrics = true,
-                    onFullscreenLyricsChanged = {},
                 )
             }
         }
@@ -94,8 +90,6 @@ class AdaptiveScreenshotsTest {
                     showQualityBadge = false,
                     playerTheme = PlayerTheme.Standard,
                     showVolumeSlider = true,
-                    fullscreenArtwork = false,
-                    fullscreenLyrics = true,
                     volume = 0.6f,
                     onSeek = {},
                     onVolumeChange = {},
@@ -120,8 +114,6 @@ class AdaptiveScreenshotsTest {
                     showQualityBadge = false,
                     playerTheme = PlayerTheme.Adaptive,
                     showVolumeSlider = true,
-                    fullscreenArtwork = true,
-                    fullscreenLyrics = true,
                     volume = 0.6f,
                     onSeek = {},
                     onVolumeChange = {},
@@ -146,8 +138,6 @@ class AdaptiveScreenshotsTest {
                     showQualityBadge = false,
                     playerTheme = PlayerTheme.Adaptive,
                     showVolumeSlider = false,
-                    fullscreenArtwork = true,
-                    fullscreenLyrics = false,
                     volume = 0.6f,
                     onSeek = {},
                     onVolumeChange = {},
