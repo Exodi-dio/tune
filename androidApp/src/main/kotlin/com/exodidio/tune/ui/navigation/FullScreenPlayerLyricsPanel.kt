@@ -1,5 +1,10 @@
 package com.exodidio.tune.ui.navigation
 
+import android.webkit.JavascriptInterface
+import android.webkit.WebSettings
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -58,23 +63,39 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.exodidio.tune.R
 import com.exodidio.tune.ui.theme.LocalTuneColors
 import com.exodidio.tune.ui.components.LocalReduceMotion
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.awaitCancellation
+import com.exodidio.tune.lyrics.AmllLyricFormat
+import com.exodidio.tune.lyrics.AmllBridgeController
 import com.exodidio.tune.lyrics.RomanizationUiState
+import org.json.JSONObject
 import kotlin.math.roundToInt
 
 internal data class PlayerLyricLine(
     val primary: String,
     val secondary: String? = null,
     val timestampSeconds: Float? = null,
+    val endSeconds: Float? = null,
+    val words: List<PlayerLyricWord> = emptyList(),
+)
+
+internal data class PlayerLyricWord(
+    val text: String,
+    val beginSeconds: Float,
+    val endSeconds: Float? = null,
 )
 
 private val TimestampedLyricLine = Regex("^\\[(\\d+):(\\d+(?:\\.\\d+)?)\\](.*)$")
@@ -86,8 +107,10 @@ internal enum class LyricsSeekDirection { Backward, Forward }
 internal fun lyricsSeekDirection(targetIndex: Int, firstVisibleIndex: Int): LyricsSeekDirection =
     if (targetIndex < firstVisibleIndex) LyricsSeekDirection.Backward else LyricsSeekDirection.Forward
 
-private val TtmlParagraph = Regex("<p[^>]*begin=\"([^\"]+)\"[^>]*>(.*?)</p>", RegexOption.DOT_MATCHES_ALL)
+private val TtmlParagraph = Regex("<p([^>]*)>(.*?)</p>", RegexOption.DOT_MATCHES_ALL)
+private val TtmlWordSpan = Regex("<span([^>]*)>(.*?)</span>", RegexOption.DOT_MATCHES_ALL)
 private val TtmlTag = Regex("<[^>]+>")
+private val TtmlAttribute = Regex("(?:^|\\s)(begin|end)\\s*=\\s*[\"']([^\"']+)[\"']")
 
 internal fun parseTtmlTimestamp(value: String): Float? {
     val v = value.trim()
@@ -98,18 +121,52 @@ internal fun parseTtmlTimestamp(value: String): Float? {
         when (parts.size) {
             3 -> parts[0].toFloat() * 3600f + parts[1].toFloat() * 60f + parts[2].toFloat()
             2 -> parts[0].toFloat() * 60f + parts[1].toFloat()
-            1 -> parts[0].trimEnd('s').toFloat()
+            1 -> {
+                val scalar = parts[0].trim()
+                when {
+                    scalar.endsWith("ms", ignoreCase = true) -> scalar.dropLast(2).toFloat() / 1_000f
+                    scalar.endsWith("s", ignoreCase = true) -> scalar.dropLast(1).toFloat()
+                    else -> scalar.toFloat()
+                }
+            }
             else -> null
         }
     } catch (_: Exception) { null }
 }
 
+private fun ttmlAttribute(attributes: String, name: String): String? =
+    TtmlAttribute.findAll(attributes)
+        .firstOrNull { it.groupValues[1].equals(name, ignoreCase = true) }
+        ?.groupValues?.get(2)
+
+private fun decodeTtmlText(value: String): String =
+    value.replace(TtmlTag, "")
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", "\"")
+        .replace("&apos;", "'")
+        .trim()
+
 internal fun parseTtmlLyrics(content: String): List<PlayerLyricLine> =
     TtmlParagraph.findAll(content).mapNotNull { match ->
-        val timestamp = parseTtmlTimestamp(match.groupValues[1])
-        val text = match.groupValues[2].replace(TtmlTag, "").replace("&amp;", "&")
-            .replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").trim()
-        text.takeIf { it.isNotEmpty() }?.let { parsePlayerLyricText(it, timestamp) }
+        val attributes = match.groupValues[1]
+        val body = match.groupValues[2]
+        val words = TtmlWordSpan.findAll(body).mapNotNull { wordMatch ->
+            val begin = ttmlAttribute(wordMatch.groupValues[1], "begin")?.let(::parseTtmlTimestamp)
+                ?: return@mapNotNull null
+            val end = ttmlAttribute(wordMatch.groupValues[1], "end")?.let(::parseTtmlTimestamp)
+            val text = decodeTtmlText(wordMatch.groupValues[2])
+            text.takeIf(String::isNotEmpty)?.let { PlayerLyricWord(it, begin, end) }
+        }.toList()
+        val paragraphBegin = ttmlAttribute(attributes, "begin")?.let(::parseTtmlTimestamp)
+            ?: words.firstOrNull()?.beginSeconds
+        val paragraphEnd = ttmlAttribute(attributes, "end")?.let(::parseTtmlTimestamp)
+            ?: words.lastOrNull()?.endSeconds
+        val text = decodeTtmlText(body)
+        text.takeIf { it.isNotEmpty() }?.let {
+            parsePlayerLyricText(it, paragraphBegin, paragraphEnd, words)
+        }
     }.toList()
 
 internal fun parsePlayerLyrics(content: String): List<PlayerLyricLine> {
@@ -156,6 +213,20 @@ internal fun shouldEnterLyricsBrowseMode(isUserDragging: Boolean, isFollowingSel
 /** Small finger drift on a lyric row is still a seek, not a manual browse. */
 internal fun shouldSeekFromLyricTap(dragDistancePx: Float, tapSlopPx: Float): Boolean = dragDistancePx <= tapSlopPx
 
+internal fun activePlayerLyricWordIndex(
+    words: List<PlayerLyricWord>,
+    positionSeconds: Float,
+    lineEndSeconds: Float? = null,
+): Int? {
+    if (words.isEmpty()) return null
+    val candidate = words.indexOfLast { it.beginSeconds <= positionSeconds }
+    if (candidate < 0) return null
+    val word = words[candidate]
+    val nextBegin = words.getOrNull(candidate + 1)?.beginSeconds
+    val end = word.endSeconds ?: nextBegin ?: lineEndSeconds
+    return if (end == null || positionSeconds < end) candidate else null
+}
+
 internal fun syncedLyricBlurRadius(distance: Int) = when (distance) {
     0 -> 0.dp
     1 -> 0.35.dp
@@ -163,10 +234,21 @@ internal fun syncedLyricBlurRadius(distance: Int) = when (distance) {
     else -> 2.dp
 }
 
-private fun parsePlayerLyricText(text: String, timestampSeconds: Float?): PlayerLyricLine {
+private fun parsePlayerLyricText(
+    text: String,
+    timestampSeconds: Float?,
+    endSeconds: Float? = null,
+    words: List<PlayerLyricWord> = emptyList(),
+): PlayerLyricLine {
     val parts = BilingualSeparator.split(text, limit = 2)
     val secondary = parts.getOrNull(1)?.trim()?.takeIf(String::isNotEmpty)
-    return PlayerLyricLine(primary = parts.first().trim(), secondary = secondary, timestampSeconds = timestampSeconds)
+    return PlayerLyricLine(
+        primary = parts.first().trim(),
+        secondary = secondary,
+        timestampSeconds = timestampSeconds,
+        endSeconds = endSeconds,
+        words = words,
+    )
 }
 
 @Composable
@@ -175,6 +257,7 @@ internal fun FullScreenPlayerLyricsPanel(
     lyrics: String?,
     loading: Boolean = false,
     visible: Boolean = true,
+    forcedFallbackReason: String? = null,
     romanization: RomanizationUiState = RomanizationUiState(),
     romanizationAllowed: Boolean = false,
     onRomanizationInput: (List<String>, Boolean) -> Unit = { _, _ -> },
@@ -184,12 +267,14 @@ internal fun FullScreenPlayerLyricsPanel(
     seekRequestId: Long = 0L,
     onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier,
-    fullscreen: Boolean = false,
 ) {
     val parsedLines = remember(lyrics) { lyrics?.let(::parsePlayerLyrics).orEmpty() }
     val syncedLines = remember(parsedLines) { parsedLines.filter { it.timestampSeconds != null } }
     val primary = remember(parsedLines, syncedLines) { (syncedLines.ifEmpty { parsedLines }).map { it.primary } }
     val lifecycleOwner = LocalLifecycleOwner.current
+    var bridgeFallbackReason by remember(trackId, forcedFallbackReason) {
+        mutableStateOf(forcedFallbackReason)
+    }
     val currentOnInput by rememberUpdatedState(onRomanizationInput)
     LaunchedEffect(trackId, primary, visible, loading, lifecycleOwner) {
         if (visible && !loading) {
@@ -210,6 +295,17 @@ internal fun FullScreenPlayerLyricsPanel(
         when {
             loading -> LyricsLoadingState(Modifier.fillMaxSize())
             lyrics.isNullOrBlank() -> LyricsEmptyState(Modifier.fillMaxSize())
+            bridgeFallbackReason == null -> AmllLyricsWebView(
+                trackId,
+                lyrics,
+                detectAmllLyricFormat(lyrics),
+                currentPositionMs,
+                pendingSeekPositionMs,
+                seekRequestId,
+                romanization.enabled,
+                { bridgeFallbackReason = it },
+                Modifier.fillMaxSize(),
+            )
             syncedLines.isNotEmpty() -> SyncedLyricsList(
                 trackId,
                 syncedLines,
@@ -220,9 +316,13 @@ internal fun FullScreenPlayerLyricsPanel(
                 Modifier.fillMaxSize(),
                 secondary,
                 showToggle,
-                fullscreen = fullscreen,
             )
-            else -> PlainLyricsList(parsedLines, Modifier.fillMaxSize(), secondary, showToggle, fullscreen = fullscreen)
+            else -> PlainLyricsList(
+                parsedLines,
+                Modifier.fillMaxSize(),
+                secondary,
+                showToggle,
+            )
         }
         if (showToggle) {
             RomanizationToggle(
@@ -233,6 +333,149 @@ internal fun FullScreenPlayerLyricsPanel(
         }
     }
 }
+
+private val LrcTimestampPattern = Regex("""(?m)(?:\\[|<)?\\d{1,3}:\\d{2}(?:[.:]\\d{1,3})?(?:\\]|>)""")
+
+internal fun detectAmllLyricFormat(content: String): AmllLyricFormat {
+    val trimmed = content.trimStart()
+    return when {
+        trimmed.startsWith("<") -> AmllLyricFormat.Ttml
+        LrcTimestampPattern.containsMatchIn(content) -> AmllLyricFormat.Lrc
+        else -> AmllLyricFormat.Plain
+    }
+}
+
+@Composable
+internal fun AmllLyricsWebView(
+    trackId: String,
+    content: String,
+    format: AmllLyricFormat,
+    currentPositionMs: Long,
+    pendingSeekPositionMs: Long?,
+    seekRequestId: Long,
+    romanizationEnabled: Boolean,
+    onFallback: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentOnFallback by rememberUpdatedState(onFallback)
+    val controller = remember(trackId) {
+        AmllBridgeController().also {
+            it.resultHandler = { result ->
+                if (result is com.exodidio.tune.lyrics.AmllBridgeResult.Fallback) {
+                    currentOnFallback(result.reason)
+                }
+            }
+        }
+    }
+    var webView by remember { mutableStateOf<WebView?>(null) }
+    var pageReady by remember { mutableStateOf(false) }
+
+    DisposableEffect(controller, lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> webView?.onPause()
+                Lifecycle.Event.ON_RESUME -> webView?.onResume()
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            controller.dispose()
+        }
+    }
+
+    AndroidView(
+        modifier = modifier,
+        factory = { context ->
+            WebView(context).apply {
+                webView = this
+                settings.javaScriptEnabled = true
+                settings.allowFileAccess = true
+                settings.allowContentAccess = false
+                settings.allowFileAccessFromFileURLs = false
+                settings.allowUniversalAccessFromFileURLs = false
+                settings.blockNetworkLoads = true
+                settings.blockNetworkImage = true
+                settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                settings.javaScriptCanOpenWindowsAutomatically = false
+                settings.setSupportMultipleWindows(false)
+                settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                addJavascriptInterface(
+                    object {
+                        @JavascriptInterface
+                        fun postMessage(json: String) {
+                            controller.onBridgeMessage(json)
+                        }
+                    },
+                    "TuneAmllBridge",
+                )
+                webViewClient = object : WebViewClient() {
+                    override fun shouldOverrideUrlLoading(
+                        view: WebView,
+                        request: WebResourceRequest,
+                    ): Boolean = request.url.toString() != LocalAmllUrl
+
+                    override fun onPageFinished(view: WebView, url: String) {
+                        pageReady = url == LocalAmllUrl
+                    }
+
+                    override fun onReceivedError(
+                        view: WebView,
+                        request: WebResourceRequest,
+                        error: android.webkit.WebResourceError,
+                    ) {
+                        if (request.isForMainFrame) {
+                            currentOnFallback(error.description.toString())
+                        }
+                    }
+
+                    override fun onRenderProcessGone(
+                        view: WebView,
+                        detail: android.webkit.RenderProcessGoneDetail,
+                    ): Boolean {
+                        currentOnFallback("WebView render process ended")
+                        return true
+                    }
+                }
+                loadUrl(LocalAmllUrl)
+            }
+        },
+        update = { view ->
+            controller.commandHandler = { command ->
+                val expression = "window.TuneAmll && window.TuneAmll.dispatch(${JSONObject.quote(command)})"
+                view.evaluateJavascript(expression, null)
+            }
+        },
+        onRelease = { view ->
+            controller.dispose()
+            view.stopLoading()
+            view.destroy()
+            webView = null
+            pageReady = false
+        },
+    )
+
+    LaunchedEffect(controller, webView, pageReady, trackId, content, format) {
+        if (pageReady && webView != null) {
+            controller.load(trackId, content, format)
+        }
+    }
+    LaunchedEffect(controller, pageReady, currentPositionMs) {
+        if (pageReady) controller.updatePosition(trackId, currentPositionMs)
+    }
+    LaunchedEffect(controller, pageReady, seekRequestId, pendingSeekPositionMs) {
+        if (pageReady && seekRequestId > 0L && pendingSeekPositionMs != null) {
+            controller.requestSeek(trackId, pendingSeekPositionMs, seekRequestId)
+        }
+    }
+    LaunchedEffect(controller, pageReady, romanizationEnabled) {
+        if (pageReady) controller.setRomanizationEnabled(romanizationEnabled)
+    }
+}
+
+private const val LocalAmllUrl = "file:///android_asset/amll/index.html"
 
 @Composable
 private fun LyricsLoadingState(modifier: Modifier) {
@@ -292,7 +535,6 @@ private fun SyncedLyricsList(
     modifier: Modifier,
     secondary: List<String?>,
     showToggle: Boolean,
-    fullscreen: Boolean = false,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val listState = rememberLazyListState()
@@ -474,11 +716,11 @@ private fun SyncedLyricsList(
         modifier = modifier.testTag("synced_lyrics_list"),
     ) {
         itemsIndexed(lines, key = { index, _ -> index }) { index, line ->
+            val distance = if (activeIndex >= 0) kotlin.math.abs(index - activeIndex) else Int.MAX_VALUE
             SyncedLyricRow(
                 line = line,
-                fullscreen = fullscreen,
                 secondary = secondary.getOrNull(index) ?: line.secondary,
-                distance = if (activeIndex >= 0) kotlin.math.abs(index - activeIndex) else Int.MAX_VALUE,
+                distance = distance,
                 onClick = {
                     isBrowsing = false
                     activeIndexWhenLineSelected = activeIndex
@@ -490,6 +732,11 @@ private fun SyncedLyricsList(
                 onRowHeightChanged = { rowHeights[index] = it },
                 onTrailingLineHeightChanged = { trailingLineHeights[index] = it },
                 focusMode = !isBrowsing,
+                activeWordIndex = if (distance == 0) {
+                    activePlayerLyricWordIndex(line.words, displayedPositionMs / 1_000f, line.endSeconds)
+                } else {
+                    null
+                },
             )
         }
     }
@@ -498,13 +745,13 @@ private fun SyncedLyricsList(
 @Composable
 private fun SyncedLyricRow(
     line: PlayerLyricLine,
-    fullscreen: Boolean = false,
     secondary: String?,
     distance: Int,
     onClick: () -> Unit,
     onRowHeightChanged: (Int) -> Unit,
     onTrailingLineHeightChanged: (Int) -> Unit,
     focusMode: Boolean,
+    activeWordIndex: Int? = null,
 ) {
     val colors = LocalTuneColors.current
     // The pointer coroutine remains alive across playback-position and track
@@ -550,12 +797,14 @@ private fun SyncedLyricRow(
             .pointerInput(line.timestampSeconds) {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
+                    down.consume()
                     val startPosition = down.position
                     var dragDistancePx = 0f
                     var pressed = true
                     while (pressed) {
                         val event = awaitPointerEvent()
                         val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                        change.consume()
                         dragDistancePx = maxOf(dragDistancePx, (change.position - startPosition).getDistance())
                         pressed = change.pressed
                     }
@@ -568,10 +817,26 @@ private fun SyncedLyricRow(
             }
             .testTag("synced_lyric_${line.timestampSeconds}"),
     ) {
+        val lyricText = if (line.words.isNotEmpty() && activeWordIndex != null) {
+            buildAnnotatedString {
+                line.words.forEachIndexed { index, word ->
+                    if (index > 0) append(" ")
+                    withStyle(
+                        SpanStyle(
+                            color = if (index == activeWordIndex) colors.onPrimary else colors.onPrimary.copy(alpha = 0.42f),
+                        ),
+                    ) {
+                        append(word.text)
+                    }
+                }
+            }
+        } else {
+            AnnotatedString(line.primary)
+        }
         Text(
-            text = line.primary,
+            text = lyricText,
             color = colors.onPrimary.copy(alpha = opacity),
-            style = if (fullscreen) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.headlineSmall,
             // Keep glyph metrics stable when the line becomes active; changing
             // weight here would re-wrap the same text during scale animation.
             fontWeight = FontWeight.Bold,
@@ -594,14 +859,23 @@ private fun SyncedLyricRow(
 }
 
 @Composable
-private fun PlainLyricsList(lines: List<PlayerLyricLine>, modifier: Modifier, secondary: List<String?>, showToggle: Boolean, fullscreen: Boolean = false) {
+private fun PlainLyricsList(
+    lines: List<PlayerLyricLine>,
+    modifier: Modifier,
+    secondary: List<String?>,
+    showToggle: Boolean,
+) {
     val colors = LocalTuneColors.current
     LazyColumn(modifier = modifier.testTag("plain_lyrics_list"), contentPadding = PaddingValues(bottom = if (showToggle) 72.dp else 0.dp)) {
         itemsIndexed(lines, key = { index, _ -> index }) { index, line ->
-            Column(Modifier.fillMaxWidth().padding(vertical = if (fullscreen) 12.dp else 8.dp)) {
-                Text(text = line.primary, color = colors.onPrimary, style = if (fullscreen) MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold) else MaterialTheme.typography.bodyLarge)
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+            ) {
+                Text(text = line.primary, color = colors.onPrimary, style = MaterialTheme.typography.bodyLarge)
                 (secondary.getOrNull(index) ?: line.secondary)?.let {
-                    Text(text = it, color = colors.foregroundSubtle, style = if (fullscreen) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 2.dp))
+                    Text(text = it, color = colors.foregroundSubtle, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 2.dp))
                 }
             }
         }

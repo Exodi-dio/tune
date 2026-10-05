@@ -69,6 +69,49 @@ class PlayerLyricsParserTest {
     }
 
     @Test
+    fun parsesTtmlWordSpansWithStartAndEndTimes() {
+        val ttml = """
+            <tt xmlns="http://www.w3.org/ns/ttml"><body><div>
+            <p begin="00:00:01.000" end="00:00:04.000">
+              <span begin="00:00:01.100" end="00:00:01.800">Hello</span>
+              <span begin="00:00:01.800" end="00:00:02.600">world</span>
+            </p>
+            </div></body></tt>
+        """.trimIndent()
+
+        val line = parsePlayerLyrics(ttml).single()
+
+        assertEquals(2, line.words.size)
+        assertEquals("Hello", line.words[0].text)
+        assertEquals(1.1f, line.words[0].beginSeconds)
+        assertEquals(1.8f, line.words[0].endSeconds)
+        assertEquals("world", line.words[1].text)
+        assertEquals(1.8f, line.words[1].beginSeconds)
+        assertEquals(2.6f, line.words[1].endSeconds)
+        assertEquals(4.0f, line.endSeconds)
+    }
+
+    @Test
+    fun highlightsTheWordWhoseTimingContainsPlaybackPosition() {
+        val line = PlayerLyricLine(
+            primary = "Hello world",
+            timestampSeconds = 1.0f,
+            endSeconds = 4.0f,
+            words = listOf(
+                PlayerLyricWord("Hello", 1.1f, 1.8f),
+                PlayerLyricWord("world", 1.8f, 2.6f),
+            ),
+        )
+
+        assertEquals(null, activePlayerLyricWordIndex(line.words, positionSeconds = 1.05f))
+        assertEquals(0, activePlayerLyricWordIndex(line.words, positionSeconds = 1.1f))
+        assertEquals(0, activePlayerLyricWordIndex(line.words, positionSeconds = 1.79f))
+        assertEquals(1, activePlayerLyricWordIndex(line.words, positionSeconds = 1.8f))
+        assertEquals(1, activePlayerLyricWordIndex(line.words, positionSeconds = 2.59f))
+        assertEquals(null, activePlayerLyricWordIndex(line.words, positionSeconds = 2.6f))
+    }
+
+    @Test
     fun lrcContentStillParsesAfterTtmlSupport() {
         val lines = parsePlayerLyrics("[00:01.00]Hello\n[00:02.00]World")
         assertEquals(2, lines.size)

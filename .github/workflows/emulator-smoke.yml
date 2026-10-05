@@ -5,18 +5,69 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build AMLL runtime assets
+        run: scripts/build-amll-assets.sh "$GITHUB_WORKSPACE/androidApp/build/generated/amllAssets/amll"
+      - name: Verify AMLL source pins
+        run: node tools/amll/verify-amll-assets.mjs
+        env:
+          AMLL_SOURCE_REVISION: 86200dead453bb067e554e989110cbadca8d4756
+          TTML_TOOL_SOURCE_REVISION: d4953b351ae073c1447464790fff17aa9bc1d807
+      - name: Test AMLL parser bridge
+        run: node tools/amll/test-parse.mjs
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: "21" }
       - uses: android-actions/setup-android@v3
-        with: { packages: platform-tools platforms;android-34 system-images;android-34;google_apis;x86_64 }
+        with:
+          packages: >-
+            platform-tools platforms;android-36
+            system-images;android-34;google_apis;x86_64
+            ndk;30.0.15729638 cmake;3.22.1
       - name: Install font tooling
         run: pip install --quiet fonttools brotli
       - uses: gradle/actions/setup-gradle@v4
+      - name: Restore FFmpeg outputs arm64-v8a
+        id: ffmpeg-cache-arm64-v8a
+        uses: actions/cache@v4
+        with:
+          path: |
+            androidApp/src/main/jniLibs
+            androidApp/build/ffmpeg
+          key: ffmpeg-arm64-v8a-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
+      - name: Restore FFmpeg outputs armeabi-v7a
+        id: ffmpeg-cache-armeabi-v7a
+        uses: actions/cache@v4
+        with:
+          path: |
+            androidApp/src/main/jniLibs
+            androidApp/build/ffmpeg
+          key: ffmpeg-armeabi-v7a-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
+      - name: Restore FFmpeg outputs x86_64
+        id: ffmpeg-cache-x86_64
+        uses: actions/cache@v4
+        with:
+          path: |
+            androidApp/src/main/jniLibs
+            androidApp/build/ffmpeg
+          key: ffmpeg-x86_64-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
+      - name: Build FFmpeg arm64-v8a
+        if: steps.ffmpeg-cache-arm64-v8a.outputs.cache-hit != 'true'
+        run: bash scripts/build-ffmpeg-android.sh arm64-v8a
+      - name: Build FFmpeg armeabi-v7a
+        if: steps.ffmpeg-cache-armeabi-v7a.outputs.cache-hit != 'true'
+        run: bash scripts/build-ffmpeg-android.sh armeabi-v7a
+      - name: Build FFmpeg x86_64
+        if: steps.ffmpeg-cache-x86_64.outputs.cache-hit != 'true'
+        run: bash scripts/build-ffmpeg-android.sh x86_64
       - name: Pre-start adb daemon
         run: |
           adb kill-server || true
           adb start-server
           adb devices
+      - name: Enable KVM access
+        run: sudo chmod 666 /dev/kvm
       - name: Run instrumented tests on 2GB AVD
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -29,4 +80,3 @@ jobs:
           disable-animations: true
           emulator-options: -no-snapshot -no-audio -no-boot-anim -no-window -gpu swiftshader_indirect
           script: ./gradlew :androidApp:connectedDevDebugAndroidTest --no-daemon
-

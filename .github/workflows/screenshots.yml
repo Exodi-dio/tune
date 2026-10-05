@@ -74,6 +74,9 @@ jobs:
             adb shell settings put global window_animation_scale 0 || true
             adb shell settings put global transition_animation_scale 0 || true
             adb shell settings put global animator_duration_scale 0 || true
+            ./gradlew :androidApp:connectedDevDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.exodidio.tune.AppNavigationTest --no-daemon
+            ./gradlew :androidApp:connectedDevDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.exodidio.tune.ui.navigation.FullScreenPlayerTest --no-daemon
+            ./gradlew :androidApp:connectedDevDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.exodidio.tune.ui.screens.AppearanceContentTest --no-daemon
             ./gradlew :androidApp:connectedDevDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.exodidio.tune.ui.navigation.AdaptiveScreenshotsTest --no-daemon
             mkdir -p shots
             adb pull /sdcard/Android/data/com.exodidio.tune.dev/files/shots shots || true

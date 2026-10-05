@@ -130,8 +130,6 @@ internal fun AppDestinationContent(
     reduceTransparency: Boolean,
     playerTheme: PlayerTheme = PlayerTheme.Standard,
     showVolumeSlider: Boolean = false,
-    fullscreenArtwork: Boolean = false,
-    fullscreenLyrics: Boolean = false,
     showInsightsTab: Boolean = false,
     onShowInsightsTabChanged: (Boolean) -> Unit = {},
     hazeState: HazeState?,
@@ -441,14 +439,6 @@ internal fun AppDestinationContent(
                                 showVolumeSlider = showVolumeSlider,
                                 onShowVolumeSliderChanged = { enabled ->
                                     onIntent(AppIntent.SetShowVolumeSlider(enabled))
-                                },
-                                fullscreenArtwork = fullscreenArtwork,
-                                onFullscreenArtworkChanged = { enabled ->
-                                    onIntent(AppIntent.SetFullscreenArtwork(enabled))
-                                },
-                                fullscreenLyrics = fullscreenLyrics,
-                                onFullscreenLyricsChanged = { enabled ->
-                                    onIntent(AppIntent.SetFullscreenLyrics(enabled))
                                 },
                                 showInsightsTab = showInsightsTab,
                                 onShowInsightsTabChanged = onShowInsightsTabChanged,
