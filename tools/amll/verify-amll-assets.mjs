@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const expectedAmlxRevision =
+const expectedAmllRevision =
   "86200dead453bb067e554e989110cbadca8d4756";
 const expectedTtmlToolRevision =
   "d4953b351ae073c1447464790fff17aa9bc1d807";
@@ -10,9 +10,9 @@ const outputDirectory = resolve(
     "androidApp/build/generated/amllAssets/amll",
 );
 
-if (process.env.AMLL_SOURCE_REVISION !== expectedAmlxRevision) {
+if (process.env.AMLL_SOURCE_REVISION !== expectedAmllRevision) {
   console.error(
-    `AMLL_SOURCE_REVISION must be ${expectedAmlxRevision}; received ${process.env.AMLL_SOURCE_REVISION ?? "<missing>"}`,
+    `AMLL_SOURCE_REVISION must be ${expectedAmllRevision}; received ${process.env.AMLL_SOURCE_REVISION ?? "<missing>"}`,
   );
   process.exit(2);
 }

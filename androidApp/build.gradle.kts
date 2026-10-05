@@ -120,6 +120,7 @@ dependencies {
 
 android {
     sourceSets.getByName("main").assets.directories.add(layout.buildDirectory.dir("generated/romanizationAssets").get().asFile.path)
+    sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/amllAssets"))
     namespace = "com.exodidio.tune"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     ndkVersion = "30.0.15729638"
