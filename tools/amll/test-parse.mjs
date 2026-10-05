@@ -8,7 +8,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const fixture = (name) => readFileSync(path.join(here, "fixtures", name), "utf8");
 
 const amllCheckout = path.join(process.env.RUNNER_TEMP, "applemusic-like-lyrics");
-const amllRequire = createRequire(path.join(amlmCheckoutPath(), "package.json"));
+const amllRequire = createRequire(path.join(amllCheckout, "packages", "ttml", "package.json"));
 const { DOMParser } = amllRequire("@xmldom/xmldom");
 
 globalThis.window = globalThis;
@@ -79,7 +79,3 @@ const parse = (format, content) => {
 }
 
 console.log("AMLL parser tests passed");
-
-function amlmCheckoutPath() {
-  return path.join(process.env.RUNNER_TEMP, "applemusic-like-lyrics");
-}
