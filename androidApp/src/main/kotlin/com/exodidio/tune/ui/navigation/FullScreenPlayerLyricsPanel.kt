@@ -1,6 +1,7 @@
 package com.exodidio.tune.ui.navigation
 
 import android.webkit.JavascriptInterface
+import android.webkit.WebSettings
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -397,10 +398,10 @@ internal fun AmllLyricsWebView(
                 settings.allowUniversalAccessFromFileURLs = false
                 settings.blockNetworkLoads = true
                 settings.blockNetworkImage = true
-                settings.cacheMode = WebView.LOAD_NO_CACHE
+                settings.cacheMode = WebSettings.LOAD_NO_CACHE
                 settings.javaScriptCanOpenWindowsAutomatically = false
                 settings.setSupportMultipleWindows(false)
-                settings.mixedContentMode = WebView.MIXED_CONTENT_NEVER_ALLOW
+                settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                 addJavascriptInterface(
                     object {
                         @JavascriptInterface
