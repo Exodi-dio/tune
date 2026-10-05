@@ -28,7 +28,8 @@ class AmllBridgeControllerTest {
     fun loadForNewTrackClearsPreviousBridgeState() {
         val controller = controller()
         controller.load("track-1", "[00:01.00]First", AmllLyricFormat.Lrc)
-        assertTrue(controller.onBridgeMessage(ready("track-1")) is AmllBridgeResult.Ready)
+        val firstReady = controller.onBridgeMessage(ready("track-1"))
+        assertTrue("Expected Ready but was $firstReady", firstReady is AmllBridgeResult.Ready)
 
         controller.load("track-2", "Second", AmllLyricFormat.Plain)
 
@@ -71,7 +72,8 @@ class AmllBridgeControllerTest {
         val controller = controller()
         controller.load("track-1", "First", AmllLyricFormat.Plain)
 
-        assertTrue(controller.onBridgeMessage(ready("track-1")) is AmllBridgeResult.Ready)
+        val firstReady = controller.onBridgeMessage(ready("track-1"))
+        assertTrue("Expected Ready but was $firstReady", firstReady is AmllBridgeResult.Ready)
         assertTrue(controller.onBridgeMessage(ready("track-1")) is AmllBridgeResult.Fallback)
         assertEquals(1, results.count { it is AmllBridgeResult.Ready })
     }
@@ -85,7 +87,8 @@ class AmllBridgeControllerTest {
 
         assertTrue(fallback is AmllBridgeResult.Fallback)
         assertFalse(controller.isReady)
-        assertTrue(controller.onBridgeMessage(ready("track-1")) is AmllBridgeResult.Ready)
+        val ready = controller.onBridgeMessage(ready("track-1"))
+        assertTrue("Expected Ready but was $ready", ready is AmllBridgeResult.Ready)
     }
 
     @Test
