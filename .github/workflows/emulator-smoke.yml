@@ -66,6 +66,8 @@ jobs:
           adb kill-server || true
           adb start-server
           adb devices
+      - name: Enable KVM access
+        run: sudo chmod 666 /dev/kvm
       - name: Run instrumented tests on 2GB AVD
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -78,4 +80,3 @@ jobs:
           disable-animations: true
           emulator-options: -no-snapshot -no-audio -no-boot-anim -no-window -gpu swiftshader_indirect
           script: ./gradlew :androidApp:connectedDevDebugAndroidTest --no-daemon
-
