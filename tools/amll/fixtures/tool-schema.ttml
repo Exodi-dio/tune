@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml"
+    xmlns:ttm="http://www.w3.org/ns/ttml#metadata"
+    xmlns:itunes="http://music.apple.com/lyric-ttml-internal"
+    xmlns:amll="http://www.example.com/ns/amll"
+    xml:lang="ja"
+    itunes:timing="Word">
+    <head>
+        <metadata>
+            <ttm:agent type="person" xml:id="v1"/>
+            <ttm:agent type="person" xml:id="v2"/>
+            <iTunesMetadata xmlns="http://music.apple.com/lyric-ttml-internal">
+                <translations>
+                    <translation type="subtitle" xml:lang="en">
+                        <text for="L1">Schema translation</text>
+                    </translation>
+                </translations>
+                <transliterations>
+                    <transliteration xml:lang="ja-Latn">
+                        <text for="L1">Schema romanization</text>
+                    </transliteration>
+                </transliterations>
+            </iTunesMetadata>
+        </metadata>
+    </head>
+    <body dur="00:04.000">
+        <div begin="00:00.500" end="00:03.500">
+            <p begin="00:00.500" end="00:01.500" itunes:key="L1" ttm:agent="v1">
+                <span begin="00:00.500" end="00:01.500" amll:empty-beat="2">テスト</span>
+            </p>
+            <p begin="00:02.000" end="00:03.500" itunes:key="L2" ttm:agent="v2">
+                <span begin="00:02.000" end="00:03.500">二行目</span>
+            </p>
+        </div>
+    </body>
+</tt>
