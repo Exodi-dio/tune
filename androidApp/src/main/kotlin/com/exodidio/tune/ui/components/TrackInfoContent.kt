@@ -119,7 +119,7 @@ internal fun trackInfoValues(track: LibraryTrack): List<TrackInfoValue> {
     val fileSize = number("file_size")
 
     return listOf(
-        TrackInfoValue(R.string.track_info_artist, text("raw_artist_names").ifBlank { track.artists }),
+        TrackInfoValue(R.string.track_info_artist, text("raw_artist_names").split("/").map { it.trim() }.joinToString(", ").ifBlank { track.artists }),
         TrackInfoValue(R.string.track_info_genre, text("raw_genre_names")),
         TrackInfoValue(R.string.track_info_year, numericText("year")),
         TrackInfoValue(R.string.track_info_composer, text("raw_composer_names")),
@@ -131,7 +131,7 @@ internal fun trackInfoValues(track: LibraryTrack): List<TrackInfoValue> {
         TrackInfoValue(R.string.track_info_isrc, text("isrc")),
         TrackInfoValue(R.string.track_info_duration, formatTrackDuration(number("duration"))),
         TrackInfoValue(R.string.track_info_format, text("format").uppercase()),
-        TrackInfoValue(R.string.track_info_bitrate, bitrate?.takeIf { it > 0 }?.let { "${it} kbps" }.orEmpty()),
+        TrackInfoValue(R.string.track_info_bitrate, bitrate?.takeIf { it > 0 }?.let { "${it / 1000} kbps" }.orEmpty()),
         TrackInfoValue(R.string.track_info_sample_rate, sampleRate?.takeIf { it > 0 }?.let { formatSampleRate(it) }.orEmpty()),
         TrackInfoValue(R.string.track_info_bit_depth, bitDepth?.takeIf { it > 0 }?.let { "$it-bit" }.orEmpty()),
         TrackInfoValue(R.string.track_info_codec, text("codec").uppercase()),

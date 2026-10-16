@@ -180,7 +180,7 @@ internal class LocalLibraryScanner(
                 discNo = null,
                 durationMs = s(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull(),
                 bitrate = s(MediaMetadataRetriever.METADATA_KEY_BITRATE)?.toIntOrNull(),
-                sampleRateHz = null,
+                sampleRateHz = s(MediaMetadataRetriever.METADATA_KEY_SAMPLE_RATE)?.toIntOrNull(),
                 bitDepth = null,
                 hasEmbeddedArt = false,
             ),
