@@ -199,7 +199,7 @@ import java.security.MessageDigest
  * ============================================================================ */
 
  fun trackDisplayTitle(track: LibraryTrack): String =
-    track.title.ifBlank { track.id }
+    track.title.ifBlank { track.id.ifBlank { "Unknown song" } }
 
  fun trackDisplayArtists(track: LibraryTrack): String =
     track.artists.ifBlank { "Unknown Artist" }
@@ -242,13 +242,13 @@ import java.security.MessageDigest
             if (artworkPath == null) {
                 artworkPath = trackArtwork[track.id]
             }
-            seen[id] = LibraryArtist(
+            seen.putIfAbsent(id, LibraryArtist(
                 id = id,
                 name = name,
                 sortName = sortName,
                 createdAt = createdAt,
                 artworkPath = artworkPath,
-            )
+            ))
         }
     }
     return seen.values.toList()
@@ -299,7 +299,7 @@ import java.security.MessageDigest
             artist = firstTrackArtist?.get("name")?.jsonPrimitive?.contentOrNull.orEmpty()
             sortArtist = firstTrackArtist?.get("sort_name")?.jsonPrimitive?.contentOrNull.orEmpty() ?: artist
         }
-        seen[albumId] = LibraryAlbum(
+        seen.putIfAbsent(albumId, LibraryAlbum(
             id = albumId,
             title = title,
             sortTitle = sortTitle,
@@ -309,7 +309,7 @@ import java.security.MessageDigest
             createdAt = createdAt,
             year = year,
             copyright = copyright,
-        )
+        ))
     }
     return seen.values.toList()
 }
@@ -346,13 +346,13 @@ import java.security.MessageDigest
             if (artworkPath == null) {
                 artworkPath = trackArtwork[track.id]
             }
-            seen[id] = LibraryComposer(
+            seen.putIfAbsent(id, LibraryComposer(
                 id = id,
                 name = name,
                 sortName = sortName,
                 createdAt = createdAt,
                 artworkPath = artworkPath,
-            )
+            ))
         }
     }
     return seen.values.toList()
@@ -376,12 +376,12 @@ fun libraryGenresFrom(
                 ?: obj.get("normalization_key")?.jsonPrimitive?.contentOrNull
                 ?: name
             val createdAt = obj.get("created_at")?.jsonPrimitive?.contentOrNull ?: track.createdAt
-            seen[id] = LibraryGenre(
+            seen.putIfAbsent(id, LibraryGenre(
                 id = id,
                 name = name,
                 sortName = sortName,
                 createdAt = createdAt,
-            )
+            ))
         }
     }
     return seen.values.toList()
