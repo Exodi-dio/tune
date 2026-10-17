@@ -458,6 +458,21 @@ fun libraryGenresFrom(
                 )
             }
         }
+        // Album documents
+        val albumObj = root.get("album") as? JsonObject
+        val albumId = albumObj?.get("id")?.jsonPrimitive?.contentOrNull
+        val albumTitle = albumObj?.get("title")?.jsonPrimitive?.contentOrNull
+        if (albumId?.isNotBlank() == true && albumTitle?.isNotBlank() == true) {
+            docs.add(
+                LibrarySearchDocumentEntity(
+                    planId = planId,
+                    entityType = "album",
+                    entityId = albumId,
+                    title = albumTitle,
+                    keywords = listOf(albumTitle),
+                ),
+            )
+        }
         // Composer documents
         val composersArr = root.get("composers") as? JsonArray
         if (composersArr != null) {
