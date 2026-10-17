@@ -55,7 +55,7 @@ class LibrarySearchViewModelTest {
         val albums = listOf(LibraryAlbum("1", "Muse", "Artist"), LibraryAlbum("2", "Museum", "Artist"))
         assertEquals(listOf("1", "2"), searchLibrary(albums, "muse", { listOf(it.title, it.artist) }, { it.title }, { it.id }).map { it.id })
         assertTrue(searchLibrary(listOf(LibraryArtist("a", "Björk")), "bjo", { listOf(it.name) }, { it.name }, { it.id }).isNotEmpty())
-        assertTrue(searchLibrary(listOf(LibraryPlaylist("p", "Focus", emptyList(), "{}")), "foc", { listOf(it.name) }, { it.name }, { it.id }).isNotEmpty())
+        assertTrue(searchLibrary(listOf(LibraryPlaylist(id = "p", name = "Focus", metadataJson = "{}")), "foc", { listOf(it.name) }, { it.name }, { it.id }).isNotEmpty())
         assertTrue(searchLibrary(listOf(LibraryComposer("c", "Claude Debussy")), "deb", { listOf(it.name) }, { it.name }, { it.id }).isNotEmpty())
     }
 

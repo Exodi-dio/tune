@@ -75,6 +75,7 @@ private class MusicSyncFakeThemeModeStore(initialThemeMode: ThemeMode = ThemeMod
     override val fullscreenArtwork: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false)
     override val fullscreenLyrics: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false)
     override val visibleTabs: Flow<List<AppDestination>> = kotlinx.coroutines.flow.MutableStateFlow(AppDestination.entries.toList())
+    override val keepScreenOn: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false)
     override suspend fun setThemeMode(themeMode: ThemeMode) {
         mutableThemeMode.value = themeMode
     }
@@ -86,4 +87,5 @@ private class MusicSyncFakeThemeModeStore(initialThemeMode: ThemeMode = ThemeMod
     override suspend fun setFullscreenArtwork(enabled: Boolean) {}
     override suspend fun setFullscreenLyrics(enabled: Boolean) {}
     override suspend fun setVisibleTabs(visibleTabs: List<AppDestination>) {}
+    override suspend fun setKeepScreenOn(enabled: Boolean) {}
 }

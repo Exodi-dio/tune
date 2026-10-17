@@ -102,6 +102,8 @@ import java.security.MessageDigest
     val id: String = "",
     val name: String = "",
     val trackCount: Int = 0,
+    val sortName: String = "",
+    val createdAt: String = "",
 )
 
  data class LibraryComposer(
@@ -223,7 +225,9 @@ import java.security.MessageDigest
             if (id.isBlank()) continue
             val name = obj.get("name")?.jsonPrimitive?.contentOrNull ?: continue
             if (name.isBlank()) continue
-            val sortName = obj.get("sort_name")?.jsonPrimitive?.contentOrNull ?: name
+            val sortName = obj.get("sort_name")?.jsonPrimitive?.contentOrNull
+                ?: obj.get("normalization_key")?.jsonPrimitive?.contentOrNull
+                ?: name
             val createdAt = obj.get("created_at")?.jsonPrimitive?.contentOrNull ?: track.createdAt
             val artworkKey = obj.get("artwork_key")?.jsonPrimitive?.contentOrNull
                 ?: obj.get("artwork_key_local")?.jsonPrimitive?.contentOrNull
@@ -326,7 +330,9 @@ import java.security.MessageDigest
             if (id.isBlank()) continue
             val name = obj.get("name")?.jsonPrimitive?.contentOrNull ?: continue
             if (name.isBlank()) continue
-            val sortName = obj.get("sort_name")?.jsonPrimitive?.contentOrNull ?: name
+            val sortName = obj.get("sort_name")?.jsonPrimitive?.contentOrNull
+                ?: obj.get("normalization_key")?.jsonPrimitive?.contentOrNull
+                ?: name
             val createdAt = obj.get("created_at")?.jsonPrimitive?.contentOrNull ?: track.createdAt
             val artworkKey = obj.get("artwork_key")?.jsonPrimitive?.contentOrNull
             var artworkPath: String? = null
@@ -346,6 +352,35 @@ import java.security.MessageDigest
                 sortName = sortName,
                 createdAt = createdAt,
                 artworkPath = artworkPath,
+            )
+        }
+    }
+    return seen.values.toList()
+}
+
+fun libraryGenresFrom(
+    tracks: List<LibraryTrackRow>,
+): List<LibraryGenre> {
+    val seen = mutableMapOf<String, LibraryGenre>()
+    for (track in tracks) {
+        val root = runCatching { LibrarySyncProtocol.json.parseToJsonElement(track.rawJson) as? JsonObject }.getOrNull()
+            ?: continue
+        val genresArr = root.get("genres") as? JsonArray ?: continue
+        for (entry in genresArr) {
+            val obj = entry as? JsonObject ?: continue
+            val id = obj.get("id")?.jsonPrimitive?.contentOrNull ?: continue
+            if (id.isBlank()) continue
+            val name = obj.get("name")?.jsonPrimitive?.contentOrNull ?: continue
+            if (name.isBlank()) continue
+            val sortName = obj.get("sort_name")?.jsonPrimitive?.contentOrNull
+                ?: obj.get("normalization_key")?.jsonPrimitive?.contentOrNull
+                ?: name
+            val createdAt = obj.get("created_at")?.jsonPrimitive?.contentOrNull ?: track.createdAt
+            seen[id] = LibraryGenre(
+                id = id,
+                name = name,
+                sortName = sortName,
+                createdAt = createdAt,
             )
         }
     }
