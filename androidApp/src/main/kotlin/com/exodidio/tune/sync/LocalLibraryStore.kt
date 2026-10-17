@@ -459,10 +459,8 @@ fun libraryGenresFrom(
             }
         }
         // Album documents
-        val albumObj = root.get("album") as? JsonObject
         val albumId = albumObj?.get("id")?.jsonPrimitive?.contentOrNull
-        val albumTitle = albumObj?.get("title")?.jsonPrimitive?.contentOrNull
-        if (albumId?.isNotBlank() == true && albumTitle?.isNotBlank() == true) {
+        if (albumId?.isNotBlank() == true && albumTitle.isNotBlank()) {
             docs.add(
                 LibrarySearchDocumentEntity(
                     planId = planId,
