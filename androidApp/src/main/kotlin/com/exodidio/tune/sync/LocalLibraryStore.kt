@@ -287,7 +287,7 @@ import java.security.MessageDigest
         // Resolve album artist
         var artist = ""
         var sortArtist = ""
-        val albumArtists = albumObj.get("album_artists") as? JsonArray
+        val albumArtists = root.get("album_artists") as? JsonArray
         if (albumArtists != null && albumArtists.isNotEmpty()) {
             val first = albumArtists.firstOrNull { it is JsonObject } as? JsonObject
             artist = first?.get("name")?.jsonPrimitive?.contentOrNull.orEmpty()
@@ -392,9 +392,11 @@ fun libraryGenresFrom(
  * ============================================================================ */
 
  fun searchFtsMatch(query: String): String? {
-    val tokens = query
+    val normalized = java.text.Normalizer.normalize(query, java.text.Normalizer.Form.NFD)
+        .replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
+    val tokens = normalized
         .lowercase()
-        .split(Regex("\\s+"))
+        .split(Regex("[\\s/]+"))
         .filter { it.isNotBlank() }
         .map { it.replace(Regex("[^a-z0-9]"), "") }
         .filter { it.isNotBlank() }
