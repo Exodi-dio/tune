@@ -202,7 +202,7 @@ import java.security.MessageDigest
     track.title.ifBlank { track.id.ifBlank { "Unknown song" } }
 
  fun trackDisplayArtists(track: LibraryTrack): String =
-    track.artists.ifBlank { "Unknown Artist" }
+    track.artists.ifBlank { "Unknown artist" }
 
 /** ============================================================================
  *  Mapper helpers (recreated for sync mapper tests)
@@ -287,24 +287,29 @@ import java.security.MessageDigest
         // Resolve album artist
         var artist = ""
         var sortArtist = ""
+        var explicitSortArtist = false
         val albumArtists = root.get("album_artists") as? JsonArray
         if (albumArtists != null && albumArtists.isNotEmpty()) {
             val first = albumArtists.firstOrNull { it is JsonObject } as? JsonObject
             artist = first?.get("name")?.jsonPrimitive?.contentOrNull.orEmpty()
-            sortArtist = first?.get("sort_name")?.jsonPrimitive?.contentOrNull.orEmpty() ?: artist
+            val explicitSortName = first?.get("sort_name")?.jsonPrimitive?.contentOrNull
+            sortArtist = explicitSortName ?: artist
+            explicitSortArtist = explicitSortName != null
         }
         if (artist.isBlank()) {
             val trackArtists = root.get("artists") as? JsonArray
             val firstTrackArtist = trackArtists?.firstOrNull { it is JsonObject } as? JsonObject
             artist = firstTrackArtist?.get("name")?.jsonPrimitive?.contentOrNull.orEmpty()
-            sortArtist = firstTrackArtist?.get("sort_name")?.jsonPrimitive?.contentOrNull.orEmpty() ?: artist
+            val explicitSortName = firstTrackArtist?.get("sort_name")?.jsonPrimitive?.contentOrNull
+            sortArtist = explicitSortName ?: artist
+            explicitSortArtist = explicitSortName != null
         }
         val existing = seen[albumId]
         seen[albumId] = LibraryAlbum(
             id = albumId,
             title = title,
             sortTitle = sortTitle,
-            sortArtist = if (artist.isNotBlank()) artist else existing?.sortArtist ?: sortArtist,
+            sortArtist = if (explicitSortArtist) sortArtist else existing?.sortArtist ?: sortArtist,
             artist = if (artist.isNotBlank()) artist else existing?.artist ?: artist,
             artworkPath = artworkPath ?: existing?.artworkPath,
             createdAt = createdAt,
