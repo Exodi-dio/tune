@@ -12,8 +12,8 @@ class GenreDetailsViewModelTest {
         val state = GenreDetailsUiState(
             allGenres = listOf(LibraryGenre("electronic", "Electronic")),
             allAlbums = listOf(
-                LibraryAlbum("z", "Alpha", "Artist", sortTitle = "Zulu", sortArtist = "Zulu Artist"),
-                LibraryAlbum("a", "Zulu", "Artist", sortTitle = "Alpha", sortArtist = "Alpha Artist"),
+                LibraryAlbum(id = "z", title = "Alpha", artist = "Artist", sortTitle = "Zulu", sortArtist = "Zulu Artist"),
+                LibraryAlbum(id = "a", title = "Zulu", artist = "Artist", sortTitle = "Alpha", sortArtist = "Alpha Artist"),
             ),
             tracks = listOf(
                 track("z-two", "z", "{\"genres\":[{\"id\":\"electronic\",\"name\":\"Electronic\"}]}", disc = 1, number = 2, order = 2),

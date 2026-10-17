@@ -22,7 +22,7 @@ class InsightViewModelTest {
         tracks,
         listOf(LibraryArtist("artist-a", "Artist A"), LibraryArtist("artist-b", "Artist B"), LibraryArtist("artist-c", "Artist C")),
         listOf(LibraryAlbum("album-a", "Album A"), LibraryAlbum("album-b", "Album B")),
-        listOf(LibraryPlaylist("favorites", "Favorites", emptyList(), "{}"), LibraryPlaylist("mix", "Mix", emptyList(), "{}")),
+        listOf(LibraryPlaylist(id = "favorites", name = "Favorites", metadataJson = "{}"), LibraryPlaylist(id = "mix", name = "Mix", metadataJson = "{}")),
     )
     private val raw = InsightRawData(
         library = bundle,

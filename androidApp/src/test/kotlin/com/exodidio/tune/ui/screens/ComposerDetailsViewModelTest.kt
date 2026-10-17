@@ -12,8 +12,8 @@ class ComposerDetailsViewModelTest {
         val state = ComposerDetailsUiState(
             allComposers = listOf(LibraryComposer("philip glass", "Philip Glass")),
             allAlbums = listOf(
-                LibraryAlbum("z", "Alpha", "Artist", sortTitle = "Zulu", sortArtist = "Zulu Artist"),
-                LibraryAlbum("a", "Zulu", "Artist", sortTitle = "Alpha", sortArtist = "Alpha Artist"),
+                LibraryAlbum(id = "z", title = "Alpha", artist = "Artist", sortTitle = "Zulu", sortArtist = "Zulu Artist"),
+                LibraryAlbum(id = "a", title = "Zulu", artist = "Artist", sortTitle = "Alpha", sortArtist = "Alpha Artist"),
             ),
             tracks = listOf(
                 track("z-two", "z", "{\"composers\":[{\"id\":\"philip glass\",\"name\":\"Philip Glass\"}]}", disc = 1, number = 2, order = 2),
