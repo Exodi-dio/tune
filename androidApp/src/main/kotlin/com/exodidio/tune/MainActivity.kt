@@ -94,35 +94,35 @@ class MainActivity : ComponentActivity() {
     }
     private val tracksViewModel: LibraryTracksViewModel by viewModels {
         LibraryTracksViewModel.Factory(
-            AndroidSyncRuntime.syncStore(),
+            AndroidSyncRuntime.syncStore,
             AndroidPlaybackRuntime.controller(),
             com.exodidio.tune.player.PlaybackPreferences(applicationContext).hideShortAudio,
         )
     }
     private val insightViewModel: InsightViewModel by viewModels {
         InsightViewModel.Factory(
-            AndroidSyncRuntime.syncStore(),
+            AndroidSyncRuntime.syncStore,
             AndroidPlaybackRuntime.controller(),
         )
     }
     private val artistsViewModel: LibraryArtistsViewModel by viewModels {
-        LibraryArtistsViewModel.Factory(applicationContext, AndroidSyncRuntime.syncStore())
+        LibraryArtistsViewModel.Factory(applicationContext, AndroidSyncRuntime.syncStore)
     }
     private val albumsViewModel: LibraryAlbumsViewModel by viewModels {
         LibraryAlbumsViewModel.Factory(
-            AndroidSyncRuntime.syncStore(),
+            AndroidSyncRuntime.syncStore,
             AndroidPlaybackRuntime.controller(),
             LibraryAlbumsLayoutPreferences(applicationContext),
         )
     }
     private val genresViewModel: LibraryGenresViewModel by viewModels {
-        LibraryGenresViewModel.Factory(AndroidSyncRuntime.syncStore())
+        LibraryGenresViewModel.Factory(AndroidSyncRuntime.syncStore)
     }
     private val composersViewModel: LibraryComposersViewModel by viewModels {
-        LibraryComposersViewModel.Factory(AndroidSyncRuntime.syncStore())
+        LibraryComposersViewModel.Factory(AndroidSyncRuntime.syncStore)
     }
     private val playlistsViewModel: LibraryPlaylistsViewModel by viewModels {
-        LibraryPlaylistsViewModel.Factory(applicationContext, AndroidSyncRuntime.syncStore())
+        LibraryPlaylistsViewModel.Factory(applicationContext, AndroidSyncRuntime.syncStore)
     }
 
     // M3U playlist import/export via the Storage Access Framework.
@@ -140,33 +140,33 @@ class MainActivity : ComponentActivity() {
     }
     private val searchViewModel: LibrarySearchViewModel by viewModels {
         LibrarySearchViewModel.Factory(
-            AndroidSyncRuntime.syncStore(),
+            AndroidSyncRuntime.syncStore,
             com.exodidio.tune.player.PlaybackPreferences(applicationContext).hideShortAudio,
         )
     }
     private val albumDetailsViewModel: AlbumDetailsViewModel by viewModels {
-        AlbumDetailsViewModel.Factory(AndroidSyncRuntime.syncStore(), AndroidPlaybackRuntime.controller())
+        AlbumDetailsViewModel.Factory(AndroidSyncRuntime.syncStore, AndroidPlaybackRuntime.controller())
     }
     private val playlistDetailsViewModel: PlaylistDetailsViewModel by viewModels {
-        PlaylistDetailsViewModel.Factory(AndroidSyncRuntime.syncStore(), AndroidPlaybackRuntime.controller())
+        PlaylistDetailsViewModel.Factory(AndroidSyncRuntime.syncStore, AndroidPlaybackRuntime.controller())
     }
     private val artistDetailsViewModel: ArtistDetailsViewModel by viewModels {
-        ArtistDetailsViewModel.Factory(AndroidSyncRuntime.syncStore(), AndroidPlaybackRuntime.controller())
+        ArtistDetailsViewModel.Factory(AndroidSyncRuntime.syncStore, AndroidPlaybackRuntime.controller())
     }
     private val genreDetailsViewModel: GenreDetailsViewModel by viewModels {
-        GenreDetailsViewModel.Factory(AndroidSyncRuntime.syncStore(), AndroidPlaybackRuntime.controller())
+        GenreDetailsViewModel.Factory(AndroidSyncRuntime.syncStore, AndroidPlaybackRuntime.controller())
     }
     private val composerDetailsViewModel: ComposerDetailsViewModel by viewModels {
-        ComposerDetailsViewModel.Factory(AndroidSyncRuntime.syncStore(), AndroidPlaybackRuntime.controller())
+        ComposerDetailsViewModel.Factory(AndroidSyncRuntime.syncStore, AndroidPlaybackRuntime.controller())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         AndroidSyncRuntime.initialize(applicationContext)
-        lastFm = AndroidLastFmRuntime.initialize(applicationContext, AndroidSyncRuntime.syncStore())
+        lastFm = AndroidLastFmRuntime.initialize(applicationContext, AndroidSyncRuntime.syncStore)
         handleLastFmIntent(intent)
-        AndroidPlaybackRuntime.initialize(applicationContext, AndroidSyncRuntime.syncStore())
+        AndroidPlaybackRuntime.initialize(applicationContext, AndroidSyncRuntime.syncStore)
         // Start the service once per app process so it can rebuild the last
         // private playback session before Compose observes its StateFlows.
         startService(Intent(this, PlaybackService::class.java))
@@ -181,9 +181,9 @@ class MainActivity : ComponentActivity() {
             val lastFmStatus by lastFm.status.collectAsStateWithLifecycle()
             val activePage = uiState.currentPage
             val activeDestination = uiState.selectedDestination
-            val allTracks by AndroidSyncRuntime.syncStore().tracks.collectAsStateWithLifecycle(initialValue = emptyList())
-            val moodRadioEligibleTrackIds by AndroidSyncRuntime.syncStore().moodRadioEligibleTrackIds.collectAsStateWithLifecycle(initialValue = emptySet())
-            val allPlaylists by AndroidSyncRuntime.syncStore().playlists.collectAsStateWithLifecycle(initialValue = emptyList())
+            val allTracks by AndroidSyncRuntime.syncStore.tracks.collectAsStateWithLifecycle(initialValue = emptyList())
+            val moodRadioEligibleTrackIds by AndroidSyncRuntime.syncStore.moodRadioEligibleTrackIds.collectAsStateWithLifecycle(initialValue = emptySet())
+            val allPlaylists by AndroidSyncRuntime.syncStore.playlists.collectAsStateWithLifecycle(initialValue = emptyList())
             val homeUiState by if (activeDestination == AppDestination.Home && activePage == AppStackPage.Root) {
                 tracksViewModel.homeUiState.collectAsStateWithLifecycle()
             } else {
@@ -216,15 +216,15 @@ class MainActivity : ComponentActivity() {
             val normalizationPreferences = remember { com.exodidio.tune.player.NormalizationPreferences(applicationContext) }
             val equalizerPreferences = remember { com.exodidio.tune.player.EqualizerPreferences(applicationContext) }
             val lyricsPreferences = remember { LyricsPreferences(applicationContext) }
-            val lyricsService = remember(applicationContext) { AndroidLyricsService(AndroidSyncRuntime.syncStore(), appContext = applicationContext) }
+            val lyricsService = remember(applicationContext) { AndroidLyricsService(AndroidSyncRuntime.syncStore, appContext = applicationContext) }
             val preferenceScope = rememberCoroutineScope()
             // Auto-scan on app launch (#18): when a scan folder is configured,
             // audio permission is granted, and the library is empty, populate the
             // library automatically without requiring the user to tap "Scan".
-            val scanner = remember { LocalLibraryScanner(applicationContext, AndroidSyncRuntime.syncStore()) }
+            val scanner = remember { LocalLibraryScanner(applicationContext, AndroidSyncRuntime.syncStore) }
             val scanFolders = remember { ScanFolderPreferences(applicationContext) }
             val folder by scanFolders.folder.collectAsStateWithLifecycle(initial = null)
-            val allTracks by AndroidSyncRuntime.syncStore().tracks.collectAsStateWithLifecycle(initialValue = emptyList())
+            val allTracks by AndroidSyncRuntime.syncStore.tracks.collectAsStateWithLifecycle(initialValue = emptyList())
             val autoScanPending by remember { mutableStateOf(false) }
 
             val autoScanPermissionLauncher =
@@ -274,7 +274,7 @@ class MainActivity : ComponentActivity() {
                 romanizationViewModel.setAllowed(lyricsSettings.romanizationEnabled)
             }
             // Avoid clearing a valid preference while Room is still loading the active manifest.
-            val normalizationAvailable by AndroidSyncRuntime.syncStore().analysisAvailable.collectAsStateWithLifecycle(initialValue = true)
+            val normalizationAvailable by AndroidSyncRuntime.syncStore.analysisAvailable.collectAsStateWithLifecycle(initialValue = true)
             LaunchedEffect(normalizationAvailable) {
                 if (!normalizationAvailable) normalizationPreferences.disable()
             }
@@ -289,7 +289,7 @@ class MainActivity : ComponentActivity() {
                 else -> null
             }
             val providerLyricsFlow = remember(lyricsTrackId) {
-                lyricsTrackId?.let(AndroidSyncRuntime.syncStore()::providerLyrics) ?: flowOf(null)
+                lyricsTrackId?.let(AndroidSyncRuntime.syncStore::providerLyrics) ?: flowOf(null)
             }
             val providerLyrics by providerLyricsFlow.collectAsStateWithLifecycle(initialValue = null)
             var manualLyricsOverride by remember { mutableStateOf<ManualLyricsOverride?>(null) }
@@ -408,7 +408,7 @@ class MainActivity : ComponentActivity() {
                         onAddToQueue = playbackController::append,
                         onAddToFavorites = { trackIds ->
                             preferenceScope.launch {
-                                trackIds.forEach { trackId -> AndroidSyncRuntime.syncStore().setFavorite(trackId, true) }
+                                trackIds.forEach { trackId -> AndroidSyncRuntime.syncStore.setFavorite(trackId, true) }
                             }
                         },
                     ),
@@ -506,7 +506,7 @@ class MainActivity : ComponentActivity() {
                 onRomanizationToggle = romanizationViewModel::toggle,
                 onSearchLyrics = { track, title, artist -> lyricsService.search(track.id, title, artist, lyricsSettings) },
                 onLyricsSelected = { trackId, lyric ->
-                    AndroidSyncRuntime.syncStore().saveProviderLyrics(trackId, lyric.content, lyric.source)
+                    AndroidSyncRuntime.syncStore.saveProviderLyrics(trackId, lyric.content, lyric.source)
                     if (trackId == lyricsTrackId) manualLyricsOverride = ManualLyricsOverride(trackId, lyric.content)
                 },
                 artworkCrossfade = artworkCrossfade,
@@ -530,7 +530,7 @@ class MainActivity : ComponentActivity() {
                 onRepeatModeChange = playbackController::setRepeatMode,
                 onFavoriteToggle = { trackId, favorite ->
                     preferenceScope.launch {
-                        AndroidSyncRuntime.syncStore().setFavorite(trackId, favorite)
+                        AndroidSyncRuntime.syncStore.setFavorite(trackId, favorite)
                         lastFm.setLoved(trackId, favorite)
                     }
                 },
@@ -648,7 +648,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             val content = withContext(Dispatchers.IO) { readTextFromUri(contentResolver, uri) } ?: return@launch
             val paths = parseM3u(content)
-            val store = AndroidSyncRuntime.syncStore()
+            val store = AndroidSyncRuntime.syncStore
             val matched = matchTracks(paths, store.tracks.value)
             if (matched.isNotEmpty()) {
                 val displayName = uri.lastPathSegment?.let { it.substringBeforeLast('.') } ?: "Imported playlist"
@@ -661,7 +661,7 @@ class MainActivity : ComponentActivity() {
     private fun handleM3uExport(uri: Uri, playlistId: String) {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                val store = AndroidSyncRuntime.syncStore()
+                val store = AndroidSyncRuntime.syncStore
                 val playlist: LibraryPlaylist? = store.playlists.value.firstOrNull { it.id == playlistId }
                 val tracks = store.tracks.value
                 val trackById = tracks.associateBy { it.id }
@@ -677,7 +677,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun m3uSuggestedFileName(playlistId: String): String {
-        val name = AndroidSyncRuntime.syncStore().playlists.value.firstOrNull { it.id == playlistId }?.name
+        val name = AndroidSyncRuntime.syncStore.playlists.value.firstOrNull { it.id == playlistId }?.name
         val base = name.takeIf { it.isNotBlank() } ?: "playlist"
         return "$base.m3u8"
     }

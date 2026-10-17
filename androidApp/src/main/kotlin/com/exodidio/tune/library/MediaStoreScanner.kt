@@ -165,6 +165,7 @@ internal class LocalLibraryScanner(
     private fun applyRetrieverTags(mmr: MediaMetadataRetriever, base: LocalTrack): LocalTrack {
         mmr.setDataSource(context, Uri.parse(base.uri))
         fun s(key: Int) = mmr.extractMetadata(key)
+        fun s(key: String) = mmr.extractMetadata(key)
         val year = s(MediaMetadataRetriever.METADATA_KEY_YEAR)?.take(4)?.toIntOrNull()
             ?: s(MediaMetadataRetriever.METADATA_KEY_DATE)?.take(4)?.toIntOrNull()
         return base.applyTags(
@@ -180,7 +181,7 @@ internal class LocalLibraryScanner(
                 discNo = null,
                 durationMs = s(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull(),
                 bitrate = s(MediaMetadataRetriever.METADATA_KEY_BITRATE)?.toIntOrNull(),
-                sampleRateHz = s(MediaMetadataRetriever.METADATA_KEY_SAMPLE_RATE)?.toIntOrNull(),
+                sampleRateHz = s("sample-rate")?.toIntOrNull(),
                 bitDepth = null,
                 hasEmbeddedArt = false,
             ),

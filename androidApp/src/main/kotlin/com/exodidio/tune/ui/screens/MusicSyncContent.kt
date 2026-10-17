@@ -55,7 +55,7 @@ internal fun MusicSyncContent(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scanner = remember(context.applicationContext) {
-        LocalLibraryScanner(context.applicationContext, AndroidSyncRuntime.syncStore())
+        LocalLibraryScanner(context.applicationContext, AndroidSyncRuntime.syncStore)
     }
     val scanState by scanner.state.collectAsState()
     val scanFolders = remember(context.applicationContext) {

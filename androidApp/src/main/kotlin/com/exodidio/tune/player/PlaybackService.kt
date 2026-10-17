@@ -96,23 +96,23 @@ class PlaybackService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        AndroidPlaybackRuntime.initialize(applicationContext, AndroidSyncRuntime.syncStore())
-        lastFm = AndroidLastFmRuntime.initialize(applicationContext, AndroidSyncRuntime.syncStore())
+        AndroidPlaybackRuntime.initialize(applicationContext, AndroidSyncRuntime.syncStore)
+        lastFm = AndroidLastFmRuntime.initialize(applicationContext, AndroidSyncRuntime.syncStore)
         listeningTracker = ListeningTracker("local") { UUID.randomUUID().toString() }
         listeningWriter = scope.launch {
-            for (write in listeningWrites) AndroidSyncRuntime.syncStore().recordListening(write)
+            for (write in listeningWrites) AndroidSyncRuntime.syncStore.recordListening(write)
         }
         runBlocking {
             val now = System.currentTimeMillis()
-            AndroidSyncRuntime.syncStore().recoverOpenPlaybackAttempts(now)
-            AndroidSyncRuntime.syncStore().cleanupListening(now - ListeningRetentionMs)
+            AndroidSyncRuntime.syncStore.recoverOpenPlaybackAttempts(now)
+            AndroidSyncRuntime.syncStore.cleanupListening(now - ListeningRetentionMs)
         }
         sessionStore = PlaybackSessionStore(applicationContext)
         playbackPreferences = PlaybackPreferences(applicationContext)
         equalizerPreferences = EqualizerPreferences(applicationContext)
         normalizationPreferences = NormalizationPreferences(applicationContext)
         moodRadioJob = scope.launch {
-            AndroidSyncRuntime.syncStore().libraryAnalysisEnabled.collectLatest { enabled ->
+            AndroidSyncRuntime.syncStore.libraryAnalysisEnabled.collectLatest { enabled ->
                 if (!enabled) commandMutex.withLock { stopMoodRadio() }
             }
         }
@@ -354,7 +354,7 @@ class PlaybackService : Service() {
     }
 
     private suspend fun startMoodRadio(seedId: String) {
-        val store = AndroidSyncRuntime.syncStore()
+        val store = AndroidSyncRuntime.syncStore
         if (!store.libraryAnalysisEnabled.first()) {
             Log.d(PlaybackLogTag, "Mood Radio ignored: library analysis is disabled")
             return
@@ -380,7 +380,7 @@ class PlaybackService : Service() {
         val attempt = snapshot.currentTrackId to snapshot.activeTrackIds.size
         if (attempt == moodRadioLastRefillAttempt) return false
         moodRadioLastRefillAttempt = attempt
-        val store = AndroidSyncRuntime.syncStore()
+        val store = AndroidSyncRuntime.syncStore
         if (!store.libraryAnalysisEnabled.first()) return false
         val selected = selectMoodRadio(seedId, store.moodRadioTracks(), snapshot.activeTrackIds.toSet(), MoodRadioBatchSize)
         if (selected.isEmpty()) return false
@@ -658,7 +658,7 @@ class PlaybackService : Service() {
     private suspend fun publishQueue() {
         val snapshot = queue.snapshot()
         queueState.value = snapshot
-        val tracks = AndroidSyncRuntime.syncStore().tracks.first().associateBy { it.id }
+        val tracks = AndroidSyncRuntime.syncStore.tracks.first().associateBy { it.id }
         mediaSession.setQueue(snapshot.activeTrackIds.mapIndexedNotNull { index, trackId ->
             tracks[trackId]?.let { track ->
                 MediaSession.QueueItem(
@@ -753,7 +753,7 @@ class PlaybackService : Service() {
     }
 
     private suspend fun normalizationGain(item: PlaybackItem, nextId: String?): Float {
-        val analyses = AndroidSyncRuntime.syncStore().activeAnalyses()
+        val analyses = AndroidSyncRuntime.syncStore.activeAnalyses
         if (analyses.isEmpty()) {
             if (normalizationSettings.enabled) normalizationPreferences.disable()
             return 0f
@@ -762,7 +762,7 @@ class PlaybackService : Service() {
         val continuousAlbum = normalizationSettings.mode == NormalizationMode.Album &&
             item.albumId.isNotEmpty() && item.albumId == next?.albumId
         val albumAnalyses = if (continuousAlbum) {
-            AndroidSyncRuntime.syncStore().tracks.first().filter { it.albumId == item.albumId }.mapNotNull { analyses[it.id] }
+            AndroidSyncRuntime.syncStore.tracks.first().filter { it.albumId == item.albumId }.mapNotNull { analyses[it.id] }
         } else emptyList()
         return normalizationGainDb(normalizationSettings, item.analysis, albumAnalyses, continuousAlbum)
     }

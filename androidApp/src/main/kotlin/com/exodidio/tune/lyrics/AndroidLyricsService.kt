@@ -57,7 +57,7 @@ internal class AndroidLyricsService(
     private val localPathOverride: ((LyricsTrack) -> String?)? = null,
 ) {
     suspend fun fetch(trackId: String, settings: LyricsSettings) {
-        val track = library.lyricsTrack(trackId) ?: run {
+        val track = library.trackById(trackId) ?: run {
             Log.w("TuneLyrics", "Cannot fetch lyrics: track $trackId is unavailable")
             return
         }
@@ -120,7 +120,7 @@ internal class AndroidLyricsService(
 
     suspend fun search(trackId: String, title: String, artist: String, settings: LyricsSettings): List<LyricsSearchResult> {
         if (title.isBlank()) return emptyList()
-        val duration = library.lyricsTrack(trackId)?.duration ?: 0
+        val duration = library.trackById(trackId)?.duration ?: 0
         return coroutineScope {
             providers.filter { it.enabled(settings) }.map { provider ->
                 async {

@@ -1,7 +1,7 @@
 package com.exodidio.tune.sync
 
 import android.content.Context
-import androidx.lifecycle.Flow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,8 +11,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import java.security.MessageDigest
 import com.exodidio.tune.library.LocalImport
 import com.exodidio.tune.player.TrackAnalysis
@@ -21,7 +21,7 @@ import com.exodidio.tune.player.TrackAnalysis
  *  Data classes recreated from deleted SyncDatabase.kt
  * ============================================================================ */
 
-internal data class LibraryTrack(
+ data class LibraryTrack(
     val id: String = "",
     val title: String = "",
     val artists: String = "",
@@ -42,7 +42,7 @@ internal data class LibraryTrack(
 )
 
 /** Row type used by sync mapper tests. */
-internal data class LibraryTrackRow(
+ data class LibraryTrackRow(
     val id: String = "",
     val title: String = "",
     val artists: String = "",
@@ -55,7 +55,7 @@ internal data class LibraryTrackRow(
     val rawJson: String = "{}",
 )
 
-internal data class LibraryPlaylist(
+ data class LibraryPlaylist(
     val id: String = "",
     val name: String = "",
     val artworkKey: String? = null,
@@ -63,9 +63,10 @@ internal data class LibraryPlaylist(
     val createdAt: String = "",
     val updatedAt: String = "",
     val sortTitle: String = "",
+    val metadataJson: String = "{}",
 )
 
-internal data class LibraryPlaylistRow(
+ data class LibraryPlaylistRow(
     val id: String = "",
     val name: String = "",
     val artworkKey: String? = null,
@@ -74,7 +75,7 @@ internal data class LibraryPlaylistRow(
     val updatedAt: String = "",
 )
 
-internal data class LibraryArtist(
+ data class LibraryArtist(
     val id: String = "",
     val name: String = "",
     val sortName: String = "",
@@ -82,7 +83,7 @@ internal data class LibraryArtist(
     val artworkPath: String? = null,
 )
 
-internal data class LibraryAlbum(
+ data class LibraryAlbum(
     val id: String = "",
     val title: String = "",
     val sortTitle: String = "",
@@ -94,13 +95,13 @@ internal data class LibraryAlbum(
     val copyright: String = "",
 )
 
-internal data class LibraryGenre(
+ data class LibraryGenre(
     val id: String = "",
     val name: String = "",
     val trackCount: Int = 0,
 )
 
-internal data class LibraryComposer(
+ data class LibraryComposer(
     val id: String = "",
     val name: String = "",
     val sortName: String = "",
@@ -108,14 +109,14 @@ internal data class LibraryComposer(
     val artworkPath: String? = null,
 )
 
-internal data class LibrarySearchCandidate(
+ data class LibrarySearchCandidate(
     val entityType: String,
     val entityId: String,
     val title: String,
     val subtitle: String = "",
 )
 
-internal data class SyncTrackEntity(
+ data class SyncTrackEntity(
     val planId: String,
     val trackId: String,
     val title: String,
@@ -131,7 +132,7 @@ internal data class SyncTrackEntity(
     val rawJson: String = "{}",
 )
 
-internal data class SyncAssetEntity(
+ data class SyncAssetEntity(
     val planId: String,
     val assetId: String,
     val kind: String,
@@ -140,7 +141,7 @@ internal data class SyncAssetEntity(
     val relativePath: String = "",
 )
 
-internal data class SyncPlaylistEntity(
+ data class SyncPlaylistEntity(
     val planId: String,
     val playlistId: String,
     val name: String,
@@ -149,7 +150,7 @@ internal data class SyncPlaylistEntity(
     val updatedAt: String = "",
 )
 
-internal data class LibrarySearchDocumentEntity(
+ data class LibrarySearchDocumentEntity(
     val planId: String,
     val entityType: String,
     val entityId: String,
@@ -158,7 +159,7 @@ internal data class LibrarySearchDocumentEntity(
     val keywords: List<String> = emptyList(),
 )
 
-internal data class SyncPlanEntity(
+ data class SyncPlanEntity(
     val planId: String,
     val source: String,
     val manifestJson: String,
@@ -170,7 +171,7 @@ internal data class SyncPlanEntity(
  *  JSON helpers
  * ============================================================================ */
 
-internal object LibrarySyncProtocol {
+ object LibrarySyncProtocol {
     val json = Json {
         ignoreUnknownKeys = true
         explicitNulls = false
@@ -181,7 +182,7 @@ internal object LibrarySyncProtocol {
  *  Extension: LibraryTrack.metadataObject()
  * ============================================================================ */
 
-internal fun LibraryTrack.metadataObject(): JsonObject? =
+ fun LibraryTrack.metadataObject(): JsonObject? =
     try {
         LibrarySyncProtocol.json.parseToJsonElement(metadataJson) as? JsonObject
     } catch (e: Exception) {
@@ -192,17 +193,17 @@ internal fun LibraryTrack.metadataObject(): JsonObject? =
  *  Display helpers
  * ============================================================================ */
 
-internal fun trackDisplayTitle(track: LibraryTrack): String =
+ fun trackDisplayTitle(track: LibraryTrack): String =
     track.title.ifBlank { track.id }
 
-internal fun trackDisplayArtists(track: LibraryTrack): String =
+ fun trackDisplayArtists(track: LibraryTrack): String =
     track.artists.ifBlank { "Unknown Artist" }
 
 /** ============================================================================
  *  Mapper helpers (recreated for sync mapper tests)
  * ============================================================================ */
 
-internal fun libraryArtistsFrom(
+ fun libraryArtistsFrom(
     tracks: List<LibraryTrackRow>,
     artworkPaths: Map<String, String> = emptyMap(),
 ): List<LibraryArtist> {
@@ -246,7 +247,7 @@ internal fun libraryArtistsFrom(
     return seen.values.toList()
 }
 
-internal fun libraryAlbumsFrom(
+ fun libraryAlbumsFrom(
     tracks: List<LibraryTrackRow>,
     artworkPaths: Map<String, String> = emptyMap(),
 ): List<LibraryAlbum> {
@@ -306,7 +307,7 @@ internal fun libraryAlbumsFrom(
     return seen.values.toList()
 }
 
-internal fun libraryComposersFrom(
+ fun libraryComposersFrom(
     tracks: List<LibraryTrackRow>,
     artworkPaths: Map<String, String> = emptyMap(),
 ): List<LibraryComposer> {
@@ -352,7 +353,7 @@ internal fun libraryComposersFrom(
  *  FTS search match builder
  * ============================================================================ */
 
-internal fun searchFtsMatch(query: String): String? {
+ fun searchFtsMatch(query: String): String? {
     val tokens = query
         .lowercase()
         .split(Regex("\\s+"))
@@ -366,7 +367,7 @@ internal fun searchFtsMatch(query: String): String? {
  *  Search document builder
  * ============================================================================ */
 
-internal fun searchDocumentsFor(
+ fun searchDocumentsFor(
     planId: String,
     entities: List<SyncTrackEntity>,
     playlists: List<SyncPlaylistEntity>,
@@ -413,11 +414,11 @@ internal fun searchDocumentsFor(
  *  Artist artwork mutation types
  * ============================================================================ */
 
-internal enum class ArtistArtworkOperation { SET_ARTWORK, REMOVE_ARTWORK }
+ enum class ArtistArtworkOperation { SET_ARTWORK, REMOVE_ARTWORK }
 
-internal data class ArtistArtworkPayload(val sha256: String?)
+ data class ArtistArtworkPayload(val sha256: String?)
 
-internal data class ArtistMutation(
+ data class ArtistMutation(
     val mutationId: String,
     val artistId: String,
     val operation: ArtistArtworkOperation,
@@ -436,14 +437,14 @@ internal data class ArtistMutation(
  *  Staged artwork types (used by ArtistArtworkFiles / PlaylistArtworkFiles)
  * ============================================================================ */
 
-internal data class StagedArtistArtwork(
+ data class StagedArtistArtwork(
     val sha256: String,
     val mime: String,
     val sizeBytes: Long,
     val relativePath: String,
 )
 
-internal data class StagedPlaylistArtwork(
+ data class StagedPlaylistArtwork(
     val sha256: String,
     val mime: String,
     val sizeBytes: Long,
@@ -454,17 +455,17 @@ internal data class StagedPlaylistArtwork(
  *  Playlist mutation types
  * ============================================================================ */
 
-internal enum class PlaylistMutationOperation {
+ enum class PlaylistMutationOperation {
     CREATE, ADD_TRACK, REMOVE_TRACK, UPDATE, SET_ARTWORK, REMOVE_ARTWORK, DELETE
 }
 
-internal data class PlaylistMutationPayload(
+ data class PlaylistMutationPayload(
     val name: String? = null,
     val trackId: String? = null,
     val artworkSha256: String? = null,
 )
 
-internal data class PlaylistMutation(
+ data class PlaylistMutation(
     val mutationId: String,
     val playlistId: String,
     val operation: PlaylistMutationOperation,
@@ -476,7 +477,7 @@ internal data class PlaylistMutation(
  *  applyPendingArtistArtworkMutations
  * ============================================================================ */
 
-internal fun applyPendingArtistArtworkMutations(
+ fun applyPendingArtistArtworkMutations(
     existing: Map<String, String>,
     pending: List<ArtistMutation>,
 ): Map<String, String> {
@@ -498,21 +499,21 @@ internal fun applyPendingArtistArtworkMutations(
  *  Stable ID helpers
  * ============================================================================ */
 
-internal fun stableId(prefix: String, name: String): String {
+ fun stableId(prefix: String, name: String): String {
     val digest = MessageDigest.getInstance("SHA-1").digest(name.lowercase().toByteArray())
     return prefix + digest.joinToString("") { "%02x".format(it) }.take(12)
 }
 
-internal fun artistIdFor(name: String): String = stableId("local-artist-", name)
-internal fun albumIdFor(name: String): String = stableId("local-album-", name)
-internal fun composerIdFor(name: String): String = stableId("local-composer-", name)
-internal fun genreIdFor(name: String): String = stableId("local-genre-", name)
+ fun artistIdFor(name: String): String = stableId("local-artist-", name)
+ fun albumIdFor(name: String): String = stableId("local-album-", name)
+ fun composerIdFor(name: String): String = stableId("local-composer-", name)
+ fun genreIdFor(name: String): String = stableId("local-genre-", name)
 
 /** ============================================================================
  *  AndroidLibrarySyncStore — local-only replacement for the Room-backed store
  * ============================================================================ */
 
-internal class AndroidLibrarySyncStore(private val context: Context) {
+ class AndroidLibrarySyncStore(private val context: Context) {
 
     private val _tracks = MutableStateFlow(emptyList<LibraryTrack>())
     val tracks: StateFlow<List<LibraryTrack>> = _tracks.asStateFlow()
@@ -594,6 +595,13 @@ internal class AndroidLibrarySyncStore(private val context: Context) {
     /** Return playlist entities for a plan (stubbed — returns empty). */
     fun playlistEntities(planId: String): List<SyncPlaylistEntity> = emptyList()
 
+    /** Find a track by ID. */
+    fun trackById(trackId: String): LibraryTrack? = tracks.value.firstOrNull { it.id == trackId }
+
+    /** Tracks eligible for mood radio. */
+    fun moodRadioTracks(): List<LibraryTrack> =
+        tracks.value.filter { it.id in moodRadioEligibleTrackIds.value }
+
     /** Set favorite state on a track. */
     suspend fun setFavorite(trackId: String, favorite: Boolean) {
         if (favorite) favorites.add(trackId) else favorites.remove(trackId)
@@ -648,7 +656,7 @@ internal class AndroidLibrarySyncStore(private val context: Context) {
  *  AndroidSyncRuntime replacement — object with same API as deleted SyncRuntime.kt
  * ============================================================================ */
 
-internal object AndroidSyncRuntime {
+ object AndroidSyncRuntime {
     private var currentStore: AndroidLibrarySyncStore? = null
 
     fun initialize(context: Context) {
@@ -666,4 +674,4 @@ internal object AndroidSyncRuntime {
  *  trackDisplayArtists on LibraryTrack (used by TrackContextMenu etc.)
  * ============================================================================ */
 
-internal fun LibraryTrack.trackDisplayArtists(): String = trackDisplayArtists(this)
+ fun LibraryTrack.trackDisplayArtists(): String = trackDisplayArtists(this)
