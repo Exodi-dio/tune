@@ -410,7 +410,7 @@ internal fun App(
             ) {
                 if (showPlaylistAddAction) {
                     androidx.compose.foundation.layout.Row(
-                        modifier = androidx.compose.foundation.layout.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
                     ) {
                         TuneGlassIconButton(

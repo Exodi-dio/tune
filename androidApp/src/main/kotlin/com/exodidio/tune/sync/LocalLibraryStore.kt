@@ -1,6 +1,9 @@
 package com.exodidio.tune.sync
 
 import android.content.Context
+import com.exodidio.tune.library.LocalImport
+import com.exodidio.tune.mood.MoodRadioTrack
+import com.exodidio.tune.player.TrackAnalysis
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,8 +17,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import java.security.MessageDigest
-import com.exodidio.tune.library.LocalImport
-import com.exodidio.tune.player.TrackAnalysis
 
 /** ============================================================================
  *  Data classes recreated from deleted SyncDatabase.kt
@@ -284,13 +285,13 @@ import com.exodidio.tune.player.TrackAnalysis
         if (albumArtists != null && albumArtists.isNotEmpty()) {
             val first = albumArtists.firstOrNull { it is JsonObject } as? JsonObject
             artist = first?.get("name")?.jsonPrimitive?.contentOrNull.orEmpty()
-            sortArtist = first?.get("sort_name")?.jsonPrimitive?.contentOrNull.orEmpty(artist)
+            sortArtist = first?.get("sort_name")?.jsonPrimitive?.contentOrNull.orEmpty() ?: artist
         }
         if (artist.isBlank()) {
             val trackArtists = root.get("artists") as? JsonArray
             val firstTrackArtist = trackArtists?.firstOrNull { it is JsonObject } as? JsonObject
-            artist = firstTrackArtist?.get("name")?.jsonPrimitive?.contentOrNull.orEmpty("")
-            sortArtist = firstTrackArtist?.get("sort_name")?.jsonPrimitive?.contentOrNull.orEmpty(artist)
+            artist = firstTrackArtist?.get("name")?.jsonPrimitive?.contentOrNull.orEmpty()
+            sortArtist = firstTrackArtist?.get("sort_name")?.jsonPrimitive?.contentOrNull.orEmpty() ?: artist
         }
         seen[albumId] = LibraryAlbum(
             id = albumId,
@@ -599,8 +600,10 @@ import com.exodidio.tune.player.TrackAnalysis
     fun trackById(trackId: String): LibraryTrack? = tracks.value.firstOrNull { it.id == trackId }
 
     /** Tracks eligible for mood radio. */
-    fun moodRadioTracks(): List<LibraryTrack> =
-        tracks.value.filter { it.id in moodRadioEligibleTrackIds.value }
+    fun moodRadioTracks(): List<MoodRadioTrack> =
+        tracks.value
+            .filter { it.id in moodRadioEligibleTrackIds.value }
+            .map { MoodRadioTrack(id = it.id, albumId = it.albumId, primaryArtistId = it.artists, energy = null, danceability = null, brightness = null, tempo = null) }
 
     /** Set favorite state on a track. */
     suspend fun setFavorite(trackId: String, favorite: Boolean) {

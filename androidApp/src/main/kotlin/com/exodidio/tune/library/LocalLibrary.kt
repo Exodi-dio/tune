@@ -138,7 +138,7 @@ internal data class LocalArtwork(
     val mime: String,
 )
 
-internal data class LocalImport(
+data class LocalImport(
     val planId: String,
     val tracks: List<SyncTrackEntity>,
     val audioAssets: List<SyncAssetEntity>,
@@ -356,7 +356,7 @@ internal fun audioTargetExists(target: AudioTarget, contentExists: (String) -> B
 
 internal enum class ScanPermission { Granted, NeedsRationale, Denied }
 
-internal data class LocalImportSummary(val inserted: Int, val skipped: Int)
+data class LocalImportSummary(val inserted: Int, val skipped: Int)
 
 internal data class LocalScanUiState(
     val permission: ScanPermission? = null,

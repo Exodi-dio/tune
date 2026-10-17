@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -181,9 +182,9 @@ class MainActivity : ComponentActivity() {
             val lastFmStatus by lastFm.status.collectAsStateWithLifecycle()
             val activePage = uiState.currentPage
             val activeDestination = uiState.selectedDestination
-            val allTracks by AndroidSyncRuntime.syncStore.tracks.collectAsStateWithLifecycle(initialValue = emptyList())
-            val moodRadioEligibleTrackIds by AndroidSyncRuntime.syncStore.moodRadioEligibleTrackIds.collectAsStateWithLifecycle(initialValue = emptySet())
-            val allPlaylists by AndroidSyncRuntime.syncStore.playlists.collectAsStateWithLifecycle(initialValue = emptyList())
+            val allTracks by AndroidSyncRuntime.syncStore.tracks.collectAsStateWithLifecycle(initial = emptyList())
+            val moodRadioEligibleTrackIds by AndroidSyncRuntime.syncStore.moodRadioEligibleTrackIds.collectAsStateWithLifecycle(initial = emptySet())
+            val allPlaylists by AndroidSyncRuntime.syncStore.playlists.collectAsStateWithLifecycle(initial = emptyList())
             val homeUiState by if (activeDestination == AppDestination.Home && activePage == AppStackPage.Root) {
                 tracksViewModel.homeUiState.collectAsStateWithLifecycle()
             } else {
@@ -224,8 +225,7 @@ class MainActivity : ComponentActivity() {
             val scanner = remember { LocalLibraryScanner(applicationContext, AndroidSyncRuntime.syncStore) }
             val scanFolders = remember { ScanFolderPreferences(applicationContext) }
             val folder by scanFolders.folder.collectAsStateWithLifecycle(initial = null)
-            val allTracks by AndroidSyncRuntime.syncStore.tracks.collectAsStateWithLifecycle(initialValue = emptyList())
-            val autoScanPending by remember { mutableStateOf(false) }
+            var autoScanPending by remember { mutableStateOf(false) }
 
             val autoScanPermissionLauncher =
                 rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -235,7 +235,7 @@ class MainActivity : ComponentActivity() {
                         scanner.refreshPermission(granted, rationale)
                         if (granted && autoScanPending) {
                             autoScanPending = false
-                            val singleFolder = scanFolders.folder.first()
+                            val singleFolder = folder
                             if (singleFolder.isNotBlank() && allTracks.isEmpty()) {
                                 scanner.scan(setOf(singleFolder))
                             }
@@ -244,9 +244,10 @@ class MainActivity : ComponentActivity() {
                 }
 
             LaunchedEffect(Unit) {
-                if (this.checkSelfPermission(audioPermission()) == PackageManager.PERMISSION_GRANTED) {
+                val activity = this@MainActivity
+                if (activity.checkSelfPermission(audioPermission()) == PackageManager.PERMISSION_GRANTED) {
                     preferenceScope.launch {
-                        val singleFolder = scanFolders.folder.first()
+                        val singleFolder = folder
                         if (singleFolder.isNotBlank() && allTracks.isEmpty()) {
                             scanner.refreshPermission(true, false)
                             scanner.scan(setOf(singleFolder))
@@ -259,22 +260,22 @@ class MainActivity : ComponentActivity() {
             }
 
             val crossfadeSettings by playbackPreferences.settings.collectAsStateWithLifecycle(
-                initialValue = com.exodidio.tune.player.CrossfadeSettings(0, 4, true),
+                initial = com.exodidio.tune.player.CrossfadeSettings(0, 4, true),
             )
-            val showFullscreenQualityBadge by playbackPreferences.showFullscreenQualityBadge.collectAsStateWithLifecycle(initialValue = false)
-            val hideShortAudio by playbackPreferences.hideShortAudio.collectAsStateWithLifecycle(initialValue = false)
+            val showFullscreenQualityBadge by playbackPreferences.showFullscreenQualityBadge.collectAsStateWithLifecycle(initial = false)
+            val hideShortAudio by playbackPreferences.hideShortAudio.collectAsStateWithLifecycle(initial = false)
             val normalizationSettings by normalizationPreferences.settings.collectAsStateWithLifecycle(
-                initialValue = com.exodidio.tune.player.NormalizationSettings(),
+                initial = com.exodidio.tune.player.NormalizationSettings(),
             )
             val equalizerSettings by equalizerPreferences.settings.collectAsStateWithLifecycle(
-                initialValue = com.exodidio.tune.player.EqualizerSettings(),
+                initial = com.exodidio.tune.player.EqualizerSettings(),
             )
-            val lyricsSettings by lyricsPreferences.settings.collectAsStateWithLifecycle(initialValue = com.exodidio.tune.lyrics.LyricsSettings())
+            val lyricsSettings by lyricsPreferences.settings.collectAsStateWithLifecycle(initial = com.exodidio.tune.lyrics.LyricsSettings())
             LaunchedEffect(lyricsSettings.romanizationEnabled) {
                 romanizationViewModel.setAllowed(lyricsSettings.romanizationEnabled)
             }
             // Avoid clearing a valid preference while Room is still loading the active manifest.
-            val normalizationAvailable by AndroidSyncRuntime.syncStore.analysisAvailable.collectAsStateWithLifecycle(initialValue = true)
+            val normalizationAvailable by AndroidSyncRuntime.syncStore.analysisAvailable.collectAsStateWithLifecycle(initial = true)
             LaunchedEffect(normalizationAvailable) {
                 if (!normalizationAvailable) normalizationPreferences.disable()
             }
@@ -291,7 +292,7 @@ class MainActivity : ComponentActivity() {
             val providerLyricsFlow = remember(lyricsTrackId) {
                 lyricsTrackId?.let(AndroidSyncRuntime.syncStore::providerLyrics) ?: flowOf(null)
             }
-            val providerLyrics by providerLyricsFlow.collectAsStateWithLifecycle(initialValue = null)
+            val providerLyrics by providerLyricsFlow.collectAsStateWithLifecycle(initial = null)
             var manualLyricsOverride by remember { mutableStateOf<ManualLyricsOverride?>(null) }
             LaunchedEffect(lyricsTrackId) {
                 if (manualLyricsOverride?.trackId != lyricsTrackId) manualLyricsOverride = null
@@ -343,7 +344,7 @@ class MainActivity : ComponentActivity() {
                         is AppEffect.PickM3uExport -> {
                             exportTargetPlaylistId = effect.playlistId
                             val suggestedName = m3uSuggestedFileName(effect.playlistId)
-                            exportM3uLauncher.launch(arrayOf("audio/m3u8", "text/plain"), suggestedName)
+                            exportM3uLauncher.launch(ActivityResultContracts.CreateDocumentRequest(arrayOf("audio/m3u8", "text/plain"), suggestedName))
                         }
                     }
                 }
@@ -678,7 +679,7 @@ class MainActivity : ComponentActivity() {
 
     private fun m3uSuggestedFileName(playlistId: String): String {
         val name = AndroidSyncRuntime.syncStore.playlists.value.firstOrNull { it.id == playlistId }?.name
-        val base = name.takeIf { it.isNotBlank() } ?: "playlist"
+        val base = name?.takeIf { it.isNotBlank() } ?: "playlist"
         return "$base.m3u8"
     }
 }

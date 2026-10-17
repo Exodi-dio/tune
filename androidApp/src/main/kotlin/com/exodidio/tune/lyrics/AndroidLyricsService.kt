@@ -61,18 +61,25 @@ internal class AndroidLyricsService(
             Log.w("TuneLyrics", "Cannot fetch lyrics: track $trackId is unavailable")
             return
         }
-        readLocalLrc(trackId, track)?.let { local ->
+        val lyricsTrack = LyricsTrack(
+            title = track.title,
+            artist = track.artists,
+            album = track.album,
+            duration = 0,
+            audioPath = track.audioPath,
+        )
+        readLocalLrc(trackId, lyricsTrack)?.let { local ->
             library.saveProviderLyrics(trackId, local, "local-lrc")
-            Log.d("TuneLyrics", "Using local .lrc lyrics for ${track.title}")
+            Log.d("TuneLyrics", "Using local .lrc lyrics for ${lyricsTrack.title}")
             return
         }
         val active = providers.filter { it.enabled(settings) }
         if (active.isEmpty()) return
-        Log.d("TuneLyrics", "Fetching lyrics for ${track.title} from ${active.size} provider(s)")
+        Log.d("TuneLyrics", "Fetching lyrics for ${lyricsTrack.title} from ${active.size} provider(s)")
         val lyric = coroutineScope {
             val results = Channel<Result<FetchedLyric?>>(active.size)
             val jobs =
-                active.map { provider -> async { results.send(runCatching { provider.fetch(track) }) } }
+                active.map { provider -> async { results.send(runCatching { provider.fetch(lyricsTrack) }) } }
             repeat(active.size) {
                 val result = results.receive()
                 result.exceptionOrNull()?.let { Log.w("TuneLyrics", "Lyrics provider failed", it) }
@@ -86,7 +93,7 @@ internal class AndroidLyricsService(
         lyric?.let {
             library.saveProviderLyrics(trackId, it.content, it.source)
             Log.d("TuneLyrics", "Fetched lyrics from ${it.source}")
-        } ?: Log.d("TuneLyrics", "No lyrics found for ${track.title}")
+        } ?: Log.d("TuneLyrics", "No lyrics found for ${lyricsTrack.title}")
     }
 
     private fun readLocalLrc(trackId: String, track: LyricsTrack): String? {
@@ -120,7 +127,7 @@ internal class AndroidLyricsService(
 
     suspend fun search(trackId: String, title: String, artist: String, settings: LyricsSettings): List<LyricsSearchResult> {
         if (title.isBlank()) return emptyList()
-        val duration = library.trackById(trackId)?.duration ?: 0
+        val duration = 0
         return coroutineScope {
             providers.filter { it.enabled(settings) }.map { provider ->
                 async {
