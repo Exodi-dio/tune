@@ -235,7 +235,7 @@ class MainActivity : ComponentActivity() {
                         scanner.refreshPermission(granted, rationale)
                         if (granted && autoScanPending) {
                             autoScanPending = false
-                            val singleFolder = folder
+                            val singleFolder = folder ?: ""
                             if (singleFolder.isNotBlank() && allTracks.isEmpty()) {
                                 scanner.scan(setOf(singleFolder))
                             }
@@ -247,7 +247,7 @@ class MainActivity : ComponentActivity() {
                 val activity = this@MainActivity
                 if (activity.checkSelfPermission(audioPermission()) == PackageManager.PERMISSION_GRANTED) {
                     preferenceScope.launch {
-                        val singleFolder = folder
+                        val singleFolder = folder ?: ""
                         if (singleFolder.isNotBlank() && allTracks.isEmpty()) {
                             scanner.refreshPermission(true, false)
                             scanner.scan(setOf(singleFolder))
@@ -260,15 +260,15 @@ class MainActivity : ComponentActivity() {
             }
 
             val crossfadeSettings by playbackPreferences.settings.collectAsStateWithLifecycle(
-                initial = com.exodidio.tune.player.CrossfadeSettings(0, 4, true),
+                initialValue = com.exodidio.tune.player.CrossfadeSettings(0, 4, true),
             )
             val showFullscreenQualityBadge by playbackPreferences.showFullscreenQualityBadge.collectAsStateWithLifecycle(initialValue = false)
             val hideShortAudio by playbackPreferences.hideShortAudio.collectAsStateWithLifecycle(initialValue = false)
             val normalizationSettings by normalizationPreferences.settings.collectAsStateWithLifecycle(
-                initial = com.exodidio.tune.player.NormalizationSettings(),
+                initialValue = com.exodidio.tune.player.NormalizationSettings(),
             )
             val equalizerSettings by equalizerPreferences.settings.collectAsStateWithLifecycle(
-                initial = com.exodidio.tune.player.EqualizerSettings(),
+                initialValue = com.exodidio.tune.player.EqualizerSettings(),
             )
             val lyricsSettings by lyricsPreferences.settings.collectAsStateWithLifecycle(initialValue = com.exodidio.tune.lyrics.LyricsSettings())
             LaunchedEffect(lyricsSettings.romanizationEnabled) {
