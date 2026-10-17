@@ -4,7 +4,6 @@ import com.exodidio.tune.sync.ArtistArtworkOperation
 import com.exodidio.tune.sync.ArtistArtworkPayload
 import com.exodidio.tune.sync.ArtistMutation
 import com.exodidio.tune.sync.applyPendingArtistArtworkMutations
-import com.exodidio.tune.sync.validationError
 import com.exodidio.tune.ui.screens.artistPickerSampleSize
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull

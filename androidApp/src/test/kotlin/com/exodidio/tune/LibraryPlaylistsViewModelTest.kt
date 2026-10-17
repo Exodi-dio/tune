@@ -20,7 +20,7 @@ class LibraryPlaylistsViewModelTest {
 
     @Test
     fun placesFavoritesFirstAndCreatesItWhenTheManifestOmitsIt() {
-        val playlist = LibraryPlaylist("p", "Playlist", emptyList(), "{}")
+        val playlist = LibraryPlaylist(id = "p", name = "Playlist", metadataJson = "{}")
 
         assertEquals(listOf("favorites", "p"), playlistsWithFavorites(listOf(playlist)).map { it.id })
         assertEquals(listOf("favorites"), playlistsWithFavorites(emptyList()).map { it.id })
@@ -36,29 +36,29 @@ class LibraryPlaylistsViewModelTest {
 
     @Test
     fun usesCustomArtworkBeforeTrackMosaic() {
-        val playlist = LibraryPlaylist("p", "Playlist", listOf("a", "c"), """{"playlist":{"artwork_key":"custom"}}""")
+        val playlist = LibraryPlaylist(id = "p", name = "Playlist", trackIds = listOf("a", "c"), metadataJson = """{"playlist":{"artwork_key":"custom"}}""")
 
         assertEquals(listOf("custom.jpg"), playlistArtworkPaths(playlist, tracks, mapOf("custom" to "custom.jpg")))
     }
 
     @Test
     fun retainsOrderAndUsesFirstFourUniqueTrackArtworks() {
-        val playlist = LibraryPlaylist("p", "Playlist", listOf("a", "b", "c", "d", "e", "f"), "{}")
+        val playlist = LibraryPlaylist(id = "p", name = "Playlist", trackIds = listOf("a", "b", "c", "d", "e", "f"), metadataJson = "{}")
 
         assertEquals(listOf("a.jpg", "c.jpg", "d.jpg", "e.jpg"), playlistArtworkPaths(playlist, tracks, emptyMap()))
     }
 
     @Test
     fun fallsBackToTrackArtworkWhenCustomArtworkIsUnavailable() {
-        val playlist = LibraryPlaylist("p", "Playlist", listOf("a"), """{"playlist":{"artwork_key":"missing"}}""")
+        val playlist = LibraryPlaylist(id = "p", name = "Playlist", trackIds = listOf("a"), metadataJson = """{"playlist":{"artwork_key":"missing"}}""")
 
         assertEquals(listOf("a.jpg"), playlistArtworkPaths(playlist, tracks, emptyMap()))
     }
 
     @Test
     fun editorArtworkUsesOnlyThePlaylistManualCover() {
-        val fallback = LibraryPlaylist("p", "Playlist", listOf("a"), "{}")
-        val custom = LibraryPlaylist("p", "Playlist", listOf("a"), """{"playlist":{"artwork_key":"custom"}}""")
+        val fallback = LibraryPlaylist(id = "p", name = "Playlist", trackIds = listOf("a"), metadataJson = "{}")
+        val custom = LibraryPlaylist(id = "p", name = "Playlist", trackIds = listOf("a"), metadataJson = """{"playlist":{"artwork_key":"custom"}}""")
 
         assertEquals(null, playlistManualArtworkPath(fallback, emptyMap()))
         assertEquals("custom.jpg", playlistManualArtworkPath(custom, mapOf("custom" to "custom.jpg")))
