@@ -409,12 +409,23 @@ internal fun App(
                 backGlassTintAlpha = if (currentPage == AppStackPage.AlbumDetails || currentPage == AppStackPage.PlaylistDetails || currentPage == AppStackPage.ArtistDetails || currentPage == AppStackPage.GenreDetails || currentPage == AppStackPage.ComposerDetails) 0.08f else null,
             ) {
                 if (showPlaylistAddAction) {
-                    TuneGlassIconButton(
-                        hazeState = hazeState,
-                        symbol = MaterialSymbols.Add,
-                        label = stringResource(R.string.playlist_create),
-                        onClick = { showCreatePlaylistSheet = true },
-                    )
+                    androidx.compose.foundation.layout.Row(
+                        modifier = androidx.compose.foundation.layout.fillMaxWidth(),
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+                    ) {
+                        TuneGlassIconButton(
+                            hazeState = hazeState,
+                            symbol = MaterialSymbols.Add,
+                            label = stringResource(R.string.playlist_create),
+                            onClick = { showCreatePlaylistSheet = true },
+                        )
+                        TuneGlassIconButton(
+                            hazeState = hazeState,
+                            symbol = MaterialSymbols.FileImport,
+                            label = stringResource(R.string.playlist_import_m3u),
+                            onClick = { onIntent(AppIntent.ImportM3u) },
+                        )
+                    }
                 } else if (currentPage == AppStackPage.SettingsEqualizer) {
                     TuneGlassIconButton(
                         hazeState = hazeState,

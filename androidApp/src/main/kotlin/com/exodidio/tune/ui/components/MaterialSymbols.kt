@@ -111,6 +111,10 @@ object MaterialSymbols {
     const val Delete = "delete"
     /** Duplicate copies entry. Aliases the proven "group" glyph (new ligatures risk tofu). */
     const val Duplicates = "group"
+    /** Import a playlist from a file (M3U). Aliased to a proven glyph to avoid tofu on un-subset ligatures. */
+    const val FileImport = "playlist_add"
+    /** Export a playlist to a file (M3U). Aliased to a proven glyph to avoid tofu on un-subset ligatures. */
+    const val FileExport = "content_copy"
 }
 
 @Composable

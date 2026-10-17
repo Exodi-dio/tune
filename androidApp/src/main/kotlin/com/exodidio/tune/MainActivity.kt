@@ -17,6 +17,7 @@ import android.database.ContentObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -30,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import android.os.Handler
@@ -37,9 +39,15 @@ import android.os.Looper
 import android.provider.Settings
 import android.view.WindowInsetsController
 import android.view.KeyEvent
+import com.exodidio.tune.library.matchTracks
+import com.exodidio.tune.library.m3uContent
+import com.exodidio.tune.library.parseM3u
+import com.exodidio.tune.library.readTextFromUri
+import com.exodidio.tune.library.writeTextToUri
 import com.exodidio.tune.settings.ThemeMode
 import com.exodidio.tune.settings.ThemePreferences
 import com.exodidio.tune.sync.AndroidSyncRuntime
+import com.exodidio.tune.sync.LibraryPlaylist
 import com.exodidio.tune.player.AndroidPlaybackRuntime
 import com.exodidio.tune.player.AndroidPlaybackSession
 import com.exodidio.tune.player.PlaybackService
@@ -110,6 +118,20 @@ class MainActivity : ComponentActivity() {
     }
     private val playlistsViewModel: LibraryPlaylistsViewModel by viewModels {
         LibraryPlaylistsViewModel.Factory(applicationContext, AndroidSyncRuntime.syncStore())
+    }
+
+    // M3U playlist import/export via the Storage Access Framework.
+    private var exportTargetPlaylistId: String? = null
+    private val importM3uLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let { handleM3uImport(it) }
+    }
+    private val exportM3uLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
+        uri?.let { savedUri ->
+            exportTargetPlaylistId?.let { playlistId ->
+                handleM3uExport(savedUri, playlistId)
+            }
+        }
+        exportTargetPlaylistId = null
     }
     private val searchViewModel: LibrarySearchViewModel by viewModels {
         LibrarySearchViewModel.Factory(
@@ -269,6 +291,14 @@ class MainActivity : ComponentActivity() {
                             AppStackPage.LibraryGenres -> genresViewModel.setFilterQuery("")
                             AppStackPage.LibraryComposers -> composersViewModel.setFilterQuery("")
                             else -> Unit
+                        }
+                        AppEffect.PickM3uImport -> {
+                            importM3uLauncher.launch(arrayOf("*/*"))
+                        }
+                        is AppEffect.PickM3uExport -> {
+                            exportTargetPlaylistId = effect.playlistId
+                            val suggestedName = m3uSuggestedFileName(effect.playlistId)
+                            exportM3uLauncher.launch(arrayOf("audio/m3u8", "text/plain"), suggestedName)
                         }
                     }
                 }
@@ -565,6 +595,46 @@ class MainActivity : ComponentActivity() {
         ThemeMode.Light -> false
         ThemeMode.Dark -> true
         ThemeMode.Amoled -> true
+    }
+
+    // ---- M3U playlist import/export (Storage Access Framework) ----
+
+    private fun handleM3uImport(uri: Uri) {
+        lifecycleScope.launch {
+            val content = withContext(Dispatchers.IO) { readTextFromUri(contentResolver, uri) } ?: return@launch
+            val paths = parseM3u(content)
+            val store = AndroidSyncRuntime.syncStore()
+            val matched = matchTracks(paths, store.tracks.value)
+            if (matched.isNotEmpty()) {
+                val displayName = uri.lastPathSegment?.let { it.substringBeforeLast('.') } ?: "Imported playlist"
+                val name = if (displayName.isNotBlank()) displayName else "Imported playlist"
+                playlistsViewModel.createPlaylist(name, null, matched)
+            }
+        }
+    }
+
+    private fun handleM3uExport(uri: Uri, playlistId: String) {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                val store = AndroidSyncRuntime.syncStore()
+                val playlist: LibraryPlaylist? = store.playlists.value.firstOrNull { it.id == playlistId }
+                val tracks = store.tracks.value
+                val trackById = tracks.associateBy { it.id }
+                val entries = playlist?.trackIds?.mapNotNull { trackId ->
+                    trackById[trackId]?.let { track ->
+                        track.title to (track.audioPath ?: "")
+                    }
+                } ?: emptyList()
+                val content = m3uContent(entries.filter { it.second.isNotBlank() })
+                writeTextToUri(contentResolver, uri, content)
+            }
+        }
+    }
+
+    private fun m3uSuggestedFileName(playlistId: String): String {
+        val name = AndroidSyncRuntime.syncStore().playlists.value.firstOrNull { it.id == playlistId }?.name
+        val base = name.takeIf { it.isNotBlank() } ?: "playlist"
+        return "$base.m3u8"
     }
 }
 

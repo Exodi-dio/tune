@@ -712,6 +712,7 @@ internal fun AppDestinationContent(
                                 onPlaylistAddToQueue = onPlaylistAddToQueue,
                                 onPlaylistUpdate = onPlaylistUpdate,
                                 onPlaylistDelete = onPlaylistDelete,
+                                onExportM3u = { playlistId -> onIntent(AppIntent.ExportM3u(playlistId)) },
                             )
                             AppStackPage.PlaylistDetails -> PlaylistDetailsContent(
                                 uiState = selectedPlaylistDetails,

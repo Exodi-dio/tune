@@ -154,6 +154,8 @@ class MainViewModel(
             is AppIntent.SetFullscreenLyrics -> setFullscreenLyrics(intent.enabled)
             is AppIntent.SetShowInsightsTab -> setShowInsightsTab(intent.enabled)
             is AppIntent.SetKeepScreenOn -> setKeepScreenOn(intent.enabled)
+            is AppIntent.ImportM3u -> _effects.trySend(AppEffect.PickM3uImport)
+            is AppIntent.ExportM3u -> _effects.trySend(AppEffect.PickM3uExport(intent.playlistId))
             is AppIntent.OpenExternalUrl -> _effects.trySend(AppEffect.OpenExternalUrl(intent.url))
         }
     }

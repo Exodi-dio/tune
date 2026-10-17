@@ -37,6 +37,12 @@ sealed interface AppIntent {
 
     data class SetKeepScreenOn(val enabled: Boolean) : AppIntent
 
+    /** User picked the "Import M3U playlist" action. */
+    data object ImportM3u : AppIntent
+
+    /** User picked the "Export M3U playlist" action for a playlist. */
+    data class ExportM3u(val playlistId: String) : AppIntent
+
     data class OpenExternalUrl(val url: String) : AppIntent
 }
 
@@ -45,4 +51,10 @@ sealed interface AppEffect {
     data class OpenExternalUrl(val url: String) : AppEffect
 
     data class ResetPoppedPage(val page: AppStackPage) : AppEffect
+
+    /** Launch the system file picker to import an M3U playlist. */
+    data object PickM3uImport : AppEffect
+
+    /** Launch the system file picker to export an M3U playlist. */
+    data class PickM3uExport(val playlistId: String) : AppEffect
 }

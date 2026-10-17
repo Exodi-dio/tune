@@ -34,6 +34,7 @@ internal fun LibraryPlaylistsContent(
     onPlaylistAddToQueue: (List<String>) -> Unit = {},
     onPlaylistUpdate: (String, String, android.net.Uri?, Boolean) -> Unit = { _, _, _, _ -> },
     onPlaylistDelete: (String) -> Unit = {},
+    onExportM3u: (String) -> Unit = {},
 ) {
     val listPadding = remember(contentPadding) { PaddingValues(top = contentPadding.calculateTopPadding(), bottom = contentPadding.calculateBottomPadding()) }
     var contextPlaylistId by remember { mutableStateOf<String?>(null) }
@@ -67,16 +68,18 @@ internal fun LibraryPlaylistsContent(
             onAddToQueue = onPlaylistAddToQueue,
             onEdit = { editingPlaylist = playlist },
             onDelete = { deletingPlaylist = playlist },
-        ) {
-            PlaylistRow(
-                playlist.id,
-                if (playlist.isFavorite) stringResource(R.string.library_favorites) else playlist.name,
-                playlist.artworkPaths,
-                syncFailed = playlist.syncFailed,
-                onClick = { onPlaylistClick(playlist.id) },
-                onLongClick = { contextPlaylistId = playlist.id },
-            )
-        }
+            onExportM3u = { onExportM3u(playlist.id) },
+            anchor = {
+                PlaylistRow(
+                    playlist.id,
+                    if (playlist.isFavorite) stringResource(R.string.library_favorites) else playlist.name,
+                    playlist.artworkPaths,
+                    syncFailed = playlist.syncFailed,
+                    onClick = { onPlaylistClick(playlist.id) },
+                    onLongClick = { contextPlaylistId = playlist.id },
+                )
+            },
+        )
     }
     editingPlaylist?.let { playlist ->
         EditPlaylistBottomSheet(
