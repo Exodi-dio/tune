@@ -225,10 +225,9 @@ import java.security.MessageDigest
             if (id.isBlank()) continue
             val name = obj.get("name")?.jsonPrimitive?.contentOrNull ?: continue
             if (name.isBlank()) continue
-            val sortName = obj.get("sort_name")?.jsonPrimitive?.contentOrNull
+            val explicitSortName = obj.get("sort_name")?.jsonPrimitive?.contentOrNull
                 ?: obj.get("normalization_key")?.jsonPrimitive?.contentOrNull
-                ?: name
-            val createdAt = obj.get("created_at")?.jsonPrimitive?.contentOrNull ?: track.createdAt
+            val explicitCreatedAt = obj.get("created_at")?.jsonPrimitive?.contentOrNull
             val artworkKey = obj.get("artwork_key")?.jsonPrimitive?.contentOrNull
                 ?: obj.get("artwork_key_local")?.jsonPrimitive?.contentOrNull
             var artworkPath: String? = null
@@ -242,13 +241,14 @@ import java.security.MessageDigest
             if (artworkPath == null) {
                 artworkPath = trackArtwork[track.id]
             }
-            seen.putIfAbsent(id, LibraryArtist(
+            val existing = seen[id]
+            seen[id] = LibraryArtist(
                 id = id,
                 name = name,
-                sortName = sortName,
-                createdAt = createdAt,
-                artworkPath = artworkPath,
-            ))
+                sortName = explicitSortName ?: existing?.sortName ?: name,
+                createdAt = explicitCreatedAt ?: existing?.createdAt ?: track.createdAt,
+                artworkPath = artworkPath ?: existing?.artworkPath,
+            )
         }
     }
     return seen.values.toList()
@@ -299,17 +299,18 @@ import java.security.MessageDigest
             artist = firstTrackArtist?.get("name")?.jsonPrimitive?.contentOrNull.orEmpty()
             sortArtist = firstTrackArtist?.get("sort_name")?.jsonPrimitive?.contentOrNull.orEmpty() ?: artist
         }
-        seen.putIfAbsent(albumId, LibraryAlbum(
+        val existing = seen[albumId]
+        seen[albumId] = LibraryAlbum(
             id = albumId,
             title = title,
             sortTitle = sortTitle,
             sortArtist = sortArtist,
             artist = artist,
-            artworkPath = artworkPath,
+            artworkPath = artworkPath ?: existing?.artworkPath,
             createdAt = createdAt,
             year = year,
             copyright = copyright,
-        ))
+        )
     }
     return seen.values.toList()
 }
@@ -330,10 +331,9 @@ import java.security.MessageDigest
             if (id.isBlank()) continue
             val name = obj.get("name")?.jsonPrimitive?.contentOrNull ?: continue
             if (name.isBlank()) continue
-            val sortName = obj.get("sort_name")?.jsonPrimitive?.contentOrNull
+            val explicitSortName = obj.get("sort_name")?.jsonPrimitive?.contentOrNull
                 ?: obj.get("normalization_key")?.jsonPrimitive?.contentOrNull
-                ?: name
-            val createdAt = obj.get("created_at")?.jsonPrimitive?.contentOrNull ?: track.createdAt
+            val explicitCreatedAt = obj.get("created_at")?.jsonPrimitive?.contentOrNull
             val artworkKey = obj.get("artwork_key")?.jsonPrimitive?.contentOrNull
             var artworkPath: String? = null
             if (artworkKey != null) {
@@ -346,13 +346,14 @@ import java.security.MessageDigest
             if (artworkPath == null) {
                 artworkPath = trackArtwork[track.id]
             }
-            seen.putIfAbsent(id, LibraryComposer(
+            val existing = seen[id]
+            seen[id] = LibraryComposer(
                 id = id,
                 name = name,
-                sortName = sortName,
-                createdAt = createdAt,
-                artworkPath = artworkPath,
-            ))
+                sortName = explicitSortName ?: existing?.sortName ?: name,
+                createdAt = explicitCreatedAt ?: existing?.createdAt ?: track.createdAt,
+                artworkPath = artworkPath ?: existing?.artworkPath,
+            )
         }
     }
     return seen.values.toList()
@@ -372,16 +373,16 @@ fun libraryGenresFrom(
             if (id.isBlank()) continue
             val name = obj.get("name")?.jsonPrimitive?.contentOrNull ?: continue
             if (name.isBlank()) continue
-            val sortName = obj.get("sort_name")?.jsonPrimitive?.contentOrNull
+            val explicitSortName = obj.get("sort_name")?.jsonPrimitive?.contentOrNull
                 ?: obj.get("normalization_key")?.jsonPrimitive?.contentOrNull
-                ?: name
-            val createdAt = obj.get("created_at")?.jsonPrimitive?.contentOrNull ?: track.createdAt
-            seen.putIfAbsent(id, LibraryGenre(
+            val explicitCreatedAt = obj.get("created_at")?.jsonPrimitive?.contentOrNull
+            val existing = seen[id]
+            seen[id] = LibraryGenre(
                 id = id,
                 name = name,
-                sortName = sortName,
-                createdAt = createdAt,
-            ))
+                sortName = explicitSortName ?: existing?.sortName ?: name,
+                createdAt = explicitCreatedAt ?: existing?.createdAt ?: track.createdAt,
+            )
         }
     }
     return seen.values.toList()
