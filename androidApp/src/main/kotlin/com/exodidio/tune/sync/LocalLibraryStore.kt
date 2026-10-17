@@ -304,8 +304,8 @@ import java.security.MessageDigest
             id = albumId,
             title = title,
             sortTitle = sortTitle,
-            sortArtist = sortArtist,
-            artist = artist,
+            sortArtist = if (artist.isNotBlank()) artist else existing?.sortArtist ?: sortArtist,
+            artist = if (artist.isNotBlank()) artist else existing?.artist ?: artist,
             artworkPath = artworkPath ?: existing?.artworkPath,
             createdAt = createdAt,
             year = year,
@@ -743,7 +743,7 @@ fun libraryGenresFrom(
 
 /** Stub: splits listening time across local dates. */
 fun splitListeningByDate(startMs: Long, endMs: Long, intervalMs: Long): Map<String, Long> {
-    val zone = java.time.ZoneId.systemDefault()
+    val zone = java.time.ZoneId.of("UTC")
     val startDate = java.time.Instant.ofEpochMilli(startMs).atZone(zone).toLocalDate().toString()
     val endDate = java.time.Instant.ofEpochMilli(endMs).atZone(zone).toLocalDate().toString()
     val totalSeconds = ((endMs - startMs) / 1000).coerceAtLeast(0)
