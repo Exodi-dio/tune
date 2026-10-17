@@ -83,10 +83,10 @@ internal fun sortGenres(
     order: SortOrder,
 ): List<LibraryGenre> {
     val comparator = when (option) {
-        GenreSortOption.Name -> compareBy<LibraryGenre, String>(libraryAlphabeticalComparator) { it.name }
+        GenreSortOption.Name -> compareBy<LibraryGenre, String>(libraryAlphabeticalComparator) { it.sortName }
             .thenBy { it.id }
-        GenreSortOption.DateAdded -> compareBy<LibraryGenre> { it.id }
-            .thenBy(libraryAlphabeticalComparator) { it.name }
+        GenreSortOption.DateAdded -> compareBy<LibraryGenre> { it.createdAt }
+            .thenBy(libraryAlphabeticalComparator) { it.sortName }
             .thenBy { it.id }
     }
     val sorted = genres.sortedWith(comparator)
