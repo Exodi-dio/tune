@@ -91,8 +91,7 @@ import java.security.MessageDigest
     val title: String = "",
     val sortTitle: String = "",
     val sortArtist: String = "",
-    val sortName: String
-        get() = sortArtist,
+    val sortName: String = sortArtist,
     val artist: String = "",
     val artworkPath: String? = null,
     val createdAt: String = "",
