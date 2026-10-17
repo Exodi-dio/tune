@@ -682,9 +682,3 @@ import java.security.MessageDigest
         get() = currentStore
             ?: error("AndroidLibrarySyncStore not initialized. Call AndroidSyncRuntime.initialize(context) first.")
 }
-
-/** ============================================================================
- *  trackDisplayArtists on LibraryTrack (used by TrackContextMenu etc.)
- * ============================================================================ */
-
- fun LibraryTrack.trackDisplayArtists(): String = trackDisplayArtists(this)
