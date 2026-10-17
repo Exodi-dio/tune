@@ -122,7 +122,7 @@ internal class LibraryArtistsViewModel(
                 staged?.let {
                     syncStore.stageArtistArtwork(it)
                     syncStore.queueArtistArtworkMutation(
-                        ArtistMutation(UUID.randomUUID().toString(), artistId, ArtistArtworkOperation.SET_ARTWORK, updatedAt, ArtistArtworkPayload(artworkSha256 = it.sha256)),
+                        ArtistMutation(UUID.randomUUID().toString(), artistId, ArtistArtworkOperation.SET_ARTWORK, updatedAt, ArtistArtworkPayload(sha256 = it.sha256)),
                     )
                 }
             }

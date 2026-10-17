@@ -344,7 +344,7 @@ class MainActivity : ComponentActivity() {
                         is AppEffect.PickM3uExport -> {
                             exportTargetPlaylistId = effect.playlistId
                             val suggestedName = m3uSuggestedFileName(effect.playlistId)
-                            exportM3uLauncher.launch(arrayOf("audio/m3u8", "text/plain"))
+                            exportM3uLauncher.launch("audio/m3u8")
                         }
                     }
                 }
