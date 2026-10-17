@@ -310,14 +310,14 @@ val LibraryAlbum.sortName: String
         val existing = seen[albumId]
         seen[albumId] = LibraryAlbum(
             id = albumId,
-            title = if (title.isNotBlank()) title else existing?.title ?: title,
-            sortTitle = if (sortTitle.isNotBlank()) sortTitle else existing?.sortTitle ?: sortTitle,
+            title = existing?.title?.takeIf { it.isNotBlank() } ?: title,
+            sortTitle = existing?.sortTitle?.takeIf { it.isNotBlank() } ?: sortTitle,
             sortArtist = if (explicitSortArtist) sortArtist else existing?.sortArtist ?: sortArtist,
-            artist = if (artist.isNotBlank()) artist else existing?.artist ?: artist,
+            artist = existing?.artist?.takeIf { it.isNotBlank() } ?: artist,
             artworkPath = artworkPath ?: existing?.artworkPath,
-            createdAt = if (createdAt.isNotBlank()) createdAt else existing?.createdAt ?: createdAt,
-            year = if (year > 0) year else existing?.year ?: year,
-            copyright = if (copyright.isNotBlank()) copyright else existing?.copyright ?: copyright,
+            createdAt = existing?.createdAt?.takeIf { it.isNotBlank() } ?: createdAt,
+            year = existing?.year?.takeIf { it > 0 } ?: year,
+            copyright = existing?.copyright?.takeIf { it.isNotBlank() } ?: copyright,
         )
     }
     return seen.values.toList()
@@ -444,6 +444,20 @@ fun libraryGenresFrom(
                 keywords = keywords.distinct(),
             ),
         )
+        // Artist documents
+        for (artistName in artistNames) {
+            if (artistName.isNotBlank()) {
+                docs.add(
+                    LibrarySearchDocumentEntity(
+                        planId = planId,
+                        entityType = "artist",
+                        entityId = stableId("local-artist-", artistName),
+                        title = artistName,
+                        keywords = listOf(artistName),
+                    ),
+                )
+            }
+        }
         // Composer documents
         val composersArr = root.get("composers") as? JsonArray
         if (composersArr != null) {
