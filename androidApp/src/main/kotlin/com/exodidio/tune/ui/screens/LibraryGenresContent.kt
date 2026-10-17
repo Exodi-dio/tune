@@ -68,7 +68,7 @@ internal fun LibraryGenresContent(
                 placeholder = stringResource(R.string.filter_placeholder_search),
             )
         },
-        alphabeticalIndexKey = if (uiState.sortOption == GenreSortOption.Name) ({ genre -> genre.sortName.ifBlank { genre.name } }) else null,
+        alphabeticalIndexKey = if (uiState.sortOption == GenreSortOption.Name) ({ genre -> genre.name.ifBlank { genre.id } }) else null,
         emptyContent = {
             Column(
                 modifier = Modifier

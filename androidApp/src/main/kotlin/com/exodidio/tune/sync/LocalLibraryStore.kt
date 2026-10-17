@@ -425,7 +425,7 @@ import java.security.MessageDigest
     val mutationId: String,
     val artistId: String,
     val operation: ArtistArtworkOperation,
-    val timestampMs: Long,
+    val updatedAt: Long,
     val payload: ArtistArtworkPayload? = null,
 ) {
     fun validationError(): String? =
@@ -459,7 +459,7 @@ import java.security.MessageDigest
  * ============================================================================ */
 
  enum class PlaylistMutationOperation {
-    CREATE, ADD_TRACK, REMOVE_TRACK, UPDATE, SET_ARTWORK, REMOVE_ARTWORK, DELETE
+    CREATE, ADD_TRACK, REMOVE_TRACK, UPDATE, SET_ARTWORK, REMOVE_ARTWORK, DELETE, MOVE_TRACK
 }
 
  data class PlaylistMutationPayload(
@@ -474,7 +474,7 @@ import java.security.MessageDigest
     val mutationId: String,
     val playlistId: String,
     val operation: PlaylistMutationOperation,
-    val timestampMs: Long,
+    val updatedAt: Long,
     val payload: PlaylistMutationPayload = PlaylistMutationPayload(),
 )
 
@@ -639,18 +639,18 @@ import java.security.MessageDigest
     suspend fun cleanupListening(cutoffMs: Long) {}
 
     /** Stage artist artwork (stubbed — no-op). */
-    suspend fun stageArtistArtwork(artistId: String) {}
+    suspend fun stageArtistArtwork(artwork: StagedArtistArtwork) {}
 
     /** Queue an artist artwork mutation (stubbed — no-op). */
-    suspend fun queueArtistArtworkMutation(
-        artistId: String,
-        operation: ArtistArtworkOperation,
-        payload: ArtistArtworkPayload?,
-        timestampMs: Long = System.currentTimeMillis(),
-    ) {}
+    suspend fun queueArtistArtworkMutation(mutation: ArtistMutation) {}
 
     /** Create a local playlist (stubbed — no-op). */
-    suspend fun createLocalPlaylist(name: String, artworkKey: String?, trackIds: List<String>) {}
+    suspend fun createLocalPlaylist(
+        mutation: PlaylistMutation,
+        artwork: StagedPlaylistArtwork?,
+        artworkMutationId: String?,
+        initialTrackIds: List<String>,
+    ) {}
 
     /** Queue a playlist mutation (stubbed — no-op). */
     suspend fun queuePlaylistMutation(mutation: PlaylistMutation) {}
@@ -659,7 +659,7 @@ import java.security.MessageDigest
     fun discardFailedLocalPlaylist(playlistId: String): Boolean = false
 
     /** Stage playlist artwork (stubbed — no-op). */
-    suspend fun stagePlaylistArtwork(playlistId: String) {}
+    suspend fun stagePlaylistArtwork(artwork: StagedPlaylistArtwork) {}
 
     /** Search candidates (stubbed — returns empty). */
     suspend fun searchCandidates(text: String): List<LibrarySearchCandidate> = emptyList()

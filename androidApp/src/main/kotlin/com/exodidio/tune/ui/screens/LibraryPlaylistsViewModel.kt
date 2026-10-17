@@ -173,7 +173,7 @@ internal fun playlistsWithFavorites(
     tracks: List<LibraryTrack> = emptyList(),
 ): List<LibraryPlaylist> {
     val favorites = playlists.firstOrNull { it.id == FavoritesPlaylistId }
-        ?: LibraryPlaylist(FavoritesPlaylistId, "", emptyList(), "{}")
+        ?: LibraryPlaylist(id = FavoritesPlaylistId, name = "", metadataJson = "{}")
     val derivedFavorites = favorites.copy(trackIds = tracks.filter(LibraryTrack::isFavorite).map(LibraryTrack::id))
     return listOf(derivedFavorites) + playlists.filterNot { it.id == FavoritesPlaylistId }
 }
