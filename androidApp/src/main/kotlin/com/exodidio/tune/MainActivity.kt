@@ -282,6 +282,15 @@ class MainActivity : ComponentActivity() {
             SideEffect {
                 updateSystemBarAppearance(darkTheme, isFullScreenPlayerVisible)
             }
+            // Keep screen awake when the keep-screen-on setting is enabled (#11).
+            SideEffect {
+                val window = window
+                if (uiState.keepScreenOn) {
+                    window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                } else {
+                    window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
+            }
             val destinations = AppDestinationModels(
                 home = HomeDestinationModel(homeUiState, tracksViewModel::playHomeTrack),
                 insight = InsightDestinationModel(

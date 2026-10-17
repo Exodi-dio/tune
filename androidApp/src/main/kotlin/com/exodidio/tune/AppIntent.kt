@@ -35,6 +35,8 @@ sealed interface AppIntent {
 
     data class SetShowInsightsTab(val enabled: Boolean) : AppIntent
 
+    data class SetKeepScreenOn(val enabled: Boolean) : AppIntent
+
     data class OpenExternalUrl(val url: String) : AppIntent
 }
 

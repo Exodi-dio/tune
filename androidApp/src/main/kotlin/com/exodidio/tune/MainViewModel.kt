@@ -30,6 +30,7 @@ data class AppUiState(
     val fullscreenArtwork: Boolean = false,
     val fullscreenLyrics: Boolean = false,
     val showInsightsTab: Boolean = false,
+    val keepScreenOn: Boolean = false,
     val selectedAlbumId: String? = null,
     val selectedArtistId: String? = null,
     val selectedGenreId: String? = null,
@@ -71,6 +72,7 @@ class MainViewModel(
         val fullscreenArtwork: Boolean = false,
         val fullscreenLyrics: Boolean = false,
         val showInsightsTab: Boolean = false,
+        val keepScreenOn: Boolean = false,
     )
 
     private val appearancePrefs = themeModeStore.themeMode
@@ -92,6 +94,9 @@ class MainViewModel(
         .combine(themeModeStore.showInsightsTab) { prefs, showInsightsTab ->
             prefs.copy(showInsightsTab = showInsightsTab)
         }
+        .combine(themeModeStore.keepScreenOn) { prefs, keepScreenOn ->
+            prefs.copy(keepScreenOn = keepScreenOn)
+        }
 
     val uiState: StateFlow<AppUiState> = combine(
         appearancePrefs,
@@ -111,6 +116,7 @@ class MainViewModel(
             fullscreenArtwork = appearance.fullscreenArtwork,
             fullscreenLyrics = appearance.fullscreenLyrics,
             showInsightsTab = appearance.showInsightsTab,
+            keepScreenOn = appearance.keepScreenOn,
             selectedAlbumId = albumId,
             destinationStacks = pages,
         )
@@ -147,6 +153,7 @@ class MainViewModel(
             is AppIntent.SetFullscreenArtwork -> setFullscreenArtwork(intent.enabled)
             is AppIntent.SetFullscreenLyrics -> setFullscreenLyrics(intent.enabled)
             is AppIntent.SetShowInsightsTab -> setShowInsightsTab(intent.enabled)
+            is AppIntent.SetKeepScreenOn -> setKeepScreenOn(intent.enabled)
             is AppIntent.OpenExternalUrl -> _effects.trySend(AppEffect.OpenExternalUrl(intent.url))
         }
     }
@@ -279,6 +286,12 @@ class MainViewModel(
             if (!enabled && selectedDestination.value == AppDestination.Insight) {
                 selectedDestination.value = AppDestination.Home
             }
+        }
+    }
+
+    private fun setKeepScreenOn(enabled: Boolean) {
+        viewModelScope.launch {
+            themeModeStore.setKeepScreenOn(enabled)
         }
     }
 

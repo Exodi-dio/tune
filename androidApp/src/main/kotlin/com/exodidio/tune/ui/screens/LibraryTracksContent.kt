@@ -27,6 +27,7 @@ import com.exodidio.tune.ui.components.TrackRow
 import com.exodidio.tune.ui.components.TrackContextArtist
 import com.exodidio.tune.ui.components.TrackContextMenu
 import com.exodidio.tune.ui.components.TrackContextBottomSheetRequest
+import com.exodidio.tune.library.rememberDeleteFilesFromDeviceLauncher
 
 @Composable
 internal fun LibraryTracksContent(
@@ -48,8 +49,12 @@ internal fun LibraryTracksContent(
     onPlayAll: (Boolean) -> Unit = {},
     onFilterQueryChange: (String) -> Unit = {},
     onTrackContextBottomSheet: (TrackContextBottomSheetRequest) -> Unit = {},
+    onTracksRemovedFromLibrary: (List<String>) -> Unit = {},
 ) {
     var contextTrack by remember { mutableStateOf<LibraryTrack?>(null) }
+    val deleteFromDevice = rememberDeleteFilesFromDeviceLauncher { confirmedIds ->
+        onTracksRemovedFromLibrary(confirmedIds)
+    }
     val listPadding = remember(contentPadding) {
         PaddingValues(
             top = contentPadding.calculateTopPadding(),
@@ -122,6 +127,7 @@ internal fun LibraryTracksContent(
             onGoToAlbum = onTrackAlbumClick,
             onGoToArtist = onTrackArtistClick,
             onBottomSheetRequested = onTrackContextBottomSheet,
+            onDeleteFromDevice = { track -> deleteFromDevice(listOf(track)) },
         ) {
             TrackRow(
                 title = track.title,

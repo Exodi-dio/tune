@@ -344,6 +344,8 @@ internal fun App(
                 fullscreenLyrics = uiState.fullscreenLyrics,
                 showInsightsTab = uiState.showInsightsTab,
                 onShowInsightsTabChanged = { enabled -> onIntent(AppIntent.SetShowInsightsTab(enabled)) },
+                keepScreenOn = uiState.keepScreenOn,
+                onKeepScreenOnChanged = { enabled -> onIntent(AppIntent.SetKeepScreenOn(enabled)) },
                 hazeState = hazeState,
                 navigationBottomPadding = navigationBottomPadding,
                 homeListState = homeListState,

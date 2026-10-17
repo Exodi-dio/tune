@@ -17,6 +17,7 @@ private val ShowVolumeSliderKey = booleanPreferencesKey("show_volume_slider")
 private val FullscreenArtworkKey = booleanPreferencesKey("fullscreen_artwork")
 private val FullscreenLyricsKey = booleanPreferencesKey("fullscreen_lyrics")
 private val ShowInsightsTabKey = booleanPreferencesKey("show_insights_tab")
+private val KeepScreenOnKey = booleanPreferencesKey("keep_screen_on")
 
 enum class ThemeMode(val storageValue: String, val labelRes: Int) {
     System("system", com.exodidio.tune.R.string.theme_system),
@@ -48,6 +49,7 @@ interface ThemeModeStore {
     val fullscreenArtwork: Flow<Boolean>
     val fullscreenLyrics: Flow<Boolean>
     val showInsightsTab: Flow<Boolean>
+    val keepScreenOn: Flow<Boolean>
 
     suspend fun setThemeMode(themeMode: ThemeMode)
     suspend fun setReduceTransparency(enabled: Boolean)
@@ -56,6 +58,7 @@ interface ThemeModeStore {
     suspend fun setFullscreenArtwork(enabled: Boolean)
     suspend fun setShowInsightsTab(enabled: Boolean)
     suspend fun setFullscreenLyrics(enabled: Boolean)
+    suspend fun setKeepScreenOn(enabled: Boolean)
 }
 
 class ThemePreferences(
@@ -122,6 +125,16 @@ class ThemePreferences(
     override suspend fun setShowInsightsTab(enabled: Boolean) {
         context.themeDataStore.edit { preferences ->
             preferences[ShowInsightsTabKey] = enabled
+        }
+    }
+
+    override val keepScreenOn: Flow<Boolean> = context.themeDataStore.data.map { preferences ->
+        preferences[KeepScreenOnKey] ?: false
+    }
+
+    override suspend fun setKeepScreenOn(enabled: Boolean) {
+        context.themeDataStore.edit { preferences ->
+            preferences[KeepScreenOnKey] = enabled
         }
     }
 }

@@ -134,6 +134,8 @@ internal fun AppDestinationContent(
     fullscreenLyrics: Boolean = false,
     showInsightsTab: Boolean = false,
     onShowInsightsTabChanged: (Boolean) -> Unit = {},
+    keepScreenOn: Boolean = false,
+    onKeepScreenOnChanged: (Boolean) -> Unit = {},
     hazeState: HazeState?,
     navigationBottomPadding: Dp,
     homeListState: LazyListState,
@@ -452,6 +454,10 @@ internal fun AppDestinationContent(
                                 },
                                 showInsightsTab = showInsightsTab,
                                 onShowInsightsTabChanged = onShowInsightsTabChanged,
+                                keepScreenOn = keepScreenOn,
+                                onKeepScreenOnChanged = { enabled ->
+                                    onIntent(AppIntent.SetKeepScreenOn(enabled))
+                                },
                                 hazeState = hazeState,
                             )
                             AppStackPage.SettingsPlayback -> PlaybackSettingsContent(
@@ -751,6 +757,7 @@ internal fun AppDestinationContent(
                                 onPlayAll = onTracksPlayAll,
                                 onFilterQueryChange = onTracksFilterQueryChange,
                                 onTrackContextBottomSheet = onTrackContextBottomSheet,
+                                onTracksRemovedFromLibrary = onTracksRemovedFromLibrary,
                             )
                             else -> LibraryContent(
                                 modifier = Modifier.fillMaxSize(),

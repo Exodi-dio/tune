@@ -35,6 +35,8 @@ internal fun AppearanceContent(
     onFullscreenLyricsChanged: (Boolean) -> Unit = {},
     showInsightsTab: Boolean = false,
     onShowInsightsTabChanged: (Boolean) -> Unit = {},
+    keepScreenOn: Boolean = false,
+    onKeepScreenOnChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
     hazeState: HazeState? = null,
 ) {
@@ -122,6 +124,16 @@ internal fun AppearanceContent(
                             )
                         },
                         onClick = { onFullscreenLyricsChanged(!fullscreenLyrics) },
+                    ),
+                    ActionListItem(
+                        labelRes = R.string.appearance_keep_screen_on,
+                        trailingContent = {
+                            Switch(
+                                checked = keepScreenOn,
+                                onCheckedChange = onKeepScreenOnChanged,
+                            )
+                        },
+                        onClick = { onKeepScreenOnChanged(!keepScreenOn) },
                     ),
                 ),
                 containerStyle = ActionListContainerStyle.Plain,
