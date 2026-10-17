@@ -435,6 +435,26 @@ fun libraryGenresFrom(
                 keywords = keywords.distinct(),
             ),
         )
+        // Composer documents
+        val composersArr = root.get("composers") as? JsonArray
+        if (composersArr != null) {
+            for (entry in composersArr) {
+                val obj = entry as? JsonObject ?: continue
+                val composerId = obj.get("id")?.jsonPrimitive?.contentOrNull ?: continue
+                if (composerId.isBlank()) continue
+                val composerName = obj.get("name")?.jsonPrimitive?.contentOrNull ?: continue
+                if (composerName.isBlank()) continue
+                docs.add(
+                    LibrarySearchDocumentEntity(
+                        planId = planId,
+                        entityType = "composer",
+                        entityId = composerId,
+                        title = composerName,
+                        keywords = listOf(composerName),
+                    ),
+                )
+            }
+        }
     }
     for (playlist in playlists) {
         docs.add(
