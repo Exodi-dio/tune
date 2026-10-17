@@ -6,7 +6,7 @@ import org.junit.Test
 class LibraryTrackMetadataFallbackTest {
     @Test
     fun usesUnknownLabelsWhenTrackMetadataIsBlank() {
-        assertEquals("Unknown song", trackDisplayTitle("  "))
-        assertEquals("Unknown artist", trackDisplayArtists(" "))
+        assertEquals("Unknown song", trackDisplayTitle(LibraryTrack(title = "  ")))
+        assertEquals("Unknown artist", trackDisplayArtists(LibraryTrack(artists = " ")))
     }
 }

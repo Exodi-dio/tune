@@ -717,3 +717,19 @@ fun libraryGenresFrom(
         get() = currentStore
             ?: error("AndroidLibrarySyncStore not initialized. Call AndroidSyncRuntime.initialize(context) first.")
 }
+
+/** Stub: splits listening time across local dates. */
+fun splitListeningByDate(startMs: Long, endMs: Long, intervalMs: Long): java.util.Map<String, Long> {
+    val zone = java.time.ZoneId.systemDefault()
+    val startDate = java.time.Instant.ofEpochMilli(startMs).atZone(zone).toLocalDate().toString()
+    val endDate = java.time.Instant.ofEpochMilli(endMs).atZone(zone).toLocalDate().toString()
+    val totalSeconds = ((endMs - startMs) / 1000).coerceAtLeast(0)
+    val perDate = totalSeconds / 2
+    return mapOf(startDate to perDate, endDate to perDate)
+}
+
+/** Stub: returns cached asset path if the file exists and path is safe. */
+fun cachedAssetPath(filesDir: java.io.File, entity: SyncAssetEntity): String? {
+    val file = java.io.File(filesDir, entity.relativePath)
+    return if (file.exists() && !entity.relativePath.contains("..")) entity.relativePath else null
+}

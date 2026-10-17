@@ -53,8 +53,8 @@ class TrackContextMenuTest {
 
     @Test
     fun playlistPickerExcludesFavoritesAndSmartPlaylists() {
-        assertEquals(false, playlistIsEditable(LibraryPlaylist("favorites", "Favorites", emptyList(), "{}")))
-        assertEquals(false, playlistIsEditable(LibraryPlaylist("smart", "Smart", emptyList(), "{\"playlist\":{\"is_smart\":true}}")))
-        assertEquals(true, playlistIsEditable(LibraryPlaylist("normal", "Normal", emptyList(), "{\"playlist\":{\"is_smart\":false}}")))
+        assertEquals(false, playlistIsEditable(LibraryPlaylist(id = "favorites", name = "Favorites", metadataJson = "{}")))
+        assertEquals(false, playlistIsEditable(LibraryPlaylist(id = "smart", name = "Smart", metadataJson = """{"playlist":{"is_smart":true}}""")))
+        assertEquals(true, playlistIsEditable(LibraryPlaylist(id = "normal", name = "Normal", metadataJson = """{"playlist":{"is_smart":false}}""")))
     }
 }
