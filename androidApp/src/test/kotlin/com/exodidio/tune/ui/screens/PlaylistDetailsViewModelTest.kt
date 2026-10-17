@@ -13,7 +13,7 @@ class PlaylistDetailsViewModelTest {
     @Test
     fun resolvesTracksInPlaylistOrderAndSkipsUnavailableIds() {
         val state = PlaylistDetailsUiState(
-            playlists = listOf(LibraryPlaylist("mix", "Mix", listOf("second", "missing", "first"), "{}")),
+            playlists = listOf(LibraryPlaylist(id = "mix", name = "Mix", trackIds = listOf("second", "missing", "first"), metadataJson = "{}")),
             allTracks = listOf(first, second),
         )
 
