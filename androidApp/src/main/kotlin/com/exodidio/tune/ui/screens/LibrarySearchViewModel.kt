@@ -60,7 +60,11 @@ internal class LibrarySearchViewModel(
     private val searchQuery = query.debouncedLibrarySearchQuery()
     private val searchResults = combine(
         searchQuery.flatMapLatest { text ->
-            syncStore.searchCandidates(text).map { candidates -> SearchCandidates(text, candidates.groupBy { it.entityType }.mapValues { (_, values) -> values.mapTo(mutableSetOf(), LibrarySearchCandidate::entityId) }) }
+            flow {
+                syncStore.searchCandidates(text).let { candidates ->
+                    SearchCandidates(text, candidates.groupBy { it.entityType }.mapValues { (_, values) -> values.mapTo(mutableSetOf(), LibrarySearchCandidate::entityId) })
+                }
+            }
         },
         syncStore.tracks, syncStore.albums, syncStore.artists, syncStore.playlists, syncStore.composers,
         syncStore.artistArtworkKeys, syncStore.artworkPaths,

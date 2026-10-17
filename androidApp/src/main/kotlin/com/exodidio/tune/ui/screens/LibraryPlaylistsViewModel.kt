@@ -68,7 +68,7 @@ internal class LibraryPlaylistsViewModel(private val context: Context, syncStore
                 playlist.trackIds.filter { it in availableTrackIds },
                 playlistArtworkPaths(playlist, tracks, artworkPaths),
                 playlistManualArtworkPath(playlist, artworkPaths),
-                playlist.syncFailed,
+                false,
             )
         })
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryPlaylistsUiState(isLoaded = false))

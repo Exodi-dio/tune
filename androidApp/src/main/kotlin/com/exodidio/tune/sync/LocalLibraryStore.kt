@@ -3,6 +3,8 @@ package com.exodidio.tune.sync
 import android.content.Context
 import com.exodidio.tune.library.LocalImport
 import com.exodidio.tune.mood.MoodRadioTrack
+import com.exodidio.tune.player.DailyPlaybackAttemptStat
+import com.exodidio.tune.player.DailyTrackListeningStat
 import com.exodidio.tune.player.TrackAnalysis
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -464,6 +466,8 @@ import java.security.MessageDigest
     val name: String? = null,
     val trackId: String? = null,
     val artworkSha256: String? = null,
+    val previousTrackId: String? = null,
+    val nextTrackId: String? = null,
 )
 
  data class PlaylistMutation(
@@ -551,6 +555,12 @@ import java.security.MessageDigest
 
     private val _artworkPaths = MutableStateFlow(emptyMap<String, String>())
     val artworkPaths: StateFlow<Map<String, String>> = _artworkPaths.asStateFlow()
+
+    private val _dailyTrackListeningStats = MutableStateFlow(emptyList<DailyTrackListeningStat>())
+    val dailyTrackListeningStats: StateFlow<List<DailyTrackListeningStat>> = _dailyTrackListeningStats.asStateFlow()
+
+    private val _dailyPlaybackAttemptStats = MutableStateFlow(emptyList<DailyPlaybackAttemptStat>())
+    val dailyPlaybackAttemptStats: StateFlow<List<DailyPlaybackAttemptStat>> = _dailyPlaybackAttemptStats.asStateFlow()
 
     private val analyses = mutableMapOf<String, TrackAnalysis>()
     val activeAnalyses: Map<String, TrackAnalysis> get() = analyses.toMap()

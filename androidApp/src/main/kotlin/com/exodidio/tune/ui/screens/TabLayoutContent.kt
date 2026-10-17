@@ -26,6 +26,7 @@ import com.exodidio.tune.ui.components.ActionListContainerStyle
 import com.exodidio.tune.ui.components.ActionListItem
 import com.exodidio.tune.ui.components.MaterialSymbol
 import com.exodidio.tune.ui.components.MaterialSymbols
+import com.exodidio.tune.ui.navigation.symbol
 import com.exodidio.tune.ui.navigation.titleRes
 import com.exodidio.tune.ui.theme.LocalTuneColors
 
