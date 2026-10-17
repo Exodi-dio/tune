@@ -310,14 +310,14 @@ val LibraryAlbum.sortName: String
         val existing = seen[albumId]
         seen[albumId] = LibraryAlbum(
             id = albumId,
-            title = title,
-            sortTitle = sortTitle,
+            title = if (title.isNotBlank()) title else existing?.title ?: title,
+            sortTitle = if (sortTitle.isNotBlank()) sortTitle else existing?.sortTitle ?: sortTitle,
             sortArtist = if (explicitSortArtist) sortArtist else existing?.sortArtist ?: sortArtist,
             artist = if (artist.isNotBlank()) artist else existing?.artist ?: artist,
             artworkPath = artworkPath ?: existing?.artworkPath,
-            createdAt = createdAt,
-            year = year,
-            copyright = copyright,
+            createdAt = if (createdAt.isNotBlank()) createdAt else existing?.createdAt ?: createdAt,
+            year = if (year > 0) year else existing?.year ?: year,
+            copyright = if (copyright.isNotBlank()) copyright else existing?.copyright ?: copyright,
         )
     }
     return seen.values.toList()
