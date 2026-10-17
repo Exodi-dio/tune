@@ -3,6 +3,7 @@ package com.exodidio.tune
 import com.exodidio.tune.lyrics.AndroidRomanizationEngine
 import com.exodidio.tune.lyrics.RomanizationViewModel
 
+import android.app.Activity
 import android.os.Bundle
 import android.os.Build
 import android.Manifest
@@ -15,6 +16,7 @@ import android.media.MediaRouter2
 import android.media.session.MediaSession
 import android.database.ContentObserver
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -47,6 +49,9 @@ import com.exodidio.tune.library.writeTextToUri
 import com.exodidio.tune.settings.ThemeMode
 import com.exodidio.tune.settings.ThemePreferences
 import com.exodidio.tune.sync.AndroidSyncRuntime
+import com.exodidio.tune.library.LocalLibraryScanner
+import com.exodidio.tune.library.ScanFolderPreferences
+import com.exodidio.tune.library.audioPermission
 import com.exodidio.tune.sync.LibraryPlaylist
 import com.exodidio.tune.player.AndroidPlaybackRuntime
 import com.exodidio.tune.player.AndroidPlaybackSession
@@ -213,6 +218,46 @@ class MainActivity : ComponentActivity() {
             val lyricsPreferences = remember { LyricsPreferences(applicationContext) }
             val lyricsService = remember(applicationContext) { AndroidLyricsService(AndroidSyncRuntime.syncStore(), appContext = applicationContext) }
             val preferenceScope = rememberCoroutineScope()
+            // Auto-scan on app launch (#18): when a scan folder is configured,
+            // audio permission is granted, and the library is empty, populate the
+            // library automatically without requiring the user to tap "Scan".
+            val scanner = remember { LocalLibraryScanner(applicationContext, AndroidSyncRuntime.syncStore()) }
+            val scanFolders = remember { ScanFolderPreferences(applicationContext) }
+            val folder by scanFolders.folder.collectAsStateWithLifecycle(initial = null)
+            val allTracks by AndroidSyncRuntime.syncStore().tracks.collectAsStateWithLifecycle(initialValue = emptyList())
+            val autoScanPending by remember { mutableStateOf(false) }
+
+            val autoScanPermissionLauncher =
+                rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                    val activity = this as Activity
+                    val rationale = activity.shouldShowRequestPermissionRationale(audioPermission()) == true
+                    preferenceScope.launch {
+                        scanner.refreshPermission(granted, rationale)
+                        if (granted && autoScanPending) {
+                            autoScanPending = false
+                            val singleFolder = scanFolders.folder.first()
+                            if (singleFolder.isNotBlank() && allTracks.isEmpty()) {
+                                scanner.scan(setOf(singleFolder))
+                            }
+                        }
+                    }
+                }
+
+            LaunchedEffect(Unit) {
+                if (this.checkSelfPermission(audioPermission()) == PackageManager.PERMISSION_GRANTED) {
+                    preferenceScope.launch {
+                        val singleFolder = scanFolders.folder.first()
+                        if (singleFolder.isNotBlank() && allTracks.isEmpty()) {
+                            scanner.refreshPermission(true, false)
+                            scanner.scan(setOf(singleFolder))
+                        }
+                    }
+                } else {
+                    autoScanPending = true
+                    autoScanPermissionLauncher.launch(audioPermission())
+                }
+            }
+
             val crossfadeSettings by playbackPreferences.settings.collectAsStateWithLifecycle(
                 initialValue = com.exodidio.tune.player.CrossfadeSettings(0, 4, true),
             )
