@@ -161,6 +161,12 @@ android {
             dimension = "environment"
             applicationId = "com.exodidio.tune"
         }
+        create("beta") {
+            dimension = "environment"
+            applicationId = "com.exodidio.tune.beta"
+            versionCode = 8
+            versionName = "1.2.0-beta"
+        }
     }
     splits {
         abi {
@@ -238,9 +244,17 @@ androidComponents {
                 "arm64-v8a" -> 3
                 else -> error("unknown ABI \"$abi\"")
             }
-            output.versionCode.set(7 * 1000 + offset)
+            val baseVersionCode = when (variant.flavorName) {
+                "beta" -> 8
+                else -> 7
+            }
+            output.versionCode.set(baseVersionCode * 1000 + offset)
             val suffix = if (abi != null) "_$abi" else ""
-            output.outputFileName.set("Tune-v1.2.0-beta$suffix.apk")
+            val flavorSuffix = when (variant.flavorName) {
+                "beta" -> "-beta"
+                else -> ""
+            }
+            output.outputFileName.set("Tune-v1.2.0-beta$flavorSuffix$suffix.apk")
         }
     }
 }

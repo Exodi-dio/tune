@@ -1,0 +1,125 @@
+name: build-beta-apk
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Beta release tag (e.g. v1.2.0-beta.2)'
+        required: true
+        default: 'v1.2.0-beta.2'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Generate fresh temporary release key
+        shell: bash
+        run: |
+          set -euo pipefail
+          store_file="$GITHUB_WORKSPACE/build/fresh-release.keystore"
+          store_pass="$(openssl rand -hex 24)"
+          key_alias="tune-temp-$(openssl rand -hex 8)"
+          key_pass="$store_pass"
+          mkdir -p "$(dirname "$store_file")"
+          keytool -genkeypair -v \
+            -keystore "$store_file" \
+            -alias "$key_alias" \
+            -keyalg RSA \
+            -keysize 3072 \
+            -validity 30 \
+            -storepass "$store_pass" \
+            -keypass "$key_pass" \
+            -dname "CN=Tune Beta, OU=GitHub Actions, O=Exodi-dio, L=Cloud, C=US" \
+            -noprompt
+          {
+            echo "MOBILE_KEYSTORE_FILE=$store_file"
+            echo "MOBILE_KEYSTORE_PASSWORD=$store_pass"
+            echo "MOBILE_KEY_ALIAS=$key_alias"
+            echo "MOBILE_KEY_PASSWORD=$key_pass"
+          } >> "$GITHUB_ENV"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-36 ndk;30.0.15729638 cmake;3.22.1
+      - name: Install font tooling
+        run: pip install --quiet fonttools brotli
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Restore FFmpeg outputs arm64-v8a
+        id: ffmpeg-cache-arm64-v8a
+        uses: actions/cache@v4
+        with:
+          path: |
+            androidApp/src/main/jniLibs
+            androidApp/build/ffmpeg
+          key: ffmpeg-arm64-v8a-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
+      - name: Restore FFmpeg outputs armeabi-v7a
+        id: ffmpeg-cache-armeabi-v7a
+        uses: actions/cache@v4
+        with:
+          path: |
+            androidApp/src/main/jniLibs
+            androidApp/build/ffmpeg
+          key: ffmpeg-armeabi-v7a-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
+      - name: Restore FFmpeg outputs x86_64
+        id: ffmpeg-cache-x86_64
+        uses: actions/cache@v4
+        with:
+          path: |
+            androidApp/src/main/jniLibs
+            androidApp/build/ffmpeg
+          key: ffmpeg-x86_64-${{ hashFiles('scripts/build-ffmpeg-android.sh') }}
+      - name: Build FFmpeg arm64-v8a
+        if: steps.ffmpeg-cache-arm64-v8a.outputs.cache-hit != 'true'
+        run: bash scripts/build-ffmpeg-android.sh arm64-v8a
+      - name: Build FFmpeg armeabi-v7a
+        if: steps.ffmpeg-cache-armeabi-v7a.outputs.cache-hit != 'true'
+        run: bash scripts/build-ffmpeg-android.sh armeabi-v7a
+      - name: Build FFmpeg x86_64
+        if: steps.ffmpeg-cache-x86_64.outputs.cache-hit != 'true'
+        run: bash scripts/build-ffmpeg-android.sh x86_64
+      - name: Unit tests
+        run: ./gradlew :sharedLogic:testAndroidHostTest --no-daemon
+      - name: Android unit tests
+        run: ./gradlew :androidApp:testDevDebugUnitTest --no-daemon
+      - name: Assemble signed beta release APKs
+        run: ./gradlew :androidApp:assembleBetaRelease -PenableReleaseAbiSplits=false --no-daemon
+      - name: Validate beta APKs
+        shell: bash
+        run: |
+          mapfile -t apks < <(find androidApp/build/outputs/apk/beta/release -maxdepth 1 -name "*.apk" -print)
+          if [ "${#apks[@]}" -lt 1 ]; then
+            echo "Expected at least one APK, found ${#apks[@]}" >&2
+            find androidApp/build/outputs/apk/beta/release -maxdepth 1 -name "*.apk" -print >&2
+            exit 1
+          fi
+          for apk in "${apks[@]}"; do echo "APK: $apk"; done
+          echo "BETA_APK_DIR=androidApp/build/outputs/apk/beta/release" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tune-beta-apks
+          path: androidApp/build/outputs/apk/beta/release/*.apk
+      - name: Create GitHub release in tune-beta
+        if: github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: Exodi-dio/tune-beta
+          tag_name: ${{ github.event.inputs.tag }}
+          name: Tune Beta ${{ github.event.inputs.tag }}
+          body: |
+            Beta build from `fix/icon-sync-removal` branch.
+
+            **Non-conflicting with official Tune:**
+            - Package: `com.exodidio.tune.beta` (official: `com.exodidio.tune`)
+            - Signed with a temporary key (not the official release key)
+            - Version code base: 8xxx (official: 7xxx)
+
+            Install side-by-side with the official Tune app.
+          files: androidApp/build/outputs/apk/beta/release/*.apk
+          draft: false
+          prerelease: true
