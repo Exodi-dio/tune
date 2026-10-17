@@ -748,11 +748,11 @@ fun libraryGenresFrom(
 }
 
 /** Stub: splits listening time across local dates. */
-fun splitListeningByDate(startMs: Long, endMs: Long, intervalMs: Long): Map<String, Long> {
+fun splitListeningByDate(startMs: Long, endMs: Long, intervalMs: Long): Map<String, Int> {
     val zone = java.time.ZoneId.of("UTC")
     val startDate = java.time.Instant.ofEpochMilli(startMs).atZone(zone).toLocalDate().toString()
     val endDate = java.time.Instant.ofEpochMilli(endMs).atZone(zone).toLocalDate().toString()
-    val totalSeconds = ((endMs - startMs) / 1000).coerceAtLeast(0)
+    val totalSeconds = ((endMs - startMs) / 1000).coerceAtLeast(0).toInt()
     val perDate = totalSeconds / 2
     return mapOf(startDate to perDate, endDate to perDate)
 }
