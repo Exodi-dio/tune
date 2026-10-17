@@ -29,7 +29,7 @@ data class AppUiState(
     val showVolumeSlider: Boolean = false,
     val fullscreenArtwork: Boolean = false,
     val fullscreenLyrics: Boolean = false,
-    val showInsightsTab: Boolean = false,
+    val visibleTabs: List<AppDestination> = AppDestination.entries.toList(),
     val keepScreenOn: Boolean = false,
     val selectedAlbumId: String? = null,
     val selectedArtistId: String? = null,
@@ -71,7 +71,7 @@ class MainViewModel(
         val showVolumeSlider: Boolean = false,
         val fullscreenArtwork: Boolean = false,
         val fullscreenLyrics: Boolean = false,
-        val showInsightsTab: Boolean = false,
+        val visibleTabs: List<AppDestination> = AppDestination.entries.toList(),
         val keepScreenOn: Boolean = false,
     )
 
@@ -91,8 +91,8 @@ class MainViewModel(
         .combine(themeModeStore.fullscreenLyrics) { prefs, fullscreenLyrics ->
             prefs.copy(fullscreenLyrics = fullscreenLyrics)
         }
-        .combine(themeModeStore.showInsightsTab) { prefs, showInsightsTab ->
-            prefs.copy(showInsightsTab = showInsightsTab)
+        .combine(themeModeStore.visibleTabs) { prefs, visibleTabs ->
+            prefs.copy(visibleTabs = visibleTabs)
         }
         .combine(themeModeStore.keepScreenOn) { prefs, keepScreenOn ->
             prefs.copy(keepScreenOn = keepScreenOn)
@@ -115,7 +115,7 @@ class MainViewModel(
             showVolumeSlider = appearance.showVolumeSlider,
             fullscreenArtwork = appearance.fullscreenArtwork,
             fullscreenLyrics = appearance.fullscreenLyrics,
-            showInsightsTab = appearance.showInsightsTab,
+            visibleTabs = appearance.visibleTabs,
             keepScreenOn = appearance.keepScreenOn,
             selectedAlbumId = albumId,
             destinationStacks = pages,
@@ -152,7 +152,7 @@ class MainViewModel(
             is AppIntent.SetShowVolumeSlider -> setShowVolumeSlider(intent.enabled)
             is AppIntent.SetFullscreenArtwork -> setFullscreenArtwork(intent.enabled)
             is AppIntent.SetFullscreenLyrics -> setFullscreenLyrics(intent.enabled)
-            is AppIntent.SetShowInsightsTab -> setShowInsightsTab(intent.enabled)
+            is AppIntent.SetVisibleTabs -> setVisibleTabs(intent.visibleTabs)
             is AppIntent.SetKeepScreenOn -> setKeepScreenOn(intent.enabled)
             is AppIntent.ImportM3u -> _effects.trySend(AppEffect.PickM3uImport)
             is AppIntent.ExportM3u -> _effects.trySend(AppEffect.PickM3uExport(intent.playlistId))
@@ -282,12 +282,9 @@ class MainViewModel(
         }
     }
 
-    private fun setShowInsightsTab(enabled: Boolean) {
+    private fun setVisibleTabs(visibleTabs: List<AppDestination>) {
         viewModelScope.launch {
-            themeModeStore.setShowInsightsTab(enabled)
-            if (!enabled && selectedDestination.value == AppDestination.Insight) {
-                selectedDestination.value = AppDestination.Home
-            }
+            themeModeStore.setVisibleTabs(visibleTabs)
         }
     }
 

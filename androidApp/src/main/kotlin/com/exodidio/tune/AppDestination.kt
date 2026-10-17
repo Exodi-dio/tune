@@ -4,7 +4,15 @@ enum class AppDestination {
     Home,
     Insight,
     Library,
-    Settings,
+    Settings;
+
+    val storageValue: String
+        get() = name.lowercase()
+
+    companion object {
+        fun fromStorage(value: String?): AppDestination? =
+            entries.firstOrNull { it.storageValue == value }
+    }
 }
 
 /** Pages that can be placed on a destination's independent navigation stack. */
@@ -33,6 +41,7 @@ enum class AppStackPage {
     SettingsLastFm,
     SettingsLyrics,
     SettingsAbout,
+    SettingsTabLayout,
 }
 
 /** Identifies the visible page and its actual position in a destination stack. */
@@ -69,6 +78,7 @@ val AppStackPage.destination: AppDestination
         AppStackPage.SettingsLastFm,
         AppStackPage.SettingsLyrics,
         AppStackPage.SettingsAbout,
+        AppStackPage.SettingsTabLayout,
         -> AppDestination.Settings
     }
 

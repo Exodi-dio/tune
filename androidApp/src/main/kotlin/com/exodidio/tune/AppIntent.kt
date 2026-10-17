@@ -33,7 +33,7 @@ sealed interface AppIntent {
 
     data class SetFullscreenLyrics(val enabled: Boolean) : AppIntent
 
-    data class SetShowInsightsTab(val enabled: Boolean) : AppIntent
+    data class SetVisibleTabs(val visibleTabs: List<AppDestination>) : AppIntent
 
     data class SetKeepScreenOn(val enabled: Boolean) : AppIntent
 

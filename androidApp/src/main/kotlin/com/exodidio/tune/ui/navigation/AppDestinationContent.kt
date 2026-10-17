@@ -55,6 +55,7 @@ import com.exodidio.tune.ui.screens.InsightContent
 import com.exodidio.tune.ui.screens.InsightPeriod
 import com.exodidio.tune.ui.screens.InsightUiState
 import com.exodidio.tune.ui.screens.SettingsContent
+import com.exodidio.tune.ui.screens.TabLayoutContent
 import com.exodidio.tune.ui.screens.IntegrationContent
 import com.exodidio.tune.ui.screens.LastFmContent
 import com.exodidio.tune.ui.screens.LyricsContent
@@ -132,10 +133,10 @@ internal fun AppDestinationContent(
     showVolumeSlider: Boolean = false,
     fullscreenArtwork: Boolean = false,
     fullscreenLyrics: Boolean = false,
-    showInsightsTab: Boolean = false,
-    onShowInsightsTabChanged: (Boolean) -> Unit = {},
     keepScreenOn: Boolean = false,
     onKeepScreenOnChanged: (Boolean) -> Unit = {},
+    visibleTabs: List<AppDestination> = AppDestination.entries.toList(),
+    onVisibleTabsChanged: (List<AppDestination>) -> Unit = {},
     hazeState: HazeState?,
     navigationBottomPadding: Dp,
     homeListState: LazyListState,
@@ -452,8 +453,6 @@ internal fun AppDestinationContent(
                                 onFullscreenLyricsChanged = { enabled ->
                                     onIntent(AppIntent.SetFullscreenLyrics(enabled))
                                 },
-                                showInsightsTab = showInsightsTab,
-                                onShowInsightsTabChanged = onShowInsightsTabChanged,
                                 keepScreenOn = keepScreenOn,
                                 onKeepScreenOnChanged = { enabled ->
                                     onIntent(AppIntent.SetKeepScreenOn(enabled))
@@ -518,6 +517,11 @@ internal fun AppDestinationContent(
                                     onIntent(AppIntent.OpenExternalUrl(url))
                                 },
                             )
+                            AppStackPage.SettingsTabLayout -> TabLayoutContent(
+                                visibleTabs = visibleTabs,
+                                onVisibleTabsChanged = onVisibleTabsChanged,
+                                modifier = settingsPageModifier,
+                            )
                             else -> SettingsContent(
                                 modifier = settingsPageModifier,
                                 onAppearanceSelected = {
@@ -531,6 +535,9 @@ internal fun AppDestinationContent(
                                 },
                                 onMusicSyncSelected = {
                                     onIntent(AppIntent.OpenPage(AppStackPage.SettingsMusicSync))
+                                },
+                                onTabLayoutSelected = {
+                                    onIntent(AppIntent.OpenPage(AppStackPage.SettingsTabLayout))
                                 },
                                 onAboutSelected = {
                                     onIntent(AppIntent.OpenPage(AppStackPage.SettingsAbout))

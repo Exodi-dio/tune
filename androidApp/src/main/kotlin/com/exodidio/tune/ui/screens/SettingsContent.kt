@@ -15,6 +15,7 @@ internal fun SettingsContent(
     onPlaybackSelected: () -> Unit,
     onIntegrationSelected: () -> Unit,
     onMusicSyncSelected: () -> Unit,
+    onTabLayoutSelected: () -> Unit,
     onAboutSelected: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -40,6 +41,11 @@ internal fun SettingsContent(
                     R.string.settings_music_sync,
                     leadingSymbol = MaterialSymbols.Sync,
                     onClick = onMusicSyncSelected,
+                ),
+                ActionListItem(
+                    R.string.settings_tab_layout,
+                    leadingSymbol = MaterialSymbols.Tune,
+                    onClick = onTabLayoutSelected,
                 ),
                 ActionListItem(
                     R.string.settings_about,

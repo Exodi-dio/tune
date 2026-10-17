@@ -232,7 +232,7 @@ private class FakeThemeModeStore(initialThemeMode: ThemeMode = ThemeMode.System)
     override val showVolumeSlider: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false)
     override val fullscreenArtwork: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false)
     override val fullscreenLyrics: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false)
-    override val showInsightsTab: Flow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false)
+    override val visibleTabs: Flow<List<AppDestination>> = kotlinx.coroutines.flow.MutableStateFlow(AppDestination.entries.toList())
     val savedModes = mutableListOf<ThemeMode>()
     val savedReduceTransparencyValues = mutableListOf<Boolean>()
 
@@ -249,6 +249,6 @@ private class FakeThemeModeStore(initialThemeMode: ThemeMode = ThemeMode.System)
     override suspend fun setShowVolumeSlider(enabled: Boolean) {}
     override suspend fun setFullscreenArtwork(enabled: Boolean) {}
     override suspend fun setFullscreenLyrics(enabled: Boolean) {}
-    override suspend fun setShowInsightsTab(enabled: Boolean) {}
+    override suspend fun setVisibleTabs(visibleTabs: List<AppDestination>) {}
 
 }

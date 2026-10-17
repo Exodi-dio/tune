@@ -70,6 +70,8 @@
     <string name="appearance_show_insights">Show Insights tab</string>
     <string name="appearance_fullscreen_lyrics">Fullscreen lyrics</string>
     <string name="appearance_keep_screen_on">Keep screen awake</string>
+    <string name="tab_layout_title">Visible tabs</string>
+    <string name="tab_layout_description">Reorder and show/hide the bottom-navigation destinations.</string>
     <string name="settings_appearance">Appearance</string>
     <string name="close">Close</string>
     <string name="ok">OK</string>
@@ -193,6 +195,7 @@
     <string name="settings_integration">Integration</string>
     <string name="integration_title">Integration</string>
     <string name="settings_music_sync">Music sync</string>
+    <string name="settings_tab_layout">Visible tabs</string>
     <string name="music_sync_title">Music sync</string>
     <string name="music_sync_permission_rationale">Tune needs audio access to find music on this device. Allow access, then scan again.</string>
     <string name="music_sync_permission_denied">Audio access is off. Turn it on in system Settings to scan for music.</string>

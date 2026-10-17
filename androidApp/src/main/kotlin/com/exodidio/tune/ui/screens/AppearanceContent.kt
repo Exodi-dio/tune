@@ -33,8 +33,6 @@ internal fun AppearanceContent(
     onFullscreenArtworkChanged: (Boolean) -> Unit = {},
     fullscreenLyrics: Boolean = false,
     onFullscreenLyricsChanged: (Boolean) -> Unit = {},
-    showInsightsTab: Boolean = false,
-    onShowInsightsTabChanged: (Boolean) -> Unit = {},
     keepScreenOn: Boolean = false,
     onKeepScreenOnChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -104,16 +102,6 @@ internal fun AppearanceContent(
                             )
                         },
                         onClick = { onFullscreenArtworkChanged(!fullscreenArtwork) },
-                    ),
-                    ActionListItem(
-                        labelRes = R.string.appearance_show_insights,
-                        trailingContent = {
-                            Switch(
-                                checked = showInsightsTab,
-                                onCheckedChange = onShowInsightsTabChanged,
-                            )
-                        },
-                        onClick = { onShowInsightsTabChanged(!showInsightsTab) },
                     ),
                     ActionListItem(
                         labelRes = R.string.appearance_fullscreen_lyrics,

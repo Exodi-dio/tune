@@ -342,10 +342,10 @@ internal fun App(
                 showVolumeSlider = uiState.showVolumeSlider,
                 fullscreenArtwork = uiState.fullscreenArtwork,
                 fullscreenLyrics = uiState.fullscreenLyrics,
-                showInsightsTab = uiState.showInsightsTab,
-                onShowInsightsTabChanged = { enabled -> onIntent(AppIntent.SetShowInsightsTab(enabled)) },
                 keepScreenOn = uiState.keepScreenOn,
                 onKeepScreenOnChanged = { enabled -> onIntent(AppIntent.SetKeepScreenOn(enabled)) },
+                visibleTabs = uiState.visibleTabs,
+                onVisibleTabsChanged = { tabs -> onIntent(AppIntent.SetVisibleTabs(tabs)) },
                 hazeState = hazeState,
                 navigationBottomPadding = navigationBottomPadding,
                 homeListState = homeListState,
@@ -564,7 +564,7 @@ internal fun App(
             }
             NavigationChrome(
                 selectedDestination = uiState.selectedDestination,
-                visibleDestinations = if (uiState.showInsightsTab) AppDestination.entries else AppDestination.entries.filter { it != AppDestination.Insight },
+                visibleDestinations = uiState.visibleTabs,
                 playbackState = playbackState,
                 playbackQueue = playbackQueue,
                 hazeState = hazeState,
