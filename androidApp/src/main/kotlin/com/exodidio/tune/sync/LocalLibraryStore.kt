@@ -91,13 +91,15 @@ import java.security.MessageDigest
     val title: String = "",
     val sortTitle: String = "",
     val sortArtist: String = "",
-    val sortName: String = sortArtist,
     val artist: String = "",
     val artworkPath: String? = null,
     val createdAt: String = "",
     val year: Int = 0,
     val copyright: String = "",
 )
+
+val LibraryAlbum.sortName: String
+    get() = sortArtist
 
  data class LibraryGenre(
     val id: String = "",
