@@ -80,7 +80,7 @@
 
 Grab the APK for your device from the
 [Releases page](https://github.com/Exodi-dio/tune/releases/latest) —
-`Tune-v1.0.0.apk` works everywhere, or pick your architecture build.
+`Tune-v1.1.0_arm64-v8a.apk` fits most phones, `Tune-v1.1.0.apk` works everywhere.
 Sideloading asks you to allow installs once; afterwards the app updates
 itself from Settings → About. Requires Android 12 or newer.
 
